@@ -8,7 +8,8 @@ const int TURNS = 12;
 const int CODELENGTH = 4;
 const int BOARDWIDTH = CODELENGTH*2;
 
-const int COLORS[7] = {39, 31, 32, 33, 34, 35, 93};
+// 0: Default, 1: Red, 2: Green, 3: Yellow, 4: Blue, 5: Magenta, 6: Cyan
+const int COLORS[7] = {39, 31, 32, 33, 34, 35, 36};
 
 /* Sets color of output
     Colors from 1-6
@@ -33,7 +34,7 @@ void printBoard(const int board[TURNS][BOARDWIDTH]) {
         // Print hints
         for (int c = CODELENGTH; c < BOARDWIDTH; c++) {
             if (board[r][c] == 1) setColor(1);
-            else if (board[r][c] == 2) setColor(6);
+            else if (board[r][c] == 2) setColor(3);
             cout << "o";
             setColor(0);
         }
