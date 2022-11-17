@@ -25,6 +25,7 @@ contact* getNthContact(int n, contact* & previous,  contact* & next);
 int contactChoser();
 void removeContact();
 void removeContact(contact *previous, contact *c, contact *next);
+void editContact();
 void exportContact();
 void exportContact(contact *c);
 void menu();
@@ -108,7 +109,8 @@ contact* createContact(string name, string surname, string phone, string email) 
 }
 
 contact* getNthContact(int n) {
-    return getNthContact(n, NULL, NULL);
+    contact *previous = NULL, *next = NULL;
+    return getNthContact(n, previous, next);
 }
 
 // Gets nth element in linked list
@@ -190,7 +192,7 @@ void editContact() {
     contact *newContact = createContact();
     contact *oldContact = getNthContact(n);
     newContact->next = oldContact->next;
-    oldContact = newContact;
+    *oldContact = *newContact;
 }
 
 void menu() {
