@@ -1,8 +1,11 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <iomanip>
 
 using namespace std;
+
+const char separator    = ' ';
 
 struct node {
     string word;
@@ -13,7 +16,7 @@ struct node {
 
 node* addNode(string word, node* leaf);
 node* searchWord(string word, node& leaf);
-void printWords(node* root);
+void printWords(node* root, int wordsCount);
 
 node* addNode(string word, node* leaf = NULL) {
     node* newLeaf = new node;
@@ -58,24 +61,36 @@ node* insertOrSearch(string word, node* root = NULL) {
     return el;
 }
 
-void printWords(node* root) {
+void printNumber(float n, int width, int precision = 0) {
+    cout.precision(precision);
+    cout.setf(ios::fixed, ios::floatfield);
+    cout << right << setw(width) << setfill(separator) << n;
+}
+
+void printWords(node* root, int wordsCount) {
     if (root == NULL) return;
     node *el = root;
-    cout << el->count << " " << el->word << endl;
-    printWords(el->lptr);
-    printWords(el->rptr);
+    printNumber(el->count, 2);
+    cout << " ";
+    printNumber((el->count/(float)wordsCount)*100, 5, 2);
+    cout << "% ";
+    cout << el->word << endl;
+    printWords(el->lptr, wordsCount);
+    printWords(el->rptr, wordsCount);
 };
 
 int main() {
     fstream file;
     string word;
     node *root = NULL;
+    int wordsCount = 0;
 
     file.open("file.txt");
     while (file >> word)
     {
+        wordsCount++;
         if (root == NULL) root = insertOrSearch(word);
         else insertOrSearch(word, root);
     }
-    printWords(root);
+    printWords(root, wordsCount);
 }
