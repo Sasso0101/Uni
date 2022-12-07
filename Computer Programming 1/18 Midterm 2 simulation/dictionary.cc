@@ -32,7 +32,7 @@ void decrementElement(element *dictionary, string key, int decrement) {
 };
 
 /**
- * Prints content of dictionary
+ * Print content of dictionary
 */
 void printDictionary(element *dictionary) {
     while (dictionary != NULL) {
