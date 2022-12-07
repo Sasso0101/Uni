@@ -45,8 +45,8 @@ element* importProducts(element* stock, string filename) {
 }
 
 /**
- * Decrements stock based on placed order
- * quantity
+ * Decrement stock based on quantity of
+ * placed orders
 */
 void decrementStockFromOrders(element* stock, string filename) {
     ifstream file = openFile(filename);
