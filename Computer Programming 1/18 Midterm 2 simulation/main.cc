@@ -5,32 +5,59 @@
 
 using namespace std;
 
-element* importProducts(element* stock, string filename) {
+ifstream openFile(string filename) {
     ifstream file;
     file.open(filename, ios::in);
-    while (!file.eof()) {
-        string row;
-        getline(file, row);
-        if (row.length() == 0) continue;
-        string code = row.substr(0, row.find(" "));
-        string value = row.substr(row.rfind(" ")+1, row.length());
-        stock = addToDictionary(stock, code, stoi(value));
+    if (file.fail()) throw "Can't open file!";
+    return file;
+}
+
+/**
+ * Split string using space as delimiting
+ * character
+*/
+void splitString(string s, string splittedString[3]) {
+    int i = 0;
+    while (i < 3) {
+        size_t firstChar = s.find_first_not_of(' ');
+        size_t lastChar = s.find(' ', firstChar);
+        splittedString[i] = s.substr(firstChar, lastChar-firstChar);
+        s.erase(0, lastChar);
+        i++;
     }
+}
+
+/**
+ * Import products from file and adds them to
+ * stock
+*/
+element* importProducts(element* stock, string filename) {
+    ifstream file = openFile(filename);
+    string row;
+    while (getline(file, row)) {
+        if (row.length() == 0) continue;
+        string splittedString[3];
+        splitString(row, splittedString);
+        stock = addToDictionary(stock, splittedString[0], stoi(splittedString[2]));
+    }
+    file.close();
     return stock;
 }
 
+/**
+ * Decrements stock based on placed order
+ * quantity
+*/
 void decrementStockFromOrders(element* stock, string filename) {
-    ifstream file;
-    file.open(filename, ios::in);
-    while (!file.eof()) {
-        string row;
-        getline(file, row);
+    ifstream file = openFile(filename);
+    string row;
+    while (getline(file, row)) {
         if (row.length() == 0) continue;
-        size_t codePos = row.find_first_not_of(' ', row.find(' '));
-        string code = row.substr(codePos, row.find(' ', codePos)-codePos);
-        string value = row.substr(row.rfind(' ')+1, row.length());
-        decrementElement(stock, code, stoi(value));
+        string splittedString[3];
+        splitString(row, splittedString);
+        decrementElement(stock, splittedString[1], stoi(splittedString[2]));
     }
+    file.close();
 }
 
 int main(int argc, char *argv[]) {
