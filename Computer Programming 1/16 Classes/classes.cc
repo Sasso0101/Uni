@@ -2,14 +2,21 @@
 
 using namespace std;
 
+class Test {
+    public:
+        void ciao();
+};
+
 class Point {
     private:
         int x;
         int y;
     public:
+        static int var;
         Point(int x, int y) {
             this->x = x;
             this->y = y;
+            var++;
         }
         Point() {
             this->x = 0;
@@ -28,9 +35,9 @@ class Point {
         }
 };
 
+int Point::var = 0;
+
 int main() {
-    Point p(10, 20);
-    Point p1(p);
-    p.print();
-    p1.print();
+    Point p(5, 10);
+    cout << Point::var;
 }
