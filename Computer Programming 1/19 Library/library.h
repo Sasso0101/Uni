@@ -23,7 +23,7 @@ void addBorrower(book *book, string name, string date);
 book* getBookByTitle(const vector<book*> &library, string title);
 
 void printBorrowers(vector<borrower*> &borrowers);
-void printBooks(const vector<book*> &library, bool withBorrowers);
+void printBooks(const vector<book*> &library, bool withBorrowers = true);
 
 void importBooks(vector<book*> &library, const char filename[]);
 void exportBooks(const vector<book*> &library, const char filename[]);
