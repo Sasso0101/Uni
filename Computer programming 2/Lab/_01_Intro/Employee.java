@@ -16,8 +16,10 @@ class Employee {
         salary = newSalary;
     }
     public void increaseSalary(double increasePercentage) {
-        System.out.println((100+increasePercentage)/100);
         salary = salary*((100+increasePercentage)/100);
+    }
+    public String toString() {
+        return "Name: " + name + "\nSurname: " + surname + "\nSalary: " + salary + "€";
     }
 
     public void print() {
@@ -30,6 +32,6 @@ class Employee {
         Employee e1 = new Employee("Will", "Smith", 1000);
         e1.increaseSalary(50);
         e1.rename("Willy");
-        e1.print();
+        System.out.println(e1);
     }
 }
