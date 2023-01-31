@@ -3,3 +3,4 @@ a.out
 .DS_Store
 **/lecture.cc
 .vscode
+*.class
