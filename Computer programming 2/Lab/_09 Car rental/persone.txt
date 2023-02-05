@@ -1,0 +1,30 @@
+00000001,2023.02.02 00.00, d, ,Temistocle, Campano
+00000002,2023.02.02 00.00, c, ,Gastone, Amato
+00000003,2022.06.19 17.44, d, ,Ilaria, Chiappetta-Casellati
+00000004,2022.06.04 12.16, d, ,Severino, Asprucci
+00000005,2022.06.13 21.23, c, ,Corrado, Zichichi
+00000006,2022.06.03 23.21, d, ,Bettina, Foletti
+00000007,2022.06.06 09.11, c, ,Lina, Serraglio
+00000008,2022.06.07 07.56, f, Dott., Sophia, Schiaparelli
+00000009,2022.06.02 17.07, a, ,Ugolino, Pertini
+00000010,2022.06.01 17.11, e, ,Lucrezia, Montecchi
+00000011,2022.06.18 20.10, e, ,Rossana, Solimena
+00000012,2022.06.05 09.52, e, ,Silvio, Gargallo
+00000013,2022.06.17 18.54, d, ,Stefano, Petrucci
+00000014,2022.06.12 11.51, b, Dott., Gianpaolo, Collina
+00000015,2022.06.10 06.30, e, ,Gaetano, Franceschi
+00000016,2022.06.04 16.53, d, ,Gioacchino, Bondumier
+00000017,2022.06.04 22.26, b, Dott., Mirco, Zichichi
+00000018,2022.06.15 07.46, a, ,Ermanno, Milanesi
+00000019,2022.06.08 23.24, a, ,Federico, Letta
+00000020,2022.06.02 17.54, f, ,Licia, Bonino
+00000021,2022.06.11 08.52, e, ,Ilaria, Majewski
+00000022,2022.06.10 11.43, d, ,Baldassare, Golino
+00000023,2022.06.15 09.56, e, ,Vittoria, Pietrangeli-Bombieri
+00000024,2022.06.11 06.31, e, Dott., Ansaldo, Crispi
+00000025,2022.06.07 13.35, c, ,Ettore, Babato
+00000026,2022.06.10 14.14, a, ,Galasso, Baracca
+00000027,2022.06.04 20.11, b, ,Vincenzo, Marcacci
+00000028,2022.06.02 10.40, a, Sig., Amleto, Corradi
+00000029,2022.06.10 09.41, d, ,Iolanda, Garrone
+00000030,2022.06.10 16.34, f, Sig., Salvatore, Gottardi

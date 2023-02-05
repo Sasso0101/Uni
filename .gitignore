@@ -4,3 +4,7 @@ a.out
 **/lecture.cc
 .vscode
 *.class
+**/build/
+**/.idea/
+**/out/
+*.iml
