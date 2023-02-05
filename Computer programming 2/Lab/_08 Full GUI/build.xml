@@ -1,0 +1,20 @@
+<project>
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="." destdir="build/" includeAntRuntime="false" modulepath="/Users/salvatore/Library/JavaFX/lib/">
+            <compilerarg line="--add-modules=javafx.base,javafx.controls,javafx.graphics,javafx.media" />
+        </javac>
+    </target>
+
+    <target name="run">
+        <copy file="bikes.txt" tofile="build/bikes.txt"/>
+        <java dir="build/" classname="gui.BikeGUI" fork="true" modulepath="/Users/salvatore/Library/JavaFX/lib/">
+            <jvmarg line="--add-modules=javafx.base,javafx.controls,javafx.graphics,javafx.media"/>
+        </java>
+    </target>
+</project>

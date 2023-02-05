@@ -1,0 +1,23 @@
+Tipologia,tipo,cambio,CLASSCODE,marca,modello,prezzo
+Mini, 4-5 porte, Manuale,A, Toyota, Aygo ,18
+Economica, 4-5 porte, Manuale,A, Opel, Corsa ,18
+Mini, 4-5 porte, Automatica,B, Toyota, Aygo ,21.75
+Compatta, Crossover, Manuale,B, Seat, Arona,21.75
+Compatta, 4-5 porte, Manuale,B, Opel, Astra ,21.75
+Economica, 4-5 porte, Automatica,B,Peugeot, 208 Aut. ,21.75
+Compatta, Crossover, Manuale,B, Hyundai, Kona ,21.75
+Compatta, Crossover, Automatica,C, Kia, Stonic,28.25
+Media, Crossover, Automatica,C, Kia, XCeed,28.25
+Compatta Special, 2-4 porte, Manuale,C, Hyundai, i30 Fastback ,28.25
+Media, Crossover, Manuale,C, Nissan, Qashqai,28.25
+Mini, Cabrio, Automatica,C, Citroen, C1 Aut. Convertible,28.25
+Compatta Special, 2-4 porte, Automatica,D, Hyundai, i30 Fastback,35.25
+Compatta, SUV, Manuale 4WD,D, Dacia, Duster,35.25
+Media, Crossover, Automatica,D, Nissan, Qashqai ,35.25
+Compatta, Station Wagon, Automatica,D, Seat, Leon SW ,35.25
+Compatta Special, 4-5 porte, Automatica,D,Mercedes, A180,35.25
+Compatta, Crossover, Automatica 4WD,E, Jeep, Renegade,39.5
+Standard Special, Crossover, Automatica,E, Mercedes, GLA ,39.5
+Compatta, Cabrio, Automatica,E, Mini, Cooper Cabrio,39.5
+Standard, Crossover, Automatica 4WD,E, Toyota, RAV4,39.5
+Lusso, Multiposto, Manuale,F, Mercedes, Vito 9 Seater,63.5
