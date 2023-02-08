@@ -1,0 +1,8 @@
+Bianchi, Anna, 4, 4/2/1990, UNIPD, LM
+Bianchi, Giovanni, 3, 1/8/1995, UNITN, LT
+Ferrari, Alberto, 7, 5/6/1993, UNITN, LM, atletica, international
+Ferrari, Vincenzo, 8, 9/8/1997, UNIVR, LT, atletica, national
+Rossi, Carla, 2, 19/12/1990
+Rossi, Mario, 1, 6/10/1950
+Verdi, Alice, 6, 16/4/1967,,, curling, international
+Verdi, Giacomo, 5, 6/9/1991,,, nuoto, national
