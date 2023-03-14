@@ -1,0 +1,6 @@
+Margherita,145,1, Siccagno tomato sauce, buffalo mozzarella, basil
+Rianata, 175,0, Siccagno tomato sauce, anchovy, red onion, pecorino, oregano
+Hindsholm,185,0, Hindsholm pork sausage, buffalo mozzarella, ramson, fermented chilli, Bra tenero
+4 Cheeses, 175,1, Gorgonzola, buffalo mozzarella, leeks, pecorino, parmigiano reggiano
+Shrooms, 175,1, Blue oyster mushrooms, buffalo mozzarella, garlic, micro rucola
+Mortadella, 285,0, Homemade fresh goat cheese, buffalo mozzarella, mortadella, Sicilian summer truffle
