@@ -1,0 +1,20 @@
+from itertools import permutations
+
+def main():
+    perm = list(permutations([1, 2, 3, 4, 5, 6, 7, 8, 9]))
+    
+    total = 0
+    # Print the obtained permutations
+    for i in perm:
+        correct = False
+        check = 1
+        for m in list(i):
+            if m == check:
+                correct = True
+            check += 1
+        if correct == True:
+            total += 1
+    
+    print("Correct permutations: " + str(total) + " on " + str(len(perm)))
+if __name__ == '__main__':
+    main()
