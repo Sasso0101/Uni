@@ -1,0 +1,57 @@
+\chapter{Combinatorics}
+\section{Permutations}
+We have n objects, in how many ways we can pick/order them (order matters):
+\begin{equation*}
+    n!=n*(n-1)*(n-2)...*1
+\end{equation*}
+\medskip
+We have n objects, but some objects are equal:
+\begin{equation*}
+    \frac{n!}{r_1!r_2!...}
+\end{equation*}
+where $r_1, r_2...$ are the number of repetitions of same objects (look at anagram example).
+\section{Dispositions}
+From a group n, pick k objects (order matters, we can choose each object once):
+\begin{equation*}
+    \frac{n!}{(n-k)!}=n*(n-1)*...*(k+1)
+\end{equation*}
+Example: 10 objects, 3 slots: $\#dispositions = 10*9*8 = \frac{10!}{7!}$\\
+\medskip
+From a group n, pick k objects (order matters, we can choose each object multiple times):
+\begin{equation*}
+    n^k = n*n*...*n \text{ (repeated k times)}
+\end{equation*}
+\section{Combinations}
+From a group n, pick k objects (order doesn't matter, we can pick each object once):
+\begin{equation*}
+    \binom{n}{k} = \frac{n!}{k!(n-k)!}
+\end{equation*}\\
+\medskip
+From a group n, pick k objects (order doesn't matter, we can choose each object multiple times):
+\begin{equation*}
+    \frac{(n+k-1)!}{k!(n-1)!}
+\end{equation*}
+\section{Examples}
+Multiply possibilities of first case with those of second case etc.
+\begin{example}
+Un dipartimento di statistica decide di assegnare ai propri 25 laureati tre premi di diversa tipologia. Se ciascuno dei laureati potesse ricevere al massimo un premio, quante assegnazioni sarebbero possibili?\\
+$\#E = 25*24*23$
+\end{example}
+\medskip
+First permutate outer group, then inner group.
+\begin{example}
+Il Signor Amadori deve sistemare 10 libri in un ripiano della scaffalatura. Quattro libri sono di matematica, tre sono di chimica, due sono di storia e uno è di grammatica. Amadori, che è un tipo ordinato, vuole fare in modo che i libri sullo stesso argomento siano vicini in libreria. In quanti modi ciò si può realizzare?\\
+$\#E = 4!*4!*3!*2!$
+\end{example}
+\medskip
+Anagrams: $\#E = \frac{(\text{num. of letters})!}{(\text{num. of repeted letter A})!*(\text{num. of repeted letter B})!}$
+\begin{example}
+Quanti sono gli anagrammi di PEPPER?\\
+$\#E = \frac{6!}{3!*2!}$
+\end{example}
+\medskip
+Pick k elements in n. Order doesn't matter.
+\begin{example}
+Dieci ragazzi devono formare 2 squadre A e B di 5 membri ciascuna. Quante sono lo suddivisioni possibili?\\
+$\#E = \binom{10}{5}=\frac{10!}{5!5!}$
+\end{example}

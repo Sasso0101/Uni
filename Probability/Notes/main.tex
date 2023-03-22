@@ -1,0 +1,47 @@
+\documentclass{book}
+\usepackage{graphicx, amsmath, amsthm, mathtools, wrapfig, fontspec}
+\usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+\setmainfont{TeX Gyre Pagella}
+\setmathfont{texgyrepagella-math.otf}
+\usepackage[a4paper, margin={2cm, 3cm}]{geometry}
+\usepackage[fontsize=13]{scrextend}
+\usepackage[font=small,skip=1pt]{caption}
+\usepackage{hyperref}
+\setlength\parindent{0pt}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}[section]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\newtheorem*{example}{Example}
+
+\theoremstyle{definition}
+\newtheorem{proposition}{Proposition}[section]
+
+\def\eff{\ensuremath{\symcal{F}}}
+\def\aii{\ensuremath{\symcal{A}}}
+\def\probspace{\ensuremath{(\Omega, \eff, P)}}
+\def\sigal{$\sigma$-algebra}
+\AtBeginDocument{% to do this after unicode-math has done its work
+  \renewcommand{\setminus}{\mathbin{\backslash}}%
+}
+
+\title{Probability}
+\author{Salvatore Andaloro}
+\date{March 2023}
+
+\begin{document}
+
+\maketitle
+\newpage
+\tableofcontents
+\include{chapters/01 Combinatorics}
+\include{chapters/02 First steps}
+\include{chapters/03 Random variables}
+\newpage
+\end{document}
