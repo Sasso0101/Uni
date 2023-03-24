@@ -116,6 +116,9 @@ It is possible to extend the notion of probability spaces by adding conditions t
         P(E|F) \coloneqq \frac{P(E \cap F)}{P(F)}
     \end{equation*}
 \end{definition}
+\begin{remark}
+    $P(A^C|B)=1-P(A|B)$
+\end{remark}
 \textbf{WARNING!} $P(E|F)$ is not the same thing as $P(E \cap F)$! $P(E|F)$ denotes the probability of the intersection \underline{ONLY} on the F set, while $P(E \cap F)$ denotes the probability on the whole $\Omega$!
 \begin{figure}[ht]
     \centering
@@ -157,7 +160,7 @@ An intuitive question we can ask ourselves is: is the probability of $E$ happeni
     \end{equation*}
     Yes, they are. If we ask our "intuitive question", the probability of $F$ happening after $E$ is $\frac{1}{2}$, but also the probability of $E$ happening after $F$ is $\frac{1}{2}$, therefore the two events are independent.
 \end{example}
-Now we can of course (to be read with a with a pedantic British accent) extend this notion to more than to sets. For example, three events A, B and C are independent if all of the following conditions hold:
+Now we can extend this notion to more than 3 sets. For example, three events A, B and C are independent if all of the following conditions hold:
 \begin{equation*}
     \begin{gathered}
         P(A \cap B) = P(A)P(B)\\
