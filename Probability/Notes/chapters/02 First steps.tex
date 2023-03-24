@@ -22,19 +22,21 @@ An experiment is \textbf{random} if the outcome, given the initial configuration
         \item (finite case) if $ A, B \in \eff $, then $ A \cup B \in \eff $
     \end{enumerate}
 \end{definition}
-\begin{wrapfigure}{r}{0.25\textwidth}
+\vbox{
+    Properties of $\eff$:
+    \begin{enumerate}
+        \item $\emptyset \in \eff$
+        \item if $ A, B \in \eff $, then $ A \cap B \in \eff$
+        \item if $ \{A_i\}^n_{i=1} \subseteq \eff$, then $\cap^n_{i=1}\, A_i \in \eff$
+        \item if $A, B \in \eff $, then $A \setminus B \in \eff$
+        \item if $A, B \in \eff$, then $A \,\Delta\, B \in \eff $ ($\Delta$ = elements present only in A or B, equivalent is $(A \cup B) \cap (A^C \cup B^C)$)
+    \end{enumerate}
+}
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.25\textwidth]{images/Venn0110.png}
     \caption*{$A \,\Delta\, B$}
-\end{wrapfigure}
-Properties of $\eff$:
-\begin{enumerate}
-    \item $\emptyset \in \eff$
-    \item if $ A, B \in \eff $, then $ A \cap B \in \eff$
-    \item if $ \{A_i\}^n_{i=1} \subseteq \eff$, then $\cap^n_{i=1}\, A_i \in \eff$
-    \item if $A, B \in \eff $, then $A \setminus B \in \eff$
-    \item if $A, B \in \eff$, then $A \,\Delta\, B \in \eff $ ($\Delta$ = elements present only in A or B, equivalent is $(A \cup B) \cap (A^C \cup B^C)$)
-\end{enumerate}
+\end{figure}
 \begin{definition}
     \sigal: same algebra as before, but also infinite unions are defined.
     Properties of \sigal s:
@@ -52,17 +54,19 @@ Difference between normal algebras and \sigal s.\\$\Omega = \symbb{N}$ $\aii$=\{
     \textbf{E - event}: every element $E \in \eff$ (\eff\, is a \sigal on $\Omega$). Singletons are elementary or atomic events.
 \end{definition}
 \begin{example}
-    Let $\Omega=\{a, b, c\}$.\\Then we can define our \sigal{} as $\eff =\{\emptyset, \{a\}, \{b, c\}, \{a, b, c\}\}$\\
-    $\{a\}$ is an atomic event\\
-    $\{b\}$ is not an event\\
-    $\{a, b, c\}$ is an event, but not atomic\\
+    Let $\Omega=\{a, b, c\}$.\\Then we can define our \sigal{} as $\eff =\{\emptyset, \{a\}, \{b, c\}, \{a, b, c\}\}$
+    \begin{itemize}
+        \item $\{a\}$ is an atomic event
+        \item $\{b\}$ is not an event
+        \item $\{a, b, c\}$ is an event, but not atomic
+    \end{itemize}
     Notice that we have checked all 3 properties of a \sigal: we have $\Omega$ and all complements.
 \end{example}
 \begin{definition}
-    Given a set $\Omega$ and a \sigal{} \eff{}  on $\Omega$, the pair $(\Omega, \eff)$ is a \textbf{measurable space} or \textbf{Borel space}.
+    Given a set $\Omega$ and a \sigal{} \eff{}  on $\Omega$, the pair \borel{}is a \textbf{measurable space} or \textbf{Borel space}.
 \end{definition}
 \begin{definition}
-    Given a measurable space $(\Omega, \eff)$, a function $P: \eff \to \symbb{R}$ is a probability measure or probability function if it satisfies the following properties (Kolmogorov's axioms):
+    Given a measurable space \borel, a function $P: \eff \to \symbb{R}$ is a probability measure or probability function if it satisfies the following properties (Kolmogorov's axioms):
     \begin{enumerate}
         \item For every event E, $P(E) \ge 0$ (non negativity)
         \item $P(\Omega) = 1$ (normalization or total mass)
@@ -118,7 +122,7 @@ It is possible to extend the notion of probability spaces by adding conditions t
     \includegraphics[width=0.4\textwidth]{images/conditional_b.png}
 \end{figure}
 \begin{remark}
-    $P_F(\cdot) = P(\cdot{} | F) $ is a probability function, since it satisfies Kolmogorov axioms. Therefore also $P_F$ is a probability measure on the Borel space $(\Omega, \eff)$, that is in general different from $P$.
+    $P_F(\cdot) = P(\cdot{} | F) $ is a probability function, since it satisfies Kolmogorov axioms. Therefore also $P_F$ is a probability measure on the Borel space \borel, that is in general different from $P$.
 \end{remark}
 \begin{remark}
     Product rule
