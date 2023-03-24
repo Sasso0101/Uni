@@ -82,20 +82,13 @@ Now we may be interested at what happens if we progressively sum the probabiliti
     \end{enumerate}
 }
 As it can be seen from the graphs, the height of the jump at point $x_0$ represent the probability of the random variable to have value $x_0$.
+\section{Discrete random variables}
 \begin{definition}
     A discrete random variable is a random variable returning a finite or countable number of values.
 \end{definition}
 \begin{remark}
     A random variable is discrete iff its distribution function is discontinuous and piecewise constant, with at most a countable number of discontinuities. These discontinuity points are the values that the random variable can take.
 \end{remark}
-\begin{definition}
-    A random variable $X$ is continuous if the distribution function $F_X$ is continuous. If additionally there exists a non-negative function $f_X:\bbR\to\bbR$ s.t. $\forall x\in\bbR$,
-    \begin{equation*}
-        F_X(x)=\int_{-\infty}^{x} f_X(y) \,dy
-    \end{equation*}
-    then $X$ is absolutely continuous.
-\end{definition}
-\section{Discrete random variables}
 \begin{definition}
     Let $X$ be a discrete r. v. We define the function $\rho_X:\bbR\to[0,1]$ called \textbf{probability mass function (pmf)} or absolute density of $X$ as
     \begin{equation*}
@@ -117,3 +110,20 @@ Properties of $\rho_X$:
     \item $F_X(t)=P_X((-\infty,t])=\sum_{x \in \calR_X}\mathbb{1}_{(-\infty, t)}(x)\rho_X(x)$
 \end{enumerate}
 \section{Absolutely continuous random variables}
+\begin{definition}
+    A random variable $X$ is continuous if the distribution function $F_X$ is continuous. If additionally there exists a non-negative function $f_X:\bbR\to\bbR$ s.t. $\forall x\in\bbR$,
+    \begin{equation*}
+        F_X(x)=\int_{-\infty}^{x} f_X(y) \,dy
+    \end{equation*}
+    then $X$ is absolutely continuous.
+\end{definition}
+We can't define a probability mass function for continuous functions, because since $F_X$ is continuous (it has no jumps), for all $x \in \bbR$ we have $P(X=x)=0$ and $\rho_X$ would be 0. Instead, we can usually define the probability density function (pdf). The pdf is the density of probability rather than the probability mass. The concept is very similar to mass density in physics: its unit is probability per unit length.
+\begin{definition}
+    Let $X$ be an absolutely continuous random variable. By definition, there exists a non- negative function $F_X(x)=\int_{-\infty}^{x} f_X(y) \,dy$. This function $f_X$ is the probability density function (pdf), sometimes shortened to density, of $X$.
+\end{definition}
+\begin{remark}
+    In the points where $F_X$ is differentiable, $F_X'=f(x)$.
+\end{remark}
+\begin{remark}
+    $F_X$ can be $>1$, since it is not a probability.
+\end{remark}
