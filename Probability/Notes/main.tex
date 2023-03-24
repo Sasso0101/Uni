@@ -1,5 +1,5 @@
-\documentclass{book}
-\usepackage{graphicx, amsmath, amsthm, mathtools, wrapfig, fontspec}
+\documentclass{report}
+\usepackage{graphicx, amsmath, amsthm, mathtools, wrapfig, fontspec, mymacros}
 \usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
 \setmainfont{TeX Gyre Pagella}
 \setmathfont{texgyrepagella-math.otf}
@@ -10,10 +10,10 @@
 \setlength\parindent{0pt}
 
 \theoremstyle{definition}
-\newtheorem{theorem}{Theorem}[section]
+\newtheorem{theorem}{Theorem}[chapter]
 
 \theoremstyle{definition}
-\newtheorem{definition}{Definition}[section]
+\newtheorem{definition}{Definition}[chapter]
 
 \theoremstyle{remark}
 \newtheorem*{remark}{Remark}
@@ -21,11 +21,12 @@
 \newtheorem*{example}{Example}
 
 \theoremstyle{definition}
-\newtheorem{proposition}{Proposition}[section]
+\newtheorem{proposition}{Proposition}[chapter]
 
 \def\eff{\ensuremath{\symcal{F}}}
 \def\aii{\ensuremath{\symcal{A}}}
 \def\probspace{\ensuremath{(\Omega, \eff, P)}}
+\def\borel{\ensuremath{(\Omega, \eff)}}
 \def\sigal{$\sigma$-algebra}
 \AtBeginDocument{% to do this after unicode-math has done its work
   \renewcommand{\setminus}{\mathbin{\backslash}}%
@@ -38,7 +39,6 @@
 \begin{document}
 
 \maketitle
-\newpage
 \tableofcontents
 \include{chapters/01 Combinatorics}
 \include{chapters/02 First steps}
