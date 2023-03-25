@@ -23,17 +23,17 @@
 Not only we can check that the probability that a random variable is equal to a fixed value, but we can also check the probability that the random variable gives as results values in an interval.\\
 Let's consider \probspace{} a probability space, $X:\Omega\to\bbR$ a random variable, and $A \in \calB$ ($\calB$ is a Borel \sigal{}, that is the smallest family of subsets in $\bbR$ that contains all the intervals and checks the properties of being a \sigal). Then
 \begin{equation*}
-    P(X \in A) = P(\{\omega \in \Omega:X(\omega)\in A\})=P(X^{-1}(A))
+    P(X \in A) = P(\{\omega \in \Omega:X(\omega)\in A\})
 \end{equation*}
 The function $X:\borel\to (\bbR, \calB)$ transforms the probabilities $P$ defined on the Borel space \borel{} to values in $(\bbR, \calB)$. We can denote this probability measure with $P_X$.
 \begin{definition}
     Given a probability space \probspace{} and a random variable $X:\borel\to (\bbR, \calB)$, the law or \textbf{distribution} of $X$ is the probability function $P_X$ defined on $(\bbR, \calB)$ for all $A \in \calB$ as
     \begin{equation*}
-        P_X(A) \coloneq P(X \in A) = P(X^{-1}(A))
+        P_X(A) \coloneq P(X \in A) = P(\{\omega \in \Omega:X(\omega)\in A\})=P(X^{-1}(A))
     \end{equation*}.
 \end{definition}
 \begin{example}
-    Let \probspace{} be a probability space, $E \in \eff$. Let's consider an urn with 50 white marbles and 50 black ones. The \textbf{indicator random variable} X tells us if $\omega$ is in the set of the event by returning a zero or a one. Let $E$ be the event "the marble drawn is white".
+    Let \probspace{} be a probability space, $E \in \eff$. Let's consider an urn with 50 white marbles and 50 black ones. The \textbf{indicator random variable} X tells us if $\omega$ is in the set of the event $E$ (ex. "i pick a black marble") by returning a zero or a one. Let $E$ be the event "the marble drawn is white".
     \begin{equation*}
         X = I_E(\omega)=\mathbb{1}_E(\omega)=\begin{cases*}
             1 & if $\omega \in E$\\
@@ -50,6 +50,13 @@ The function $X:\borel\to (\bbR, \calB)$ transforms the probabilities $P$ define
         \end{cases*}
     \end{equation*}
 \end{example}
+This tells us the following: if I choose the event $E=\text{"I pick a black marble"}$ as the indicator and a set $A$ with real numbers inside, then:
+\begin{itemize}
+    \item There is probability $1$ that the event happens ($1 \in A$) or doesn't happen ($0 \in A$)
+    \item There is probability $\frac{1}{2}$ that the event happens ($0 \notin A \text{ and } 1 \in A$)
+    \item There is probability $\frac{1}{2}$ that the event doesn't happen ($0 \in A \text{ and } 1 \notin A$)
+    \item There is probability $0$ that the the random variable gives as result a number different from 0 and 1 ($0 \notin A \text{ and } 0 \notin A$)
+\end{itemize}
 Now we may be interested at what happens if we progressively sum the probabilities by taking a set that starts from $-\infty$ and making its right boundary vary.
 \begin{definition}
     Given a random variable $X$, the \textbf{cumulative distribution function (cdf)} of $X$ is the function $F_X:\bbR\to\bbR$ defined for all $t \in \bbR$ s.t.
@@ -70,7 +77,7 @@ Now we may be interested at what happens if we progressively sum the probabiliti
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.61\textwidth]{images/cumulative1.png}
-    \caption*{Cumulative distribution function of the marbles exercise}
+    \caption*{Cumulative distribution function from the marbles exercise}
 \end{figure}
 \vbox{
     Properties of $F_X$:
@@ -81,7 +88,7 @@ Now we may be interested at what happens if we progressively sum the probabiliti
         \item cadlag: continuous to the right ($\lim_{x \to x_0^+} f(x) = f(x_0)$), limited to the left ($\lim_{x \to x_0^-} $ exists on $[0, 1]$)
     \end{enumerate}
 }
-As it can be seen from the graphs, the height of the jump at point $x_0$ represent the probability of the random variable to have value $x_0$.
+As it can be seen from the graphs, the height of the jump at point $x_0$ represents the probability of the set of elements of $\Omega$ that have the random variable equal to $x_0$.
 \section{Discrete random variables}
 \begin{definition}
     A discrete random variable is a random variable returning a finite or countable number of values.
@@ -109,6 +116,11 @@ Properties of $\rho_X$:
     \item if $E \in \calB$, then $P_X(E)=\sum_{x \in \calR_X\cap E}\rho_X(x)=\sum_{x \in \calR_X}\mathbb{1}_E(x)\rho_X(x)$
     \item $F_X(t)=P_X((-\infty,t])=\sum_{x \in \calR_X}\mathbb{1}_{(-\infty, t)}(x)\rho_X(x)$
 \end{enumerate}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/pmf.png}
+    \caption*{pmf of the marbles exercise}
+\end{figure}
 \section{Absolutely continuous random variables}
 \begin{definition}
     A random variable $X$ is continuous if the distribution function $F_X$ is continuous. If additionally there exists a non-negative function $f_X:\bbR\to\bbR$ s.t. $\forall x\in\bbR$,
