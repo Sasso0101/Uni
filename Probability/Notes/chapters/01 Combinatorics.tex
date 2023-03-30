@@ -55,3 +55,18 @@ Pick k elements in n. Order doesn't matter.
 Dieci ragazzi devono formare 2 squadre A e B di 5 membri ciascuna. Quante sono lo suddivisioni possibili?\\
 $\#E = \binom{10}{5}=\frac{10!}{5!5!}$
 \end{example}
+If you have probelms asking "at least", ofter it is easier to compute the complement and then subtract.
+\begin{example}
+    Il sito dedicato al calcolo delle probabilità "cdp.com" richiede ai suoi utenti di registrarsi con una password. Le regole per la costruzione della password sono le seguenti:
+    \begin{itemize}
+        \item deve essere lunga esattamente 5 caratteri;
+        \item lettere maiuscole e minuscole sono considerate distinte (la password è case sensitive);
+        \item deve contenere almeno una lettera (non importa se maiuscola o minuscola) e almeno un simbolo (punto . oppure underscore);
+        \item le lettere possibili sono quelle dell'alfabeto inglese (26 lettere);
+        \item sono consentiti solamente lettere maiuscole o minuscole, il punto (.) e l'underscore (\_).
+    \end{itemize}
+    \#charachers = $26*2+2=52$\\
+    From the total number of passwords($54^5$), I subtract the ones having only letters ($54^5$) and the ones having only symbols ($2^5$), so I get $n=54^4-52^5-2^5$.\\
+    I can write cdp in $2^3$=8 ways. I can place cdp in 3 ways: cdp**, *cdp*, **cdp. In those 2 ** spots i can place 2 symbols ($2^2$ possibilities) or 1 symbol and 1 character ($52*2*2$ possibilities). The final result is:
+    $3*2^3*(2^2+52*2^2)$ (permutations of string cdp, permutations of letters cdp, possible ways of writing **).
+\end{example}

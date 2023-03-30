@@ -1,10 +1,10 @@
-\documentclass{report}
+\documentclass{book}
 \usepackage{graphicx, amsmath, amsthm, mathtools, wrapfig, fontspec, mymacros}
 \usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
 \setmainfont{TeX Gyre Pagella}
 \setmathfont{texgyrepagella-math.otf}
 \usepackage[a4paper, margin={2cm, 3cm}]{geometry}
-\usepackage[fontsize=13]{scrextend}
+% \usepackage[fontsize=13]{scrextend}
 \usepackage[font=small,skip=1pt]{caption}
 \usepackage{hyperref}
 \setlength\parindent{0pt}
@@ -28,6 +28,12 @@
 \def\probspace{\ensuremath{(\Omega, \eff, P)}}
 \def\borel{\ensuremath{(\Omega, \eff)}}
 \def\sigal{$\sigma$-algebra}
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
 \AtBeginDocument{% to do this after unicode-math has done its work
   \renewcommand{\setminus}{\mathbin{\backslash}}%
 }
