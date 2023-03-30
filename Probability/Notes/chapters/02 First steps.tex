@@ -99,10 +99,11 @@ The idea is that we have to remove all elements that we have counted twice, add 
     \begin{equation*}
         P\left(\bigcup_{i=1}^{n} E_i\right) = 
         \sum_{i=1}^nP(E_i) -
-        \sum_{i<j}P(E_i \cap E_j) \footnote{$\sum_{i<j}=\sum_{i=1}^n\left(\sum_{j=i+1}^nP(E_i \cap E_j\right)$} +
+        \sum_{i<j}P(E_i \cap E_j) +
         \sum_{i<j<k}P(E_i \cap E_j \cap E_k) +
         \cdots +
         (-1)^{n+1}P\left(\bigcap_{i=1}^nE_i\right)
+        \blfootnote{$\sum_{i<j}=\sum_{i=1}^n\left(\sum_{j=i+1}^nP(E_i \cap E_j\right)$}
     \end{equation*}
 \end{proposition}
 \begin{remark}

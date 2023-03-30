@@ -131,11 +131,15 @@ Properties of $\rho_X$:
 \end{definition}
 We can't define a probability mass function for continuous functions, because since $F_X$ is continuous (it has no jumps), for all $x \in \bbR$ we have $P(X=x)=0$ and $\rho_X$ would be 0. Instead, we can usually define the probability density function (pdf). The pdf is the density of probability rather than the probability mass. The concept is very similar to mass density in physics: its unit is probability per unit length.
 \begin{definition}
-    Let $X$ be an absolutely continuous random variable. By definition, there exists a non- negative function $F_X(x)=\int_{-\infty}^{x} f_X(y) \,dy$. This function $f_X$ is the probability density function (pdf), sometimes shortened to density, of $X$.
+    Let $X$ be an absolutely continuous random variable. By definition, there exists a non- negative function $F_X(x)=\int_{-\infty}^{x} f_X(y) \,dy$. This function $f_X$ is the \textbf{probability density function (pdf)}, sometimes shortened to density, of $X$.
 \end{definition}
 \begin{remark}
     In the points where $F_X$ is differentiable, $F_X'=f(x)$.
 \end{remark}
-\begin{remark}
-    $F_X$ can be $>1$, since it is not a probability.
-\end{remark}
+Properties of $f_X$:
+\begin{enumerate}
+    \item for all $x \in \bbR, f_X(x) \ge 0$
+    \item for all $x \in \calR_X^c, f_X(x)=0$
+    \item $\int_{-\infty}^{+\infty}  f_X(x)\,dx =1$
+    \item $\int_{a}^{b}  f_X(x)\,dx =F_X(b)-F_X(a)$
+\end{enumerate}
