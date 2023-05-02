@@ -143,3 +143,29 @@ Properties of $f_X$:
     \item $\int_{-\infty}^{+\infty}  f_X(x)\,dx =1$
     \item $\int_{a}^{b}  f_X(x)\,dx =F_X(b)-F_X(a)$
 \end{enumerate}
+\section{Transformation of random variables}
+\subsection{Linear transformations}
+\begin{proposition}
+    Let X be a random variable and let Y=aX+b with $a\ne0, b \in \bbR$ be a linear transformation of X. Then, if X is discrete $\varphi_Y=\varphi_X(\frac{y-b}{a})$, if X is abs. cont. $f_Y(y)=\frac{1}{\left\lvert a \right\rvert}f_X(\frac{y-b}{a})$ (the density function has to be squished by a factor of a to have the area below still equal to 1).
+    If $a>0$,
+    \begin{equation*}
+        F_Y(y)=P(Y \le y)=P(aX+b \le y)=P(X \le \frac{y-b}{a})=F_X(\frac{y-b}{a})
+    \end{equation*}
+    If $a<0$,
+    \begin{equation*}
+        F_Y(y)=\begin{cases*}
+            1-F_X(\frac{y-b}{a}) & X abs. cont. \\
+            1-F_X(\frac{y-b}{a})+\varphi(\frac{y-b}{a}) & X discrete
+        \end{cases*}
+    \end{equation*}
+\end{proposition}
+\subsection{Normalising constant}
+If we take a general function $f(x)$, we can transofrm it into a probability density function by adding a normalizing constant c, which rescales the function, so that the area below the function becomes one.
+If we have a function $ f(x)\ge0 $ for which the integral over $\bbR$ is finite and positive,
+\begin{equation*}
+    1=\int_{-\infty}^{+\infty}{cf(x)dx}=c\int_{-\infty}^{+\infty}{f(x)dx}
+\end{equation*}
+\begin{equation*}
+    c = \frac{1}{\int_{-\infty}^{+\infty}{f(x)dx}}=(\int_{-\infty}^{+\infty}{f(x)dx})^{-1}
+\end{equation*}
+\subsection{Nonlinear transformations}
