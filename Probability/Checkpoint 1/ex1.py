@@ -1,6 +1,6 @@
 import random
 
-die = [1,2,3,4,5,6]
+die = [1,5,5,5,5,6]
 totals = [0,0,0,0]
 
 def is5or6(throw):
