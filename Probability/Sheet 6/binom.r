@@ -1,0 +1,1 @@
+ppois(8, 7, lower.tail=TRUE) - ppois(3, 7, lower.tail=TRUE) + dpois(3, 7)
