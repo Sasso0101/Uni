@@ -1,7 +1,5 @@
 ## Networking
 
-
-
 ### Protocols
 
 Structure of protocol:
