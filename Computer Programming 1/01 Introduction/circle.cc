@@ -1,6 +1,7 @@
-using namespace std;
 #include <iostream>
 #include <cmath>
+
+using namespace std;
 
 const float pi = 3.1415;
 
@@ -9,7 +10,6 @@ int main() {
 	float radius;
 	cout << "Input radius: ";
 	cin >> radius;
-	cout << "test" << "aa" << endl;
 	cout << "Circumference: " << circumference(radius) << "\nArea: " << pi*pow(radius, 2) << endl;
 	return 0;
 }
