@@ -23,8 +23,7 @@ pub fn strings(){
     // This is also called a String literal. It is hardcoded into the text of our program.
     // It must have known fixed length at compile time
     let str_string : &str = "hello";
-    let mut str_string2 = "wht";
-    str_string2 = "mehs";
+    let str_string2 = "mehs";
     // note that we don't have methods to add to a `&str`, we can only replace it with something of fixed size
     println!("Strings {} and {}", str_string , str_string2);
 
@@ -58,9 +57,8 @@ pub fn strings(){
     // Using Strings in Rust is different than in other languages
     let _s = "hell";
     // this is **NOT** a String, it's a &str
-    let mut s0 = "hell".to_string();
+    let s0 = "hell".to_string();
     // this is a String, but it is not mutable, as we are used to
-    //s0.push('c'); // this does not typecheck
 
     let mut s = "hell".to_string();
     let t = String::from("o world");
@@ -113,7 +111,7 @@ pub fn vec(){
     // no, i need to deref `nn` first, it's a pointer!
     // while n gets dereferenced automatically to i32
     let nn = *nn;       //shadowing!
-    println!("Adding stuff {}", nn + n);
+    println!("Adding stuff {}", n + nn);
 
     // Vec tors can be iterated with for loops, taking immutable references
     for i in &v {
@@ -150,10 +148,6 @@ pub fn hashmap(){
     // with `get` and the related handling of options
     let blue_scores = scores.get("Blue").unwrap();
     println!("blue: {}", blue_scores);
-}
-
-pub fn main() {
-    ownership();
 }
 
 /// This function discusses various aspects of Rust ownership
@@ -476,4 +470,8 @@ fn findinv(v : &Vec<i32>) -> i32 {
         counter+=1;
     }
     return -1;
+}
+
+pub fn main() {
+    vec();
 }
