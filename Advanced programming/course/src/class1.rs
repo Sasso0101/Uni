@@ -194,29 +194,6 @@ pub fn expressions(){
     //      allowing for the collection to be modified in place.
 }
 
-
-
-/// This module is used to show Rust's testing infrastructure
-// Rust modules can be nested,
-// this is a private testing module, as the next line defines
-#[cfg(test)]
-mod testing {
-    use crate::full_files::c01_basic::testfuns::{crapadd, okadd};
-
-    // all functions marked as #[test] can be run with project testing
-    #[test]
-    // Ensure you can see the Cargo panel in Clion:
-    //      View -> Tool Windows -> Cargo  --> drag it where you want
-    //      Click the 'run cargo command' --> type "cargo test" to run all the tests and only them
-    //      see the change in the Run icon on the top-right icons menu
-    fn test_crapadd() {
-        assert_eq!(crapadd(1,3),2);
-    }
-    #[test]
-    fn test_okadd(){
-        assert_eq!(okadd(1, 5), 6);
-    }
-}
 /// This is an example public module used by the testing module above
 // this is a public, inner module
 pub mod testfuns{
