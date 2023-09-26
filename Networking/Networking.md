@@ -33,13 +33,15 @@ Each layer takes the data from the lower layer, puts them in its own Protocol Da
 
 From a theoretical point of view defined in the ISO/OSI standard, on of the possible implementations is TCP/IP.
 
-#### Implementation
+### Implementation
 
 Implementation of ISO/OSI prone to interpretation:
 
 <img src="assets/2023-09-19-09-03-08-image.png" title="" alt="" width="265"><img src="assets/2023-09-19-09-03-28-image.png" title="" alt="" width="342">
 
-### Layer 1 - Physical
+### ISO-OSI layers
+
+#### Layer 1 - Physical
 
 - Takes care of transmitting raw bits over the interface
   
@@ -117,3 +119,53 @@ Implementation of ISO/OSI prone to interpretation:
 - Provides the means to communicate and exchange data
 
 - Example protocols: file transfer (FTP), virtual terminal (SSH), email (POP3, IMAP, SMTP), world wide web (HTTP)
+
+### TCP/IP layers
+
+#### Application layer
+
+- Includes also session and presentation layer of ISO/OSI model
+
+- End applications that users use
+
+- Possible architecture types
+  
+  - Client - server
+    
+    - Server is fixed, always on and has permanent IP address
+    
+    - Clients communicate with the server, do not communicate with each other
+    
+    - Manual scalability: servers have to be added if there is an increase in demand
+  
+  - Peer to peer
+    
+    - Hosts arbitrary connect to each other anche change IP addresses
+    
+    - Self scalability: when hosts connect, the network automatically scales
+
+- Sockets
+  
+  - Point of access for processes to communicate with each other
+
+- Application layer defines:
+  
+  - Types of messages exchanged (request, response)
+  
+  - Message syntax (which fields in messages and how fields are delineated)
+  
+  - Semantics (meaning of information in field)
+  
+  - Rules for when and how processes send and respond to messages
+
+- Procols can be open (ex. HTTP) or closed (ex. Skype)
+
+- The lower layer (transport layer) has to provide the following features to the application layer:
+  
+  - Data integrity (some applications require 100% reliability, others don't)
+  
+  - Timing (some applications require low delay)
+  
+  - Throughput (some apps require fixed minimum throughput to function, other just use what's available ("elastic apps"))
+  
+  - Security (encryption, data integrity)
