@@ -1,483 +1,363 @@
 /// This module shows some KEY concepts of Rust:
-///     ownership,
-///     references,
-///     borrowing,
-///     slices
-/// for this, it first discusses
-///     Strings
-///     Vec
-///     Hashmap
+///     enums
+///     Option
+///     pattern-matching
+///     Result & error handling
+///     error handling in Vec
 
 /// Material for this module:
 ///
-///     https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html
-///     https://doc.rust-lang.org/std/string/struct.String.html
-///     https://doc.rust-lang.org/std/vec/struct.Vec.html
-///     https://doc.rust-lang.org/std/collections/struct.HashMap.html
-///     https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html
-///     https://doc.rust-lang.org/book/ch04-03-slices.html
+///     https://doc.rust-lang.org/book/ch06-00-enums.html
+///     https://doc.rust-lang.org/std/option/enum.Option.html
+///     https://doc.rust-lang.org/book/ch18-00-patterns.html?highlight=pattern%20ma#patterns-and-matching
+///     https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html
 
-/// This function showcases Rust Strings and how to use them
-pub fn strings(){
-    // `str_string` has type &str, i.e., pointer to a `str`.
-    // This is also called a String literal. It is hardcoded into the text of our program.
-    // It must have known fixed length at compile time
-    let str_string : &str = "hello";
-    let mut str_string2 = "wht";
-    str_string2 = "mehs";
-    // note that we don't have methods to add to a `&str`, we can only replace it with something of fixed size
-    println!("Strings {} and {}", str_string , str_string2);
+// enums define a type that has multiple possible variants.
+// Enums are a feature in many languages, but their capabilities differ in each language.
+// Rust’s enums are most similar to algebraic data types in functional languages, such as F#, OCaml, and Haskell.
 
-    // A String is stored as a vector of bytes (`Vec<u8>`), guaranteed to always be a valid UTF-8 sequence.
-    // A string is heap-allocated, growable, and not null-terminated.
-    // Each `String` is allocated on the heap and your a variable of type `String` consists of three parts:
-    //     - a **pointer** to the memory that holds the contents of the string.
-    //     - The **length** is how much memory, in bytes, the contents of the String is currently using.
-    //     - The **capacity** is the total amount of memory, in bytes, that the String has received from the allocator.
-    /* Visually:
-            strptr_string                 str_string                 heap stuff
-          | name  | value |         | name     | value |        | index | value |
-          | ptr   | ----------------> ptr      | ---------------> 0     | h     |
-                                    | length   | 5     |        | 1     | e     |
-                                    | capacity | 5     |        | 2     | l     |
-                                                                | 3     | l     |
-                                                                | 4     | o     |
-    */
-    let str_string = String::from(str_string);
-    // Below is the reference of a *String*,
-    // it allows us to refer to the string without taking ownership of it.
-    let strptr_string : &String = &str_string;
-    let str_slice : &str = &str_string[..2];
-    println!("This is a slice {}", str_slice);
-    println!("This is (not) a pointer: {}", strptr_string);
-    // this does not show a pointer!
-    // when we see traits, we'll see the details of why this is printing this way
-    println!("This is a pointer: {:p}", strptr_string);
-    // when we see structs, we will discuss displaying with Debug and Display
+// the `IpAddrKind` enum defines 2 different values: `V4` and `V6`
+pub enum IpAddrKind {
+    V4,
+    V6,
+}
+// the `IpAddr` enum defines 3 values:
+//   V4 has 4 i32 fields, V6 has a String field and V0 has none
+enum IpAddr {
+    V4(i32,i32,i32,i32),
+    V6(String),
+    V0(),
+}
+// the first enum is accessible from other modules, and both `V4` and `V6` are public types
 
-    // Using Strings in Rust is different than in other languages
-    let _s = "hell";
-    // this is **NOT** a String, it's a &str
-    let mut s0 = "hell".to_string();
-    // this is a String, but it is not mutable, as we are used to
-    //s0.push('c'); // this does not typecheck
 
-    let mut s = "hell".to_string();
-    let t = String::from("o world");
-    s.push_str(&t);
-    // QUIZ: what is peculiar about the line above?
-    // what is going on here? `push_str` wants a `&str`, why is passing a `&String` ok ?
+/// This function showcases Rust Enums and how to use them
+pub fn enum_usage(){
+    // we can create values of each type declared in the enum
+    let _four = IpAddrKind::V4;
+    // here we say that `_four` is a value of a certain variant (V4)
+    let _six = IpAddrKind::V6;
 
-    // This is an important Rust feature called
-    //      Implicit Deref Coercion
-    // which we'll discuss later
-    // if you can't wait, see
-    //  https://doc.rust-lang.org/book/ch15-02-deref.html#implicit-deref-coercions-with-functions-and-methods
-
-    // Another way of manipulating strings is with `format!`
-    let r = format!("{} is real t{}lings", s0, t);
-    println!("{}",r);
-
-    // Strings cannot be indexed directly, even though they are arrays,
-    // because you can end in the middle of a character
-    // let h = s0[0];  // DNC: the type `String` cannot be indexed by `{integer}`
-    for c in s0.chars() {
-        println!("Char: {:?}", c)
-    }
+    let loopback = IpAddr::V6(String::from("::1"));
+    let home = IpAddr::V4(127, 0, 0, 1);
+    // we can access these fields with pattern-matching, which we describe in a second
 }
 
-/// This function showcases Rust Vec
-pub fn vec(){
-    // Like `array`, vector `Vec` can store a single type of values next to each other.
-    // Unlike `array`, `Vec` is allocated in the heap and doesn't need to have a fixed length at compile time.
-    // Find the list of methods for `Vec` from their doc:
-    //      https://doc.rust-lang.org/std/vec/struct.Vec.html#method.from_raw_parts
 
-    // This is a Vector of i32. There are 2 types here: Vec and i32. i32 here is a type parameter.
-    // Rust defines Vec<T> for any type T (T here is a type variable)
-    // Rust has Parametric Polymorphism (like in System F) and this is an example
-    let mut v: Vec<i32> = Vec::new();
-    // one can push and pop values in a Vec
-    v.push(5);
-    v.push(5);
-    v.push(6);
-    v.push(5);
-    v.pop();
-    // or just get them values (for now, as immutable! )
-    let n = v.get(0).unwrap();
-    let nn = v.get(2).unwrap();
-    // first we need to deal with the options that `get` returns
-    // then observe the types of `n` and of `nn`:
+/* ==== Option Types ====
+   ====================== */
+// https://doc.rust-lang.org/std/option/enum.Option.html
+// The Option type is used in many places
+// it encodes the very common scenario in which a value could be something or it could be nothing.
+// Benefit:
+//      the Rust type system lets us express whether a value can be something or nothing
+//      so the compiler can check whether you’ve handled all the cases you should be handling;
+// Design choice:
+//      Rust doesn’t have the null feature that many other languages have.
+//      In languages with null, variables can always be in one of two states: null or not-null.
+//      but if you try to use a null value as a not-null value, you’ll get an error of some kind.
+//      This leads to many mistakes
+// Rust does not have nulls, but it does have the enum `Option<T>`,
+// which lets one express the same idea of null values, but with type system guarantees
+// The `<T>` syntax is a feature of Rust we haven’t talked about yet called generic type parameter,
+// we'll talk about them later
+// Option<T> is defined by the standard library as follows,
+/*
+enum Option<T> {
+    None,
+    Some(T),
+}
+ */
+
+/// This function showcases Rust Options and how to use them
+// let's look at Option usages
+pub fn option(){
+    // here we instantiate the type parameter T with i8
+    // it is kind of like calling functions: T is a formal parameter and its actual parameter here is i8
+    // Note that `Option<T>` is not the same type as `T`.
+    let x: i8 = 5;
+    let y: Option<i8> = Some(5);
     // QUIZ: can i do this:
-    // nn = nn + n;
-    // no, i need to deref `nn` first, it's a pointer!
-    // while n gets dereferenced automatically to i32
-    let nn = *nn;       //shadowing!
-    println!("Adding stuff {}", nn + n);
-
-    // Vec tors can be iterated with for loops, taking immutable references
-    for i in &v {
-        println!("{}", i);
-    }
-    // or taking mutable ones
-    for i in &mut v {
-        *i += 50;
-    }
-    // For complex data structures that implement the Debug trait,
-    // we can use {:?} to print them in a standard way -- more info on this later
-    println!("Vector v {:?}", v);
-}
-
-/// This function showcases Rust HashMap
-pub fn hashmap(){
-    // A Hashmap is a collection that stores a key-value mapping
-    // The type is HashMap<K,V>, which is Polymorphic in the types of keys `K` and of values `V`
-    use std::collections::HashMap;
-    // this import can be per-function (as here), or per module (move to beginning of code)
-
-    let mut scores = HashMap::new();
-    // insert values
-    scores.insert(String::from("Blue"), 10);
-    scores.insert(String::from("Yellow"), 50);
-    // get values
-    for (key, value) in &scores {
-        println!("Hashmap content: {}: {}", key, value);
-    }
-
-    //overwrite
-    scores.insert(String::from("Blue"), 25);
-    //get or insert in two different ways
-    // with `get` and the related handling of options
-    let blue_scores = scores.get("Blue").unwrap();
-    println!("blue: {}", blue_scores);
-}
-
-/// This function discusses various aspects of Rust ownership
-pub fn ownership(){
-    // Central to the reason why Rust has ownership is the role of Stack and Heap.
-    // let's recap stack and heap from 1st year
-    // QUIZ:
-    // 1. which one is faster to access: stack / heap
-    // 2. which one is larger: stack / heap
-    // 3. what operations do you do on a heap: push / pop / malloc / free
-    // 4. what does a typical C function push on a stack? (word cloud)
-
-    // Existing languages have many a problem with the management of the heap,
-    // e.g., buffer overflows, data races, dangling pointers etc...
-
-    /* ========== Rust's Ownership Rules ==========
-        - Each value in Rust has one **owner**
-        - There can only be **one owner** at a time for each value
-        - When the owner goes out of scope (when the *lifetime* is over), the value will be dropped (deallocated, freed).
-
-        Why?
-        - Each piece of memory has its owner. No data race!
-        - When the owner gets dropped, the piece of memory will be freed. No dangling pointers!
-    */
-    // these curly braces introduce a new scope block
-    {
-        // allocates s1
-        let s1 = String::from("hello");
-        // moves s1 into s2
-        let _s2 = s1;
-        // DNC: borrow of moved value: `s1`
-        // let's look at the compiler output to understand what is going on
-        // println!("{}", s1); // error, `s1` doesn't own the value anymore.
-        // First: Rust errors are often very informative!
-        //      the explanation is quite clear: String cannot be copied,
-        //      its value is **MOVED** from s1 to s2
-        //      and when s1 is used, it does not own the value anymore
-
-        // This is called MOVE SEMANTICS:
-        //  the Rust type system statically keeps track of ownership of values
-        //  and of how that ownership moves around were programs to execute
-
-    } // When the scope is over, rust calls `drop()` function automatically to drop `s1` and `s2`.
-
-    // cloning
-    {
-        let s1 = String::from("hello");
-        // If we really want to keep `s1` and `s2` at the same time, we can `clone` it explicitly:
-        let s2 = s1.clone();
-
-        println!("s1 = {}, s2 = {}", s1, s2);
-    }
-
-    // Ownership rules only affects HEAP values, not STACK ones (such as i32)
-    let x: i32 = 5;
-    let y = x;
-    println!("x = {}, y = {}", x, y); //works
-    //This is OK because x has a primitive type, `i32`, whose length is known at compile-time and is stored on the stack.
-    // So, the Rust compiler will *copy* the value of  `x` to `y`, so both `x` and `y` have the same value of type `5i32`
-    // but are stored in a different place on the stack.
-    // This is because `i32` has the `Copy` trait.
-    // If a type implements the `Copy` trait, the value of the type will be copied after the assignment.
-    // This also matters with Implicit Deref Coercion, and we'll talk more about this later
-
-    // 2 Words on Rust Traits:
-    //    A Trait is a way of saying that a type has a particular property
-    //    (e.g., Copy, Move, Debug, Display, PartialEq ...)
-    // We'll discuss Traits at length later
-
-    // What about function calls and ownership of passed parameters?
-    ownership_for_functions();
-}
-
-// Consider the following 3 functions
-// QUIZ: when is the memory for the heap-allocated `s` freed ?
-fn ownership_for_functions() {
-    // s comes into scope, in the heap
-    let mut s = String::from("hello");
-    // s's value moves into the function `takes_ownership`
-    s = takes_ownership(s);
-    // ... and so is no longer valid here
-    print!("{}", s);
-    // x comes into scope, on the stack
-    let x = 5;
-    // x would move into the function,
-    // but i32 is Copy, so it's okay to still  use x afterward
-    makes_copy(x);
-} // Here, x goes out of scope, then s. But because s's value was moved, nothing happens:
-  //      it does not get deallocated because of this 'drop'
-
-fn takes_ownership(some_string: String) -> String { // some_string comes into scope
-    println!("{}", some_string);
-    return some_string;
-} // Here, some_string goes out of scope and `drop` is called. The backing memory is freed.
-
-fn makes_copy(some_integer: i32) { // some_integer comes into scope
-    println!("{}", some_integer);
-} // Here, some_integer goes out of scope. Nothing special happens.
-
-pub fn main() {
-    refs_and_borrowing();
-}
-
-/// This function presents Rust references and Borrowing
-pub fn refs_and_borrowing(){
-    // Borrowing avoids transferring ownership
-    //  If we don't want a function to take ownership of our data,
-    //  we can pass a reference to the function, creating an explicit, non-owning pointer
-    //  by making a reference is called `borrowing` in rust.
-
-    // Refernces are done with `&` ampersand operator.
-    // The opposite of referencing by using `&` is dereferencing, which is accomplished with `*`.
-
-    let mut s1 = String::from("hello");
-    // note that the parameter we pass into `calculate_length` is &s1, not just s1
-    let len = calculate_length(&s1);
-    // &s1 has type &String, which reads: pointer to String
-    println!("The length of '{}' is {}.", s1, len);
-    // QUIZ: can i write through a pointer? Can i do:
-    s1.push('c');
-    println!("The length of '{}' is {:?}.", s1, s1.len());
-
+    let sum = x + y.unwrap();
     // Y / N
 
 
-    // `&` alone doesn't give us the permission to modify the data.
-    // Remember that in Rust, everything is by default **immutable**.
-    // To make a mutable reference, we need to specify `&mut` when making a reference.
-    let mut s = String::from("hello");
-    change(&mut s);
 
-    //**REMEMBER:** Mutable references have one big restriction: you can have only
-    //          ONE
-    // mutable reference to a particular piece of data in a particular scope.
-    // QUIZ: does this code compile?
-    let mut s = String::from("hello");
-
-    let r1 = &mut s;
-    let r2 = "asd";
-    //let r2 = &s; // DNC cannot borrow `s` as mutable more than once at a time
-    println!("r1 and r2: {} and {}", r1, r2);
-    // cannot have multiple mutable reference!
-
-    // Why do we have:
-    //      either 1 RW references
-    //      or multiple R only references?
-    // The benefit of having this restriction is that
-    //     1)     Rust can prevent data races statically (i.e., at compile-time)
-    //     2)     Rust enforces Temporal Memory Safety statically
     //
-    // Recall that Rust also enforces (almost) spatial memory safety (by keeping sizes of arrays around
-    // and by dealing with Option types
+    // DNC: error[E0277]: cannot add `Option<i8>` to `i8`
+    // Option<i8> is like String, Vec, Bool, it is effectively another type,
+    // look where it is placed in the syntax, right after the " : "
+
+    // // options have a number of specific destructors and error handling methods
+    let nopt : Option<i32> = None;
+    let opt = Some(10);
+    // if nopt.is_nons
+    // QUIZ: what will this expression do?
+    // let v = nopt.unwrap();
+
     //
-    // This is golden
-    //      You unlikely not have the expertise in security and concurrency to appreciate this
-    //      but join this information with what you learn in the next semesters /
-    //      years to understand truly why Rust rocks
-
-    // Data Races Prevention Example
-    // QUIZ: does this code compile?
-    let r1 = &s;
-    let r2 = &s;
-    let r3 = "asd";
-    // let r3 = &mut s; //DNC: cannot borrow `s` as mutable because it is also borrowed as immutable
-    println!("r1 and r2 and r3: {} and {} and {}", r1, r2, r3);
-
-    // Temporal memory safety includes: no dangling references (dangling pointers) and no use-after free
-    //  Dangling References
-    //      In languages with pointers, it’s easy to erroneously create a *dangling pointer*,
-    //      a pointer that references a location in memory that may have been given to someone else,
-    //      by freeing some memory while preserving a pointer to that memory.
-
-    // In rust, the dangling pointer will NEVER happen**
-    // because Rust compiler will make sure that if you have a reference to some data,
-    // the data will not go out of scope before the reference to the data does.
-
-    // take a look at `dangle`
-    let reference_to_nothing = dangle();
-
-    // take a look at `no_dangle`
-    let string = no_dangle();
-    println!("String {}",string);
+    // RTE: thread 'main' panicked at 'called `Option::unwrap()` on a `None` value'
+    // // RTE = runtime error
+    // let v = opt.unwrap();
+    // println!("Some of {}",v);
 }
 
-/// Example function used for borrowing
-fn calculate_length(s: &String) -> usize {
-    s.len()
-}
-/// Example function used for borrowing
-fn change(some_string: &mut String) {
-    some_string.push_str(", world");
-}
-/// Example function used for references
-fn dangle() -> &String {
-    // This function cannot return because the variable s is dropped at the end of the function.
-    let s = String::from("hello");
-    &s
-    // DNC :  missing lifetime specifier
-    // (and there is no lifetime specifier that can make this compile,
-    // also we'll discuss lifetime in detail later)
-}
-/// Example function used for references
-fn no_dangle() -> String {
-    // This function can return (even if it does not use the `return` keyword, it is returning `s`),
-    // and it returns an actual string, so because `s` is returned,
-    // it is not freed when `drop` is called at the end of the function scope
-    let s = String::from("hello");
-    s   // return s; // equivalent
-}
+/// This function showcases Pattern matching in Rust
+pub fn patternmatching(){
+    let home = IpAddr::V4(127, 0, 0, 1);
+    let loopback = IpAddr::V6(String::from("::1"));
 
-/// This function presents Rust slicing
-pub fn slices(){
-    // Another type that does not have ownership is the slice.
-    // Slices let you reference a contiguous sequence of elements in a collection rather than the whole collection.
+    // match allows you to compare some value against a series of pattens
+    // and execute code based on which pattern matches.
+    // Patterns can be made up of literal values, variable names, wildcards, and many other things;
+    //      Chapter 18 covers all the different kinds of patterns and what they do.
+    // The power of match comes from the expressiveness of the patterns
+    // and the fact that the compiler confirms that all possible cases are handled.
 
-    // slicing is done by taking the desired range with square brackets [..],
-    // the first interval is inclusive, the second is not
-
-    let s : String = String::from("hello world");
-    let _hello : &str = &s[0..5];
-    let _world : &str = &s[6..11];
-    // `s` owns the string.
-    // `world` is a reference pointing to the second word of the string.
-
-    /* Visually:
-                s                        heap stuff
-          | name     | value  |       | index | value |
-          | ptr      | ---------------> 0     | h     |
-          | length   | 11     |       | 1     | e     |
-          | capacity | 11     |       | 2     | l     |
-                                      | 3     | l     |
-                                      | 4     | o     |
-                world                 | 5     |       |
-          | ptr      | ---------------> 6     | w     |
-          | length   | 5      |       | 7     | o     |
-          | capacity | 5      |       | 8     | r     |
-                                      | 9     | l     |
-                                      | 10    | d     |
-    */
-    // these are equal
-    let _slice = &s[0..2];
-    let _slice = &s[..2];
-    // these are equal too
-    let len = s.len();
-    let _slice = &s[3..len];
-    let _slice = &s[3..];
-
-    // slicing is not limited to Strings, but it works on Array s and on Vec s too
-    let a = [1, 2, 3, 4, 5];
-    let slice = &a[1..3];
-    assert_eq!(slice, &[2, 3]);
-
-    let v = vec![1, 2, 3, 4, 5];
-    let third: &i32 = &v[2];
-    println!("The third element is {}", third);
-    match v.get(2) {
-        Some(third) => println!("The third element is {}", third),
-        None => println!("There is no third element."),
-    }
-}
-
-pub fn ownership_and_compound(){
-    // let's now take a look at ownership and vectors,
-    // to study in details how to deal with ownership and compound data types
-
-    let mut v = vec![String::from("something");10];
-    // QUIZ: can i do this:
-    // let first_nonmut = v[0];
-    // let sec_nonmut = v[1];
+    // QUIZ: is this ok?
+    // match home {
+    //     IpAddr::V4(a, b, c, d) => println!("Is V4"),
+    //     IpAddr::V6(a) => println!("Is V6")
+    // };
     // Y / N
 
-    // DNC: error[E0507]: cannot move out of index of `Vec<String>`
-    // the compiler tells us something useful though:
-    //      move occurs because value has type `String`, which does not implement the `Copy` trait
-    //              help: consider borrowing here: `&v[0]`
-    let first_nonnmut = &v[0];
-    // note that this now is a &String
-    let mut first_mut = v.get_mut(0).unwrap();
-    first_mut.push_str(" else");
-    println!("First Element: {}",first_mut);
 
-    let second_nonnmut = v.get(1).unwrap();
-    // QUIZ: what happens if we write
-    // println!("First Element: {}",first_mut);
-    // nothing: it works // compiler error
+    //
+    // DNC: error[E0004]: non-exhaustive patterns: `V0` not covered
+    match home {
+        // matches any V4, must be after the previous or that becomes unreachable
+        IpAddr::V4(a, b, c, d) => println!("Is V4"),
+        // matches any V4 whose first field is 127
+        IpAddr::V4(127, b, c, d) => println!("Is V4 loopback"),
+        // matches any V6
+        IpAddr::V6(a) => println!("Is V6"),
+        // the " _ " matches anything
+        _ => println!(" catch all")
+    };
+    // pattern-matching can return values, so it can be used to set variables
+    let _variable = match loopback {
+        IpAddr::V4(127, b, c, d) => Some(loopback),
+        _ => None
+    };
+    let firstfield = match IpAddr::V4(10,20,30,40){
+        IpAddr::V4(a,_,_,_) => a,
+        _ => 0,
+    };
+    println!("The first field is: {}", firstfield);
 
+    // since pattern-matching works on Enums, it works on options too, even when combined,
+    // like in a tuple: here the patters to test are 4
+    let nopt : Option<i32> = None;
+    let opt : Option<i32> = Some(3);
+    let test_eq = match (opt, nopt) {
+        (Some(o),Some(n)) => {o == n},
+        // unused arguments can be made irrelevant with " _ "
+        (Some(_),None) => {false},
+        (None,Some(_)) => {false},
+        (None, None) => {false},
+    };
+    println!("Are they the same? {}", test_eq);
 
-    // DNC: error[E0502]: cannot borrow `v` as immutable because it is also borrowed as mutable
-    // the print of first_mut here clashes with the immutabble borrow of v done for second_nonmut
-    // instead, this is not a problem for first_nonmut
-    let third_nonmut = v.get(2).unwrap();
-    println!("Nonmut: second and third {}, {}", second_nonnmut, third_nonmut);
-    // what about the first_nonmut?
-    // same issue, the mutable access to first_mut breaks stuff
-    // println!(" First nonmut ? no {}",first_nonnmut);
-    // DNC: error[E0502]: cannot borrow `v` as mutable because it is also borrowed as immutable
+    // For specific Enums, like Option, pattern-matching is not the only way
+    // to use values of their type:
+    // we can check if an Option is Some or None, unwrap its content, and
+    let issome = nopt.is_some();
+    let isnone = opt.is_none();
+    // unwrap gets out the content of a Some
+    if isnone {
+        let content = opt.unwrap();
+    }
+    // careful, using `unwrap` can panic when called on Nones
+    let exp = nopt.expect("insert error message here");
+    println!("nopt {}",exp);
+    // `expect` is like unwrap but with a specific message
 
-    // how do i get another mutable reference to a different entry in the vector?
-    // can i? element 5 and 6 do not share stuff, so we should get those 2 pointers because they
-    // do not overlap, their ownership is disjoint, the issue is that ownership goes through v ...
-    let (v05, v6plus) = v.split_at_mut(6);
-    let mut one_mut = v05.get_mut(5).unwrap();
-    let mut two_mut = v6plus.get_mut(0).unwrap();
-    // the indices ofc change now!
-    println!("5: {}, 6: {}",one_mut, two_mut);
-
-    // how to merge them back? with concat, applied to an array since
-    // arrays can concat() slices to a vector
-    let vv = [v05,v6plus].concat();
-    println!("{:?} == {:?}",v,vv);
+    // there are many more ways to use an Option, check out
+    // .and_then
+    // .is_some_and
+    // .ok_or_else
+    // .zip
 }
 
+/// This function showcases Rust errors
+pub fn errors() {
+    // Rust groups errors into two major categories:
+    //      recoverable and
+    //      unrecoverable errors.
+    // recoverable error: e.g., a file not found error, it’s reasonable to report the problem to the user and retry the operation.
+    // Unrecoverable errors are always symptoms of bugs, like trying to access a location beyond the end of an array.
+    // For recoverable errors, Rust doesn’t have exceptions like other languages.
+    //      Instead, it has the type `Result<T, E>`
+    //      https://doc.rust-lang.org/std/result/enum.Result.html
+    // For unrecoverable errors, Rust has the panic! macro that stops execution.
+    // Result enum is defined as having two variants, Ok and Err, as follows:
+    /*
+    ```rust
+    enum Result<T, E> {
+        Ok(T),
+        Err(E),
+    }
+     */
+    use std::fs::File;
 
+    // erase file and comment line to see panic
+    File::create("hello.txt");
 
-pub fn testvec(){
-    let mut v = vec![5];
-    v.push(6);
+    let f = File::open("hello.txt");
+    // as always, `match` needs to be exhaustive
+    let f = match f {
+        Ok(file) => file,
+        Err(error) => panic!("Problem opening the file: {:?}", error),
+    };
 
-    let sixindex = findinv(&v);
-    v.push(9);
+    // We can also nest our matching expressions to match with a specific kind of error.
+    use std::io::ErrorKind;
+    let f = match File::open("hello.txt") {
+        Ok(file) => file,
+        Err(error) => match error.kind() {
+            ErrorKind::NotFound => match File::create("hello.txt") {
+                Ok(fc) => fc,
+                Err(e) => panic!("Problem creating the file: {:?}", e),
+            },
+            other_error => {
+                panic!("Problem opening the file: {:?}", other_error)
+            }
+        },
+    };
+    // The type of the value that File::open returns inside the Err variant is io::Error,
+    // which is a struct provided by the standard library.
+    // This struct has a method kind that we can call to get an io::ErrorKind value.
+    // The enum io::ErrorKind is provided by the standard library and has variants
+    // representing the different kinds of errors that might result from an io operation.
+    // The variant we want to use is ErrorKind::NotFound,
+    // which indicates the file we’re trying to open doesn’t exist yet.
+    // So we match on f, but we also have an inner match on error.kind().
+
+    // Using match can sometimes be a bit verbose, so we can use the `unwrap()` or `expect()` methods.
+    // let f = File::open("hello.txt").unwrap();
+    // If we run this code and the file doesn't exist, it will panic with the following error.
+    //      thread 'main' panicked at 'Problem opening the file: Os { code: 2, kind: NotFound, message: "No such file or directory" }', src/full_files/c03_enums.rs:179:23
+    // We can also use `expect()`, to print a specific message when our code runs.
+    // let f = File::open("hello.txt").expect("Failed to open hello.txt");
+
+    // We briefly above saw the `panic!` macro.
+    // This macro is used to generate an unrecoverable error:
+    // panic!("crash and burn");
+
+    //How do you know when to call `panic!` and when to return a `Result`?
+    // Result:
+    //      you give the calling code options rather than making the decision for it.
+    //      The calling code could choose to attempt to recover in a way that’s
+    //      appropriate for its situation, or it could decide that an
+    //      Err value in this case is unrecoverable, so it can call panic!
+    //      and turn your recoverable error into an unrecoverable one.
+    //      Therefore, returning Result is a good default choice when you’re defining a function that might fail.
+    // Panic:
+    //      you deny users of your code the option to recover
 }
-fn findinv(v : &Vec<i32>) -> i32 {
-    let mut counter =0;
-    for x in v.iter() {
-        if *x == 6{
-            return counter;
+
+/// This function showcases errors in Rust collections (Vec)
+pub fn collectionerrors(){
+    // many Rust collections make extensive usage of Options and Results
+    let num = vec![10, 20];
+
+    println!("num[0]: {}", num[0]);
+    println!("num[1]: {}", num[1]);
+    // here we are accessing vector elements using .get
+    //      the difference with [.] is that .get returns an Option
+    //
+    println!("num[2]: {}", num.get(0).unwrap());
+    println!("num[3]: {}", num.get(1).unwrap());
+
+    // so we can use pattern matching or any learnt trick on .get
+    match num.get(2) {
+        Some(n) => {
+            println!("Found a value at index");
+        },
+        None =>{
+            println!("Found no value at index");
         }
-        counter+=1;
     }
-    return -1;
+    // or alternatively
+    if num.get(2).is_some(){
+        println!("Found a value at index");
+    }else{
+        println!("Found no value at index");
+    }
+
+    // let temp = num[2];
+    // This causes an error:
+    //      thread 'main' panicked at 'index out of bounds: the len is 2 but the index is 2', src/full_files/c03_enums.rs:259:16
+}
+
+
+
+
+// ? is an error propagation expression.
+// as such it only propagates the error part of Options or Results: None / Err
+// the Some / Ok part is unwrapped correctly
+fn qm() -> Option<i32> {
+    // look at the type of the return: it's an option
+    // same type of retn
+    let r = retn()?;
+    // look at the type of `r`: it's already an i32!
+    // what happens when i remove the `?` ?
+    return Some(4);
+    // how can this return statement be reached ?
+}
+
+pub fn testqm() {
+    let r = qm();
+    println!("Received {:?}",r);
+    let r = retop();
+    println!("Received {:?}",r);
+}
+
+
+fn retop() -> Option<i32>{
+    return Some(3);
+}
+fn retn() -> Option<i32> {
+    return None;
+}
+
+
+//
+use std::fs::File;
+use std::io::{Read, Write};
+use std::io::prelude::*;
+
+pub fn readfilecontent () -> Result<(),String>{
+
+    // create a new file X -> deal with the Result
+    // do not unwrap immediately -> issues when unwrapping later
+    // write to it using write_all and a 'b' buffer -> deal with the Result
+    // read its content
+    // feed to calculateS, with String parameter (not &String) -> Ownership!
+    // printout the content and the s's
+
+    let mut file = File::create("foo.txt").unwrap();
+    file.write_all(b"ssSSSss");
+    let mut file = File::open("foo.txt").unwrap();
+    let mut contents = String::new();
+    let r = file.read_to_string(&mut contents);
+    if r.is_err(){
+        return Err(String::from("asd"));
+    }
+    let tots = calculate_s(&contents);
+
+    println!("Contents: {}, with {}s",contents, tots);
+    return Ok(());
+}
+// write out calculateS
+// use chars iterator
+// use eq_ignore_ascii_case
+fn calculate_s(s : &String) -> i32{
+    let mut tot = 0;
+    for c in s.chars(){
+        if c.eq_ignore_ascii_case(&'s') {
+            tot +=1;
+        }
+    }
+    return tot;
 }
