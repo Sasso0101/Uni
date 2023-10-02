@@ -1,17 +1,14 @@
-#include <bitset>
 #include <iostream>
 
 using namespace std;
 
+enum Color { red = 1, green = 4, blue };
 int main() {
-    char a = -12;
-    char b = 1;
-    bitset<8> x(a);
-    cout << x << '\n';
-    bitset<8> y(b);
-    cout << y << '\n';
-
-    char c = a & b;
-    bitset<8> z(c);
-    cout << z << '\n';
+    Color r = blue;
+    switch(r)
+    {
+        case red  : std::cout << r << endl;   break;
+        case green: std::cout << r << endl; break;
+        case blue : std::cout << r << endl;  break;
+    }
 }
