@@ -169,3 +169,19 @@ Implementation of ISO/OSI prone to interpretation:
   - Throughput (some apps require fixed minimum throughput to function, other just use what's available ("elastic apps"))
   
   - Security (encryption, data integrity)
+
+- HTTP
+  
+  - Application layer protocol
+  
+  - Stateless: server maintains no information about past client requests
+  
+  - Uses TCP
+    
+    - Non persistent HTTP:  initiate new TCP connection for every object
+      
+      - 2 RTT+ (Round trip time) for every object
+    
+    - Persistent HTTP: create TCP connection once and reuse it to download multiple objects
+      
+      - One RTT for each object
