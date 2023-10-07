@@ -2,13 +2,17 @@
 
 using namespace std;
 
-enum Color { red = 1, green = 4, blue };
 int main() {
-    Color r = blue;
-    switch(r)
-    {
-        case red  : std::cout << r << endl;   break;
-        case green: std::cout << r << endl; break;
-        case blue : std::cout << r << endl;  break;
-    }
+    // Color r = blue;
+    // switch(r)
+    // {
+    //     case red  : std::cout << r << endl;   break;
+    //     case green: std::cout << r << endl; break;
+    //     case blue : std::cout << r << endl;  break;
+    // }
+
+    int n1;
+	cin >> n1;
+    n1 = n1 << 2;
+	cout << "n1: " << bitset<4>(n1) << endl;
 }
