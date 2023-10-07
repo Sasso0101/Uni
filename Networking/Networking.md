@@ -180,8 +180,116 @@ Implementation of ISO/OSI prone to interpretation:
     
     - Non persistent HTTP:  initiate new TCP connection for every object
       
-      - 2 RTT+ (Round trip time) for every object
+      - Issues: 2 RTT+ (Round trip time) for every object, OS overhead for each connection, browsers often open parallel TCP connections to fetch objects
     
     - Persistent HTTP: create TCP connection once and reuse it to download multiple objects
       
       - One RTT for each object
+      - Server leaves connection open for subsequent requests
+  
+  - Request:
+    
+    - request line (GET, PUT, POST, DELETE, HEAD...), header lines, body
+    
+    - lines terminated by \r\n
+      
+      <img src="assets/2023-10-03-09-32-44-image.png" title="" alt="" width="371">
+  
+  - Response
+    
+    - status line (200, 301, 400, 404, 505), header lines, data
+  
+  - Web caches: cache server between you and destination server
+    
+    - If object not in the cache server asks for the missing information to the true server and returns it back to the user
+    
+    - Benefits: reduces time for client request, reduce traffic on access network of organization (requests stay out of the network)
+    
+    - Condtional get:
+      
+      - set header If-modified-since
+      
+      - server sends data only if content has been updated after that date, otherwise return 304 Not Modified
+  
+  - Email
+    
+    - Components
+    
+    - User agent: reads and sends mail
+      
+      - Mail server:
+        
+        - Received mails are stored on the server
+        
+        - Holds queue of mails to send to other servers
+        
+        - Client: sender mail server, server: receiving mail server
+    
+    - Uses TCP to transfer mail from client to server
+      
+      - Port 25
+      
+      - 3 phases of tranfer: handshaking, transfer of messages, closure
+  
+  - DNS
+    
+    - Uses UDP
+    
+    - Root name server: 13 logical regions, have addresses of TLD DNS servers
+    
+    - DNS servers: responsible for top level domains (.com, .uk, .jp...)
+    
+    - Authoritative name servers: responsible for 2nd+ level (ex. google.com, disi.unitn.it, ciao.hello.sasso.dev)
+      
+      - Can be maintained by organization or provider
+    
+    - Local DNS server:
+      
+      - does not strictly belong to the hierarichy
+      
+      - run by ISPs, organizations...
+      
+      - Has local cache of name-address pairs, but they can be out of date
+      
+      - Acts as proxy, forwards query into hierarchy
+      
+      - <img src="assets/2023-10-05-11-11-44-image.png" title="" alt="" width="176">
+    
+    - DNS supports recursive requests (ask the root name server, if root doesn't have it it asks lower level servers and returns back the response)
+      
+      - Not used in practice, easily becomes DDOS attack to root servers
+    
+    - DNS caching: local name servers cache mapping, which disappear (expire) after some time (Time to live TTL), ex. TLD servers are almast aways caches
+      
+      DNS record: DNS servers store resource recors (RR)
+      
+      - Format: (name, value, type, TTL)
+      
+      - Type A: name -> hostname, value -> IP address
+      
+      - Type CNAME: name -> alias for real name, value -> canonical name (ex. www.ibm.com is server1.backup.ibm.com)
+      
+      - Type NS: name -> domain, value -> hostname of authoritative name server
+      
+      - Type MX: value -> address of mail server associated with name
+    
+    - DNS protocol messages encoded in binary
+      
+      - Identification of the query (since DNS uses UDP, makes sense for queries to have and ID so the answer can use the same ID)
+      
+      - Flags: query or reply, recursion desidered or recursion available, reply is authoritative
+      
+      - Length of questions, answers, authority (records of authoritative nameservers), additional helpful information
+      
+      - Every field can contain multiple Resource records (RR)
+    
+    - Inserting records into DNS
+      
+      - register name at DNS registrar: provide names, IP addresses of authoritative name server
+      
+      - registrar inserts two RRs into .com TLD server
+        
+        - networkutopia.com, dns1.networkutopia.com, NS
+          dns1.networkutopia.com, 212.212.212.1, A
+  
+  
