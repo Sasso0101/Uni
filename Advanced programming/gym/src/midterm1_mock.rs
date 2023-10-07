@@ -37,7 +37,6 @@ fn replace_surname(ns: &mut NameSurname, surname: String) -> String {
     old_surname
 }
 
-#[derive(Debug)]
 struct Student {
     name: String,
     id: u32
@@ -58,7 +57,6 @@ impl Display for Student {
     }
 }
 
-#[derive(Debug)]
 struct University {
     name: String,
     students: Vec<Student>
@@ -90,7 +88,10 @@ impl University {
 
 impl Display for University {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Name: {}, Students:\n{:?}", self.name, self.students)
+        let s = self.students.iter().fold(String::new(), |acc, s| {
+            format!("{}\n{}", acc, s)
+        });
+        write!(f, "Name: {}, Students:\n{}", self.name, s)
     }
 }
 
