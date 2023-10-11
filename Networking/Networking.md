@@ -291,5 +291,37 @@ Implementation of ISO/OSI prone to interpretation:
         
         - networkutopia.com, dns1.networkutopia.com, NS
           dns1.networkutopia.com, 212.212.212.1, A
+    
+    - P2P
+      
+      - Minimum time to transfer file from server to n clients
+        
+        $max(\frac{F}{u_{server}},\frac{F}{d_{client}},\frac{NF}{u_{server}+\sum{u_{client}}})$
+      
+      - The maximum between:
+        
+        - uploading one file from server to network ($u_{server}$ - upload speed of server) - in the meantime the clients exchange the part of file they received with each other
+        
+        - downloading whole file (all chunks: one from server and other ones from other peers) from network ($d_{client}$ - download speed of client) - in the meantime the server had enough time to distribute chunks to all peers
+        
+        - upload limit of the network: ${u_{server}+\sum{u_{client}}}$ - max upload rate, $NF$ total number of bytes to upload/download
+      
+      - Tracker servers: list of all peers participating in the network
+      
+      - Bittorrent
+        
+        - Peer joins network, signals that to tracker servers and get list of clients
+        
+        - Starts accumulkating chunks, rarest first
+        
+        - Alice sends back chunks to the 4 clients that are sending her chunks at the highest speed, reevaluates every 10 seconds (chokes everyone else)
+        
+        - Every 30 seconds randomly selects another peer (optimistically chokes that peer)
+
+#### Transport layer (TCP/UDP)
+
+- Multiplexing/demultiplexing sockets
   
+  - In header source and destination field for port number (16 bits each)
   
+  - Ports can be static (fixed port)/dynamic (automatically assigned by the operating system when opening a connection, ex. when browser connects to webpage uses a random port)
