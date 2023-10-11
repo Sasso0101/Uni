@@ -7,8 +7,9 @@ mod class3;
 mod class4;
 mod class7;
 mod class8;
+mod class9;
 
 
 pub fn main() {
-    
+    class9::main();
 }
