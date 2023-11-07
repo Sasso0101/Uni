@@ -1,0 +1,182 @@
+{
+  "main": {
+    "id": "86190561000d1319",
+    "type": "split",
+    "children": [
+      {
+        "id": "f1f238bd6ed3e1d6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7d0bb4489e7e2534",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "00 Introduction.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "4c5e6f1179991293",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "02 Transport layer.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "b90b3a5af0961139",
+    "type": "split",
+    "children": [
+      {
+        "id": "150317a57923e013",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4f3d491788a5ee2c",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "df0df4b1adbc3498",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "951f5ad518b84dad",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "503715e9b42a1182",
+    "type": "split",
+    "children": [
+      {
+        "id": "5f007b7c1cb60022",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2b940653e869fca2",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "02 Transport layer.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "420065e7948d225d",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "02 Transport layer.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "5575249313294d72",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "e54f85e3816cb4ad",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "02 Transport layer.md"
+              }
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "horizontal",
+    "width": 228.5,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "4c5e6f1179991293",
+  "lastOpenFiles": [
+    "Pasted image 20231107172636.png",
+    "Images/Pipelined protocols.png",
+    "Images/Stop-And-Wait.png",
+    "02 Transport layer.md",
+    "00 Introduction.md",
+    "01 Application layer.md",
+    "Images/File distribution.png",
+    "Images/DNS message.png",
+    "Images/Centralized server.png",
+    "Images",
+    "Images/DNS query.png",
+    "Images/Protocol stacks.png",
+    "Images/PDU structure.png",
+    "Images/SAP and protocols.png",
+    "2023-11-06.md",
+    "Untitled.canvas"
+  ]
+}
