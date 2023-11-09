@@ -3,7 +3,7 @@
 In the client-server architecture there exists an always on host, which usually has a fixed IP address to which all clients connect to obtain resources or to use a service. Clients talk to the server only when they need to, may have dynamically changing IP addresses and are not connected directly to each other.
 Pros: easy to implement, clients don't need to be powerful
 Cons: single point of failure -> if server goes down, everything goes down, complicated to scale
-![[Centralized server.png| 300]]
+![300](Centralized%20server.png)
 ### Peer to peer architecture
 In the peer to peer architecture there is no central node, but all clients act as both servers and clients. In this architecture every connected node is called peer. Peers are intermittently connected and change IP addresses. Some P2P networks have some central nodes that act as directory nodes, which hold information about all peers connected to the network.
 A P2P connection is implemented on a host by creating two processes: a client process which communicates with another peer and a server process which waits to be contacted.
@@ -69,7 +69,7 @@ Structure of DNS:
 Each ISP has also its own "local" DNS name server, which provides DNS resolution for their customers. This local DNS server acts like a proxy which caches records and forwards queries into hierarchy if it does not have them cached.
 #### DNS querying
 When a host wants to resolve a domain name, it asks its local DNS server. If the local DNS server has the response in cache, it passes it directly to the host, otherwise it interrogates the DNS hierarchy. There are two ways of asking: iteratively and recursively. In the iterative approach the DNS servers reply with the address of the next server in the hierarchy, while in the recursive approach the server actually asks the next server for the answer and returns the final answer to the client. Since this method would put a very heavy load on the root nameserver, almost no server supports this method anymore.
-![[DNS query.png]]
+![](DNS%20query.png)
 #### DNS caching
 When a nameserver learns about the mapping of an IP address, it stores it in a cache. These entries get deleted after some time (TTL), because they might be outdated.
 #### DNS resource records (RR)
@@ -84,7 +84,7 @@ Common values for the type field are:
 - MX: associates the mail server to the domain name (name: domain name, value: domain of the mail server)
 #### DNS protocol messages
 The DNS protocol specifies two types of messages: request and response. Both have the same format.
-![[DNS message.png|300]]
+![300](DNS%20message.png)
 The fields are:
 - Identification: 16 bit field which uniquely identifies the answer and the response
 - Flag: query/reply, recursion desired, recursion available, reply is authoritative
@@ -113,14 +113,13 @@ Minimum guaranteed client download time: F/d_min
 Time to distribute F to N clients: >= max{NF/u_S, NF/d_min}
 ```
 The time increases linearly in N!
-![[File distribution.png|300]]
+![300](File%20distribution.png|)
 If we use a distributed approach we get:
-$F/u_S$ - Time for the server to distribute one copy of the file among the peers
-$F/d_{min}$ - Minimum time for one peer to download the whole file (possibly from multiple sources)
-Clients in total have to download NF bits -> download is limited by the maximum upload rate $u_S+\sum{u_i}$
-$\frac{NF}{(u_S+\sum{u_i})}$ - Total upload capability of the network
-Time to distribute F to N clients: $>= max\{\frac{F}{u_S}, \frac{F}{d_{min}}, \frac{NF}{u_S+\sum{u_i}}\}$
-Still dependent on N, but when we add new peers we also increase the total bandwidth of the network!
+- $F/u_S$ - Time for the server to distribute one copy of the file among the peers
+- $F/d_{min}$ - Minimum time for one peer to download the whole file (possibly from multiple sources)
+- Clients in total have to download NF bits -> download is limited by the maximum upload rate $u_S+\sum{u_i}$
+- $\frac{NF}{(u_S+\sum{u_i})}$ - Total upload capability of the network
+Finally the time to distribute F to N clients hat to be $>= max\{\frac{F}{u_S}, \frac{F}{d_{min}}, \frac{NF}{u_S+\sum{u_i}}\}$. This is still dependent on N, but when we add new peers we also increase the total bandwidth of the network!
 ### BitTorrent implementation
 When a peer joins the BitTorrent network, it will announce its presence to the tracker server and start collecting chunks from other peers and uploading chucks it already has. The rarest chucks are requested first. The peer will upload chucks only for the 4 peers which are sending to it chunks at the highest rate. Every 30 seconds there is a reevaluation and the peer will optimistically change a peer with a different one.
 ## Multimedia distribution
