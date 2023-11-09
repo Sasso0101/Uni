@@ -8,7 +8,7 @@
         "type": "tabs",
         "children": [
           {
-            "id": "7d0bb4489e7e2534",
+            "id": "5c7b3fd3f414210c",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -20,12 +20,22 @@
             }
           },
           {
-            "id": "4c5e6f1179991293",
+            "id": "9c000dcc81aafd97",
+            "type": "leaf",
+            "state": {
+              "type": "image",
+              "state": {
+                "file": "Images/ARP message.png"
+              }
+            }
+          },
+          {
+            "id": "4e3a4dcbca84e7ff",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "02 Transport layer.md",
+                "file": "03 Network layer.md",
                 "mode": "source",
                 "source": false
               }
@@ -98,7 +108,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "02 Transport layer.md",
+                "file": "Images/ARP message.png",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -115,7 +125,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "02 Transport layer.md",
+                "file": "Images/ARP message.png",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -138,7 +148,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "02 Transport layer.md"
+                "file": "Images/ARP message.png"
               }
             }
           }
@@ -147,8 +157,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 228.5,
-    "collapsed": true
+    "width": 228.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -160,22 +169,23 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "4c5e6f1179991293",
+  "active": "4f3d491788a5ee2c",
   "lastOpenFiles": [
-    "Pasted image 20231107172636.png",
-    "Images/Pipelined protocols.png",
-    "Images/Stop-And-Wait.png",
+    "Images/Multiple IP addresses.png",
     "02 Transport layer.md",
+    "03 Network layer.md",
+    "Images/ARP message.png",
     "00 Introduction.md",
+    "Images/TCP teardown.png",
+    "Images/TCP setup.png",
+    "Images/Stop-And-Wait 1.png",
     "01 Application layer.md",
-    "Images/File distribution.png",
-    "Images/DNS message.png",
-    "Images/Centralized server.png",
+    "Images/UDP structure.png",
+    "Images/Additive increase multiplicative decrease.png",
+    "Images/Fast retransmit fast recovery.png",
+    "Images/Slow start congestion avoidance.png",
+    "Images/TCP packet structure.png",
     "Images",
-    "Images/DNS query.png",
-    "Images/Protocol stacks.png",
-    "Images/PDU structure.png",
-    "Images/SAP and protocols.png",
     "2023-11-06.md",
     "Untitled.canvas"
   ]

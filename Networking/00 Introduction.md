@@ -45,5 +45,5 @@ Data units can be
 Name of PDUs of the various layers:
 - Application: messages
 - Transport: segments
-- Network: packets
+- Network: packets or datagrams
 - Data link: frame
