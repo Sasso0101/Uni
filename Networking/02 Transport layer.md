@@ -9,7 +9,7 @@ A flow is a group of data belonging to the same logic communication. An applicat
 ## UDP protocol
 The UDP (User Datagram Protocol) is a protocol offering a "best effort service", therefore it does not guarantee that the USP segments will reach the destination or that they will arrive in order. UDP is connectionless, that means that there is no handshaking between sender and receiver, so each segment is independent from the others. If we want to, we can add reliability to the protocol at the application layer.
 Advantages of UDP: less delay because there is no connection establishment, no need to maintain state of communication, smaller header size, no limit on the amount of data sent because there is no congestion control.
-![300](UDP%20structure.png)
+![300](Images/UDP%20structure.png)
 ### Error control
 In the header of the UDP segment there is a checksum field. The sender splits the data (including header) in 16 bit integers, sums them and flips all the bits (ones' complement). The receiver just sums the data and adds that sum to the checksum. If the checksum is correct, the final result should be all ones, otherwise there has been an error in transmission. Checksum field is optional in IPv4, required in IPv6.
 ## Reliable data transfer
@@ -17,7 +17,7 @@ There exists a class of protocols which deal with packet losses called ARQ (Auto
 ### Stop-and-wait protocol
 For this protocol the transmitter sends a PDU and keeps a copy and waits to receive the ACK. If it doesn't receive the ACK before the timer runs out it resends the PDU. When an ACK is received it checks the sequence number and the checksum of the ACK and if correct sends the next PDU.
 On the other side when the receiver gets a PDU it checks the sequence number and the checksum. If they are correct it sends back an ACK and forwards the SDU to the higher level, otherwise it drops the PDU.
-![](Stop-And-Wait.png)
+![](mages/Stop-And-Wait.png)
 #### Efficiency of the protocol
 Assuming R = 1Gbps link, 15ms propagation delay (RTT 30ms), L = 8000 bit packet, then the transmission delay (time to send 8000 bits) is:
 $$ d_{trans} = L/R = 8000bit/10^9bps = 8\micro s $$
@@ -31,14 +31,14 @@ We can see from the computations that this method is extremely inefficient!
 ### Pipelined protocols
 In pipelined protocols the sender sends multiple packets at once and keeps track of their sequence number. Using pipelining we can increase the throughput of the Stop-And-Wait protocol. For example, if we send three packets at once, we triple the throughput.
 $$ \frac{3L}{d_{trans}+RTT} = \frac{24000bit}{8\micro s+30ms}=100kB/s $$
-![](Pipelined%20protocols.png)
+![](mages/Pipelined%20protocols.png)
 Note that the time start when the first packet is transmitted and ends when the first acknowledgment arrives.
 #### Terminology of pipelined protocols
 Transmission window $W_T$: set of PDUs that the transmitter is allowed to transmit without receiving an acknowledgement. The maximum dimension of the window is limited by the allocated memory at the transmitter side and is denoted by $|W_T|$.
 Receive window $W_R$: set of PDUs that the receiver is capable to accept and memorise. The maximum dimension of the window is limited by the allocated memory at the receiver side.
 Low pointer $W_{LOW}$: pointer to the first packet in the transmission window $W_T$
 Up pointer $W_{UP}$: pointer to the last packet that has already been transmitted
-![](Transmission%20and%20receive%20windows.png)
+![](mages/Transmission%20and%20receive%20windows.png)
 #### Acknowledgement packets
 There actually exist multiple types of acknowledgment packets:
 - Individual ACK: indicate the reception of a specific packet; $ACK(n)$ means that packet n has been received
@@ -47,33 +47,33 @@ There actually exist multiple types of acknowledgment packets:
 With the *piggybacking* technique we can send an acknowledgment inside a normal packet.
 #### Go-back-N protocol
 In this protocol the sender can have up to N unacked packets in the pipeline. The receiver uses cumulative ACK to signal that it has received the packets. If it detects a gap in the packets for every received packet it will retransmit the last ACK sent. That means that it doesn't accept any more packets until the missing packet is received. The sender keeps a timer starting from the oldest unacked packet. When this timer expires, it retransmits all packets from the expired one. This timer is reset every time an ACK is received. Because all packets get retransmitted, even those that may have been actually received after the missing one, there is an intrinsic inefficiency with this approach.
-![](Go-Back-N.png)
+![](mages/Go-Back-N.png)
 Note: if the sequence numbers are encoded using k bits, the maximum sender window size has to be $|W_T|\le2^k-1$, because otherwise there could be multiple packets with the same sequence number in the same window.
 #### Selective repeat
 As in Go-Back-N, the sender can have up to N unacked packets in the pipeline, but this time the receiver will send individual ACKs. The sender keeps a timer for every unacked packet and will retransmit that packet when the timer expires. The receiver will keep the packet in a buffer until all packets before that one have been received.
-![](Selective%20repeat.png)
+![](mages/Selective%20repeat.png)
 In *selective repeat* the maximum window sizes has to be $|W_T|+|W_R|\le2^k$, so that the receiving window size doesn't wrap around past the sending window size and risk having two packets with the same number in the same window.
-![300](Window%20cycle.png)
+![300](mages/Window%20cycle.png)
 ## TCP protocol
 TCP is a connection-oriented (has handshaking), point-to-point protocol that allows reliable, in-order segment transmission. TCP uses pipelining, where the size of the sender and receiver windows are set by flow control (sender should not overwhelm receiver) and congestion control (network should not get clogged) algorithms. Data flow is bidirectional (full-duplex) and the protocol is connection-oriented, because there is handshaking.
 ### TCP segment structure
-![](TCP%20packet%20structure.png)
+![](mages/TCP%20packet%20structure.png)
 The number in bytes that the receiver is capable of buffering (receive window) is specified in the RWND (receiver window) field. Assuming that the sender can transmit very quickly, it will have to stop when it sends as many bytes as specified by RWND. Since it is a 16-bit field the maximum data is $2^{16}=64kB$, but we can specify a scaling factor so we can have larger windows.
 The field *Sequence number* indicates the number of the first byte of that segment in that flow of data, while *Acknowledge number* indicates the sequence number of the next byte that we are expecting to receive from the other end, noting that TCP uses cumulative acknowledgments.
-![300](Seq%20and%20Ack%20numbers.png)
+![300](mages/Seq%20and%20Ack%20numbers.png)
 ### TCP connection setup
 TCP connection is setup using a mechanism called 3-way handshake:
 1. Host A initialises the connection sending a segment with the SYN flag set, source port set to A, destination port set to B and initial sequential number x
 2. Host B replies with a segment with SYN and ACK flags set, source port B and destination port B, sequential number y and ACK x+1
 3. Host A sends an ACK segment with source port A, destination port B and ACK y+1
-![300](TCP%20setup.png)
+![300](mages/TCP%20setup.png)
 ### TCP connection teardown
 Since TCP communication is bidirectional, teardown of the connection is required in both directions.
 #### Gentle teardown
 The host that wants to terminate the connection sends a segment with the FIN flag set and the receiver replies with ACK. Now the connection is half closed, because the first host cannot send anything anymore, but communication in the other direction is still allowed. To terminate the connection in the other direction also the other host must send a segment with the FIN flag set.
 #### Rude teardown
 This method is used for connections that are in an error state (ex. an ACK gets received on a non-existing connection). To terminate the connection the host sends a segment with the RST flag set. Then both hosts can free the resources needed by the connection.
-![](TCP%20teardown.png)
+![](mages/TCP%20teardown.png)
 ### Maximum segment size (MSS)
 Although TCP works with bytes, it doesn't send single bytes, but rather tries to send segments as big as MSS. MSS depends a parameter from the lower level called MTU (Maximum Transfer Unit), which in turn relies on the MTU of the Data link layer. To determine the size TCP proceeds by trial and error, until a segment gets lost. By default the MSS is set to 1460 bytes (ethernet has a 1500 bytes MTU - 40 bytes for the headers).
 ### Estimating the round trip time (RTT) and choosing timeouts
@@ -99,7 +99,7 @@ In this alogrithm the sender progressively increases the transmission rate by in
 The protocol has two phases:
 - Additive increase: the window size gets increased by 1 MSS every RTT until a loss is detected (NOTE: it increases the window size every RTT, not when an ACK is received!)
 - Multiplicative decrease: after a loss, the window size gets halved
-![400](Additive%20increase%20multiplicative%20decrease.png)
+![400](mages/Additive%20increase%20multiplicative%20decrease.png)
 The AIMD protocol ensures fairness in the network. That means that if K connections share the same link with bottleneck R, each connection has a bandwidth of R/K.
 ##### Implementation in TCP
 Congestion window (CWND): number of bytes that the transmitter is allowed to inject into the network.
@@ -109,10 +109,10 @@ TCP adapt the size of CWND by implementing the AIMD algorithm using two phases t
 - Slow start: for every ACK received by the transmitter, the window size gets increased by 1. This induces an exponential growth (fucking compound interest goes brrrr). When CWND reaches SSTHRESH (slow start threshold), TCP switches to congestion avoidance
 - Congestion avoidance: for every ACK received by transmitter, CWND increased by $MSS\cdot\frac{MSS}{CWND}$. That means that if all packets in a window get ACKed, then the window size increases by one MSS. This induces a linear increase in time.
 At the beginning of the transmission CWND gets initialised to 1 and SSTHRESH to RWND. When a timeout happens the algorithm always switches to slow start, retransmits the unACKed packet, SSTHRESH gets set to $max(\frac{CWND}{2}, 2)$, RTO gets doubled and CWND gets set to 1.
-![](Slow%20start%20congestion%20avoidance.png)
+![](mages/Slow%20start%20congestion%20avoidance.png)
 This method is very inefficient and does not consider the number of duplicated acknowledgements we get, which provide information about the working of the network (remember that TCP uses cumulative acknowledgements).
 In the fast retransmit and fast recovery algorithm after three duplicated acknowledgements are received the sender retransmits the segment indicated by the duplicated acknowledgements (fast retransmit) and enters fast recovery mode. SSTHRESH gets set to $\frac{CWND}{2}$, $W_{LOW}$ still points to the first unACKed segment and CWND gets set to SSTHRESH + 3 MSS. After the sender receives another duplicated acknowledgement CWND gets increased by 1 MSS. After a valid ACK has been received (this means that the lost segment has been successfully received) CWND gets set to SSTHRESH and the sender exits fast recovery and enters congestion avoidance.
-![](Fast%20retransmit%20fast%20recovery.png)
+![](mages/Fast%20retransmit%20fast%20recovery.png)
 ### TCP fairness
 The TCP protocol does not solve all fairness problems:
 - TCP connections may limit their bandwidth if other UDP connections, which do not have congestion control, are using the link at the same time

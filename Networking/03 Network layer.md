@@ -91,7 +91,7 @@ These exists a subnet reserved for hosts which cannot find an IP address. Hosts 
 #### IP addresses for routers
 Each router can have two or more IP addresses, one for each logical network to which is connected.
 For example, a router can act as a bridge for multiple subnets, but all these subnets are connected to the router on the same network interface.
-![](Multiple%20IP%20addresses.png)
+![](Images/Multiple%20IP%20addresses.png)
 ### ARP protocol
 Every IP packet gets encapsulated inside a level 2 frame and to send a level 2 frame the source and destination address of that layer are needed. These addresses are called MAC addresses and are 48-bit long numbers, which uniquely identify every network interface. While source and destination IP addresses remain unchanged during the whole trip of the packet, MAC addresses change at every hop. To go from level 3 to level 2, it is therefore needed to translate the IP address of the next hop to a MAC address. A host can discover the MAC address of another host in the network by using a level 2 protocol called ARP (Address Resolution Protocol). To do this, the host sends a broadcast request asking for the MAC address of host with IP address X. When host X receives the ARP request, it replies with its MAC address.  When it travels through a physical network an ARP message is encapsulated in a hardware frame.
 #### ARP message
