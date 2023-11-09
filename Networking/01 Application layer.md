@@ -78,9 +78,9 @@ DNS servers store resource records (RR) in this format:
 (name, value, type, ttl)
 ```
 Common values for the type field are:
-- A: associates an IPv4 address to a domain name (name: domain name, value: IPv4 address)
+- A: associates an IPv4 address to a domain name (name: hostname, value: IPv4 address)
 - NS: associates an authoritative nameserver to the whole domain (name: domain, value: name of the nameserver)
-- CNAME: associates an alias to the canonical name (name: alias domain name, value: real domain)
+- CNAME: associates an alias to the canonical name (name: alias hostname, value: real hostname)
 - MX: associates the mail server to the domain name (name: domain name, value: domain of the mail server)
 #### DNS protocol messages
 The DNS protocol specifies two types of messages: request and response. Both have the same format.
@@ -115,16 +115,11 @@ Time to distribute F to N clients: >= max{NF/u_S, NF/d_min}
 The time increases linearly in N!
 ![[File distribution.png|300]]
 If we use a distributed approach we get:
-```
-Time to send one copy: F/u_S
-Minimum guaranteed client download time: F/d_min
-Clients in total have to download NF bits -> that is limited by the maximum upload rate u_S+sum{u_i}
-Time to distribute F to N clients: >= max{F/u_S, F/d_min, NF/(u_S+sum{u_i})}
-```
-In the formula we have:
-- F/u_S - Time for the server to distribute one copy of the file among the peers
-- F/d_min - Time for one peer to download the whole file (possibly from multiple sources)
-- NF/(u_S+sum{u_i}) - Total upload capability of the network
+$F/u_S$ - Time for the server to distribute one copy of the file among the peers
+$F/d_{min}$ - Minimum time for one peer to download the whole file (possibly from multiple sources)
+Clients in total have to download NF bits -> download is limited by the maximum upload rate $u_S+\sum{u_i}$
+$\frac{NF}{(u_S+\sum{u_i})}$ - Total upload capability of the network
+Time to distribute F to N clients: $>= max\{\frac{F}{u_S}, \frac{F}{d_{min}}, \frac{NF}{u_S+\sum{u_i}}\}$
 Still dependent on N, but when we add new peers we also increase the total bandwidth of the network!
 ### BitTorrent implementation
 When a peer joins the BitTorrent network, it will announce its presence to the tracker server and start collecting chunks from other peers and uploading chucks it already has. The rarest chucks are requested first. The peer will upload chucks only for the 4 peers which are sending to it chunks at the highest rate. Every 30 seconds there is a reevaluation and the peer will optimistically change a peer with a different one.
@@ -133,4 +128,4 @@ The major consumer on internet bandwidth is multimedia. Due to the high volume o
 ### DASH protocol
 DASH (Dynamic Adaptive Streaming over HTTP) is a protocol which deals with optimising streaming of multimedia over the internet. The server divides the video file into multiple chunks and each chunk is stored in different encodings. Then it produces a manifest file which contains the URLs for the different chunks. The client periodically measures server-to-client bandwidth and, by using the manifest, requests chunks by choosing the most optimal encoding that the network can handle at that point.
 ### Content Delivery Networks (CDN)
-Due to the high volume of traffic that multimedia generates, it is advisable to distribute the same resources across multiple servers. With this approach we are avoiding having a single point of failure, a single point of network congestion and a possibly long distance between users and server. These servers are called CDNs and are strategically placed close to the end users.
+Due to the high volume of traffic that multimedia generates, it is advisable to distribute the same resources across multiple servers. With this approach we are avoiding having a single point of failure, a single point of network congestion and a possibly long distance between users and server. These servers are called CDNs and are strategically placed close to the end users to reduce latency.
