@@ -19,7 +19,7 @@ Speed at which data is transmitted between sender and receiver (bits/time unit).
 ## Protocols
 Protocols define format and order of messages exchanged by the entities. More specifically they define the syntax of the messages (ex. their fields, order of bits), semantics (meaning of the messages), behaviour (ex. what to do if I lose a packet), temporisation (timing of acknowledgment).
 Multiple protocols are grouped in so called *stacks*, defining a physical and logical communication architecture. There exist two main protocol stacks: the ISO/OSI stack and the TCP/IP stack. The ISO/OSI stack is just a reference model defining some fundamentals principles out of which real world models can be crafted. The TCP/IP stack is used in real world communication networks.
-![300](Protocol%20stacks.png)
+![300](mages/Protocol%20stacks.png)
 ### ISO/OSI structure
 1. Physical: takes care of transmitting raw bits on the physical medium (electrical, electro-magnetic, light, sound)
 2. Link: handles single hop communication and deals with error discovery and correction
@@ -34,10 +34,10 @@ Layering protocols this way brings many advantages, namely:
 - Clearly defines what each component of the system is responsible for, therefore simplifying the overall analysis of the system, maintenance and updating
 Each layer provides services to the layer above and sees the lower layer as a black box out of which it gets services from.
 Communication between layers is provided through a programming interface called SAP (Service access point). On the other hand exchange of information between same layers is defined by protocols.
-![](SAP%20and%20protocols.png)
+![](mages/SAP%20and%20protocols.png)
 #### Data units
 Because of layering, we have to define how data travels through these layers. In a system with M layers, user data is packed in a M-SDU (Service data unit). Then layer M adds a M-CPI (Protocol control information). The final result is a M-PDU (Protocol data unit). The lower layer takes the M-PDU as a closed envelope and uses it as the (M-1)-SDU. On the receiving side the process is inverted, until we get the original data.
-![](PDU%20structure.png)
+![](mages/PDU%20structure.png)
 Data units can be
 - segmented if data cannot be fit in a single SDU
 - assembled to avoid inefficiencies, so multiple SDUs are grouped into one
