@@ -2,17 +2,18 @@ The main network layers functions are:
 - Forwarding the packet from the router input to the router output (data plane)
 - Routing packets from source to destination using routing algorithms (control plane)
 ## Router architecture
-Routers implement the network stack up to the network layer. They have a routing processor, which deals with routing of packets and operations require milliseconds to be completed.
-### Input port functions
-The input port of a router is composed of:
-- Line termination: receives the bits from the wire
-- Link layer: protocol from the link layer to interpret the received data from medium (ex. Ethernet, fiber)
-- Queue
+Routers implement the network stack up to the network layer. They are logically divided in the control plane and the data plane. The control plane deals with deciding where a packet should go and is carried out by a routing processor. The control plane deals with the physically forward packets from the input port to the output port.
+![](Images/Pasted%20image%2020231114092047.png)
 ### Switching fabric
 The switching fabric deals with transferring the packet from the input to the output buffer. The performance is measured as multiples of input/output line rate. There exist three types of switching fabrics:
 - Memory based: works as in normal computers, packets get saved to memory. The speed is limited by the memory bandwidth and memory has to be accesses twice to transfer one packet
 - Bus based: all input and output ports share the same bus, speed limited by bus bandwidth
 - Interconnection network: uses a matrix of connections to enable extremely high speeds
+### Input port functions
+The input port of a router is composed of:
+- Line termination: receives the bits from the wire
+- Link layer: protocol from the link layer to interpret the received data from medium (ex. Ethernet, fiber)
+- Queue
 ### Consequences of switching delays
 If the switching fabric is slower than the input ports combined then we will have queueing. Head-of-line queueing happens when the first datagram in the queue  blocks all other datagrams behind because his output port is already being used.
 We can have queueing also at the output ports. To deal with this we can implement some scheduling algorithms that prioritise some packets rather than others (problem for net neutrality!).
@@ -27,6 +28,7 @@ The IP packet has a header organised in 32 bit blocks. Its most important fields
 - Checksum: 16-bit one's complement of the header
 - Source and destination ip address: 32 bit addresses
 - Additional options + padding
+![300](Images/Pasted%20image%2020231114092502.png)
 ### IP fragmentation
 Every hardware technology specifies a maximum dimension of the frame (layer 2 PDU) that is transiting on it known as Maximum Transmission Unit (MTU). Since different networks can have different MTUs, it may happen that a datagram has to be split. In this case some header fields are modified:
 - the fragment offset field tells at which position in the original datagram the fragment belongs
