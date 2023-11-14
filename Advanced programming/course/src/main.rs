@@ -10,6 +10,7 @@ mod class8;
 mod class9;
 mod class10;
 mod class11;
+mod class12;
 
 
 pub fn main() {
