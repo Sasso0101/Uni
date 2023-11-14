@@ -95,7 +95,7 @@ There are two possible approaches to this problem:
 - End-to-end: congestion is estimated by looking at packet losses and delays
 - Network-assisted: routers provide feedback on congestion of the network
 #### AIMD (Additive Increase Multiplicative Decrease)
-In this alogrithm the sender progressively increases the transmission rate by increasing the window size until a loss occurs. When a loss occurs the window gets shrunk.
+In this algorithm the sender progressively increases the transmission rate by increasing the window size until a loss occurs. When a loss occurs the window gets shrunk.
 The protocol has two phases:
 - Additive increase: the window size gets increased by 1 MSS every RTT until a loss is detected (NOTE: it increases the window size every RTT, not when an ACK is received!)
 - Multiplicative decrease: after a loss, the window size gets halved
