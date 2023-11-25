@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 mod gym1;
 mod gym2;
 mod gym3;
@@ -9,5 +11,4 @@ pub fn main() {
     gym1::main();
     gym2::main();
     gym3::main();
-    gym4::main();
 }
