@@ -1,6 +1,6 @@
 use std::{fmt::{Debug, Display}, ops::{Add, Sub, Mul}};
 
-use rand::{distributions::{Alphanumeric, DistString}, random, Rng};
+use rand::{distributions::{Alphanumeric, DistString}, Rng};
 
 trait Printable {
     fn print(&self);

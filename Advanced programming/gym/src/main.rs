@@ -5,6 +5,7 @@ mod gym2;
 mod gym3;
 mod gym4;
 mod gym5;
+mod gym6;
 mod midterm1_mock;
 mod midterm1_2022_v1;
 
