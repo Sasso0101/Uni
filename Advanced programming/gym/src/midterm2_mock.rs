@@ -1,4 +1,4 @@
-use std::{rc::Rc, cell::RefCell, fmt::Display};
+use std::{rc::Rc, cell::RefCell, fmt::{Display, Debug}, collections::LinkedList, ops::Add};
 
 struct BinIter {
     n: Vec<bool>,
@@ -119,8 +119,131 @@ impl<T: PartialEq+Display+Clone> List<T> {
         })
     }
 }
+
+trait Task {
+    fn execute(&self) -> usize;
+}
+struct SumTask {
+    n1: usize,
+    n2: usize
+}
+
+impl SumTask {
+    fn new(n1: usize, n2: usize) -> Self{
+        Self { n1, n2 }
+    }
+}
+impl Task for SumTask {
+    fn execute(&self) -> usize {
+        self.n1 + self.n2
+    }
+}
+struct LenTask {
+    s: String
+}
+impl LenTask {
+    fn new(s: String) -> Self {
+        Self { s }
+    }
+}
+impl Task for LenTask {
+    fn execute(&self) -> usize {
+        self.s.len()
+    }
+}
+struct Executer {
+    executer_queue: Rc<RefCell<LinkedList<Box<dyn Task>>>>
+}
+impl Executer {
+    fn execute_task(&self) -> Option<usize> {
+        self.executer_queue.borrow_mut().pop_front().and_then(|task| {
+            Some(task.execute())
+        })
+    }
+}
+struct Tasker {
+    executer: Rc<RefCell<Executer>>
+}
+impl Tasker {
+    fn new() -> Self {
+        Self {
+            executer: Rc::new(RefCell::new(Executer { executer_queue: Rc::new(RefCell::new(LinkedList::new())) }))
+        }
+    }
+
+    fn get_tasker(&self) -> Tasker {
+        Tasker {
+            executer: self.executer.clone()
+        }
+    }
+
+    fn get_executer(&self) -> Executer {
+        Executer { executer_queue: self.executer.borrow().executer_queue.clone() }
+    }
+
+    fn schedule_task(&mut self, task: Box<dyn Task>) {
+        self.executer.borrow().executer_queue.borrow_mut().push_back(task);
+    }
+}
+
+mod odd_module {
+    pub const CONSTANT: i32 = 123;
+}
+mod even_module {
+    pub const CONSTANT: i32 = 246;
+}
+mod getter_function {
+    use super::{odd_module, even_module};
+
+    pub fn get_constant(value: u32) -> i32 {
+        if value % 2 != 0 {
+            odd_module::CONSTANT
+        } else {
+            even_module::CONSTANT
+        }
+    }
+}
+
+trait CloneAndDouble: Clone+Add {
+    fn clone_and_double(&self) -> Self::Output {
+        self.clone().add(self.clone())
+    }
+}
+impl<T: Clone+Add> CloneAndDouble for T {}
+
+trait Unknown {
+    fn serialize(&self) -> String;
+}
+impl Unknown for i32 {
+    fn serialize(&self) -> String {
+        self.to_string()
+    }
+}
+impl Unknown for String {
+    fn serialize(&self) -> String {
+        self.to_string()
+    }
+}
+impl<T: Debug> Unknown for Vec<T> {
+    fn serialize(&self) -> String {
+        format!("{:?}", self)
+    }
+}
+
+fn get_vec() -> Vec<Box<dyn Unknown>> {
+    Vec::new()
+}
+
+fn print_vec(v: &Vec<Box<dyn Unknown>>) {
+    for el in v {
+        println!("{}", el.serialize())
+    }
+}
+
 mod tests {
-    use super::{BinIter, List};
+    use crate::midterm2_mock::{getter_function, even_module, odd_module};
+
+    use super::{BinIter, List, Task, SumTask, Tasker, Executer, LenTask, CloneAndDouble, get_vec, print_vec};
 
     #[test]
     fn ex1() {
@@ -223,5 +346,118 @@ mod tests {
         println!("{:?}", list.head);
         debug_assert_eq!(list.tail, None);
         println!("{:?}", list.tail);
+    }
+
+    #[test]
+    fn ex3_1() {
+        macro_rules! sum_task {
+            (let $task: ident =$n1: literal + $n2: literal) => {
+                let $task: Box<dyn Task> = Box::new(SumTask::new($n1, $n2));
+            };
+        }
+    
+        sum_task!(let t1 = 1+1);
+        sum_task!(let t2 = 2+2);
+        sum_task!(let t3 = 3+3);
+        sum_task!(let t4 = 4+4);
+        sum_task!(let t5 = 5+5);
+        sum_task!(let t6 = 6+6);
+        sum_task!(let t7 = 7+7);
+    
+        let mut tasker = Tasker::new();
+        let mut executer = tasker.get_executer();
+    
+        println!("{:?}",executer.execute_task());
+    
+        tasker.schedule_task(t1);
+        tasker.schedule_task(t2);
+    
+        println!("{:?}",executer.execute_task());
+    
+        tasker.schedule_task(t3);
+        tasker.schedule_task(t4);
+        tasker.schedule_task(t5);
+        tasker.schedule_task(t6);
+        tasker.schedule_task(t7);
+    
+        println!("{:?}",executer.execute_task());
+        println!("{:?}",executer.execute_task());
+        println!("{:?}",executer.execute_task());
+        println!("{:?}",executer.execute_task());
+        println!("{:?}",executer.execute_task());
+        println!("{:?}",executer.execute_task());
+        println!("{:?}",executer.execute_task());
+    }
+
+    #[test]
+    fn ex3_2() {
+        macro_rules! sum_task {
+            (let $task: ident =$n1: literal + $n2: literal) => {
+                let $task: Box<dyn Task> = Box::new(SumTask::new($n1, $n2));
+            };
+        }
+        macro_rules! len_task {
+            (let $task: ident =$s: literal) => {
+                let $task: Box<dyn Task> = Box::new(LenTask::new($s.to_owned()));
+            };
+        }
+    
+    
+        sum_task!(let t1 = 10+1);
+        len_task!(let t2 = "four");
+        let mut tasker1 = Tasker::new();
+        let mut tasker2 = tasker1.get_tasker();
+        let mut executer1 = tasker2.get_executer();
+        let mut executer2 = tasker1.get_executer();
+        tasker1.schedule_task(t1);
+        tasker2.schedule_task(t2);
+        println!("{:?}",executer1.execute_task());
+        println!("{:?}",executer2.execute_task());
+    }
+
+    #[test]
+    fn ex4_1() {
+        println!("odd constant: {}",odd_module::CONSTANT);
+        println!("even constant: {}",even_module::CONSTANT);
+        print!("test function: {}", getter_function::get_constant(100));
+    }
+
+    #[test]
+    fn ex4_2() {
+        println!("odd constant: {}",odd_module::CONSTANT);
+        println!("even constant: {}",even_module::CONSTANT);
+        println!("test function: {}", getter_function::get_constant(105));
+    }
+
+    #[test]
+    fn ex5() {
+        println!("{}",1u8.clone_and_double());
+        println!("{}",1i8.clone_and_double());
+        println!("{}",2u16.clone_and_double());
+        println!("{}",2i16.clone_and_double());
+        println!("{}",3u32.clone_and_double());
+        println!("{}",3i32.clone_and_double());
+        println!("{}",4u64.clone_and_double());
+        println!("{}",4i64.clone_and_double());
+    }
+
+    #[test]
+    fn ex6_1() {
+        let mut v = get_vec();
+        v.push(Box::new("hiii!".to_string()));
+        v.push(Box::new(-587));
+        v.push(Box::new("xyz".to_string()));
+        v.push(Box::new(vec![4, 5, 6]));
+        print_vec(&v);
+    }
+
+    #[test]
+    fn ex6_2() {
+        let mut v = get_vec();
+        v.push(Box::new("invalid data".to_string()));
+        v.push(Box::new(58));
+        v.push(Box::new(987));
+        v.push(Box::new(vec![vec!["hi1", "hi2"], vec!["hi3"]]));
+        print_vec(&v);
     }
 }
