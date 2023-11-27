@@ -112,17 +112,7 @@ impl Sound for Dog {
 
 struct FarmCell {
     element: Box<dyn Sound>,
-    next: Option<Rc<RefCell<FarmCell>>>
-}
-
-impl Iterator for FarmCell {
-    type Item = Rc<RefCell<FarmCell>>;
-    fn next(&mut self) -> Option<Self::Item> {
-        match &self.next {
-            Some(next) => Some(Rc::clone(next)),
-            None => None
-        }
-    }
+    next: Option<Box<FarmCell>>,
 }
 
 impl FarmCell {
@@ -130,20 +120,33 @@ impl FarmCell {
         FarmCell { element: Box::new(obj), next: None }
     }
 
-    fn insert(self, obj: impl Sound + 'static) {
-        let last = self.into_iter().last().unwrap();
+    fn insert(&mut self, obj: impl Sound + 'static) {
+        let mut next = &mut self.next;
+        loop {
+            match next {
+                Some(el) => {
+                    next = &mut el.next;
+                },
+                None => break
+            }
+        }
         let new_el: FarmCell = FarmCell { element: Box::new(obj), next: None };
-        last.borrow_mut().next = Some(Rc::new(RefCell::new(new_el)));
+        *next = Some(Box::new(new_el));
     }
 }
 
 impl Sound for FarmCell {
     fn make_sound(&self) -> String {
-        let mut string = String::from(self.make_sound());
-
-        while last {
-            string.push_str(next.borrow().make_sound().as_str());
-            last = 
+        let mut string = String::new();
+        let mut current = self;
+        loop {
+            string += current.element.make_sound().as_str();
+            match &current.next {
+                Some(el) => {
+                    current = el;
+                },
+                None => break
+            }
         }
         string
     }
@@ -164,7 +167,10 @@ mod tests {
 
     #[test]
     fn exercise3() {
-        let farm = FarmCell::new(Dog);
+        let mut farm = FarmCell::new(Dog);
+        farm.insert(Dog);
+        farm.insert(Cat);
+        farm.insert(Dog);
         farm.insert(Cat);
         println!("{}", farm.make_sound())
     }
