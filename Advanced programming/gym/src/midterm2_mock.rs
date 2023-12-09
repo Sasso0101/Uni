@@ -57,7 +57,7 @@ impl<T: PartialEq+Display+Clone> PartialEq for List<T> {
         }
         if let Some(cur1) = self.head.clone() {
             if let Some(cur2) = other.head.clone() {
-                if cur1.borrow().element == cur2.borrow().element {
+                if *cur1.borrow() == *cur2.borrow() {
                     return Self {
                         head: cur1.borrow().next.clone(),
                         tail: self.tail.clone(),
