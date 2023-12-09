@@ -41,10 +41,37 @@ impl<T: PartialEq+Display+Clone> Display for Node<T> {
     }
 }
 
+#[derive(Debug)]
 struct List<T: PartialEq+Display+Clone> {
     head: Option<Rc<RefCell<Node<T>>>>,
     tail: Option<Rc<RefCell<Node<T>>>>,
     size: usize
+}
+impl<T: PartialEq+Display+Clone> PartialEq for List<T> {
+    fn eq(&self, other: &Self) -> bool {
+        if self.size == 0 && other.size == 0 {
+            return true;
+        }
+        if self.size != other.size {
+            return false;
+        }
+        if let Some(cur1) = self.head.clone() {
+            if let Some(cur2) = other.head.clone() {
+                if cur1.borrow().element == cur2.borrow().element {
+                    return Self {
+                        head: cur1.borrow().next.clone(),
+                        tail: self.tail.clone(),
+                        size: self.size - 1
+                    } == Self {
+                        head: cur2.borrow().next.clone(),
+                        tail: other.tail.clone(),
+                        size: other.size - 1
+                    };
+                }
+            }
+        }
+        return false;
+    }
 }
 impl<T: PartialEq+Display+Clone> List<T> {
     fn new() -> Self {
@@ -239,11 +266,69 @@ fn print_vec(v: &Vec<Box<dyn Unknown>>) {
         println!("{}", el.serialize())
     }
 }
+struct NodeGraph<T: PartialEq + Debug> {
+    value: T,
+    adjacents: Vec<Rc<NodeGraph<T>>>,
+}
+impl<T: PartialEq + Debug + Copy> NodeGraph<T> {
+    fn new(node: T, graph: Vec<Rc<NodeGraph<T>>>) -> Self {
+        Self {
+            value: node,
+            adjacents: graph,
+        }
+    }
+
+    fn get_value(&self) -> &T {
+        &self.value
+    }
+
+    fn dfs(&self, visited: &mut Vec<Rc<NodeGraph<T>>>) {
+        for node in &self.adjacents {
+            if visited.iter().find(|e| e.value == node.value).is_none() {
+                visited.push(node.clone());
+                node.dfs(visited);
+            }
+        }
+    }
+}
+
+impl<T: PartialEq + Debug + Copy> Debug for NodeGraph<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut values = vec![];
+        for node in &self.adjacents {
+            values.push(node.value);
+        }
+        write!(f, "[value: {:?}, adjacents: \"{:?}\"]", self.value, values)
+    }
+}
+
+struct Graph<T: PartialEq + Debug + Copy> {
+    nodes: Vec<Rc<NodeGraph<T>>>,
+}
+
+impl<T: PartialEq + Debug + Copy> Graph<T> {
+    fn new(nodes: Vec<Rc<NodeGraph<T>>>) -> Self {
+        Self { nodes }
+    }
+
+    fn dfs(&self, root: Rc<NodeGraph<T>>) -> Vec<Rc<NodeGraph<T>>> {
+        let root = self
+            .nodes
+            .iter()
+            .find(|e| e.value == root.value)
+            .unwrap();
+        let mut visited = vec![root.clone()];
+        root.dfs(&mut visited);
+        visited
+    }
+}
 
 mod tests {
+    use std::rc::Rc;
+
     use crate::midterm2_mock::{getter_function, even_module, odd_module};
 
-    use super::{BinIter, List, Task, SumTask, Tasker, Executer, LenTask, CloneAndDouble, get_vec, print_vec};
+    use super::{BinIter, List, Task, SumTask, Tasker, LenTask, CloneAndDouble, get_vec, print_vec, NodeGraph, Graph};
 
     #[test]
     fn ex1() {
@@ -349,6 +434,26 @@ mod tests {
     }
 
     #[test]
+    fn ex2_6() {
+        let mut list: List<i32> = List::new();
+        list.push(1);
+        list.push(2);
+        list.push(3);
+        let mut list1: List<i32> = List::new();
+        list1.push(1);
+        list1.push(2);
+        list1.push(3);
+        debug_assert_eq!(list, list1);
+        list1.push(4);
+        debug_assert_ne!(list, list1);
+        let mut list1: List<i32> = List::new();
+        list1.push(1);
+        list1.push(1);
+        list1.push(3);
+        debug_assert_ne!(list, list1);
+    }
+
+    #[test]
     fn ex3_1() {
         macro_rules! sum_task {
             (let $task: ident =$n1: literal + $n2: literal) => {
@@ -365,7 +470,7 @@ mod tests {
         sum_task!(let t7 = 7+7);
     
         let mut tasker = Tasker::new();
-        let mut executer = tasker.get_executer();
+        let executer = tasker.get_executer();
     
         println!("{:?}",executer.execute_task());
     
@@ -407,8 +512,8 @@ mod tests {
         len_task!(let t2 = "four");
         let mut tasker1 = Tasker::new();
         let mut tasker2 = tasker1.get_tasker();
-        let mut executer1 = tasker2.get_executer();
-        let mut executer2 = tasker1.get_executer();
+        let executer1 = tasker2.get_executer();
+        let executer2 = tasker1.get_executer();
         tasker1.schedule_task(t1);
         tasker2.schedule_task(t2);
         println!("{:?}",executer1.execute_task());
@@ -459,5 +564,35 @@ mod tests {
         v.push(Box::new(987));
         v.push(Box::new(vec![vec!["hi1", "hi2"], vec!["hi3"]]));
         print_vec(&v);
+    }
+
+    #[test]
+    fn ex7() {
+        let n1 = Rc::new(NodeGraph::new(1, vec![]));
+        let n2 = Rc::new(NodeGraph::new(2, vec![n1.clone()]));
+        let n3 = Rc::new(NodeGraph::new(3, vec![]));
+        let n4 = Rc::new(NodeGraph::new(4, vec![n1.clone(), n3.clone()]));
+        let n5 = Rc::new(NodeGraph::new(5, vec![n2.clone(), n4.clone()]));
+        let n6 = Rc::new(NodeGraph::new(6, vec![n5.clone(), n4.clone()]));
+        let n7 = Rc::new(NodeGraph::new(7, vec![n2.clone(), n4.clone()]));
+
+        let graph = Graph::new(vec![
+            n1.clone(),
+            n2.clone(),
+            n3.clone(),
+            n4.clone(),
+            n5.clone(),
+            n6.clone(),
+            n7.clone(),
+        ]);
+
+        let mut paths: Vec<Vec<Rc<NodeGraph<i32>>>> = vec![];
+        for n in graph.nodes.iter() {
+            paths.push(graph.dfs(n.clone()))
+        }
+
+        paths.iter().for_each(|path| {
+            println!("{:?}", path);
+        });
     }
 }
