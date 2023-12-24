@@ -97,7 +97,45 @@ For example, a router can act as a bridge for multiple subnets, but all these su
 ### ARP protocol
 Every IP packet gets encapsulated inside a level 2 frame and to send a level 2 frame the source and destination address of that layer are needed. These addresses are called MAC addresses and are 48-bit long numbers, which uniquely identify every network interface. While source and destination IP addresses remain unchanged during the whole trip of the packet, MAC addresses change at every hop. To go from level 3 to level 2, it is therefore needed to translate the IP address of the next hop to a MAC address. A host can discover the MAC address of another host in the network by using a level 2 protocol called ARP (Address Resolution Protocol). To do this, the host sends a broadcast request asking for the MAC address of host with IP address X. When host X receives the ARP request, it replies with its MAC address.  When it travels through a physical network an ARP message is encapsulated in a hardware frame.
 #### ARP message
-![](Images/ARP%20message.png)
+![300](Images/ARP%20message.png)
 The Hardware type field specifies the network link protocol type, therefore the type of address in PADDR. The message structure is the same for both request and response, so request field tells if this is a request or response (1 request, 2 response).
 To send an ARP request use the command arping.
 ARP responses are cached in an ARP table and updated periodically (every 30s).
+### ICMP
+IP includes an auxiliary protocol called ICMP (Internet Control Message Protocol) which is used to notify errors and other information about the network to the sender of the packet.
+![300](Images/Pasted%20image%2020231224132913.png)
+ICMP generally has two message types:
+- messages to report errors (ex. destination unreachable or time exceeded)
+- messages to obtain information (ex. echo and reply)
+During transport the ICMP message is encapsulated inside an IP packet. If an ICMP message generates an error, no error messages are sent (this is to avoid infinite loops of error messages).
+#### Examples of ICMP messages
+- Ping command: echo request and echo reply
+- Traceroute: send IP packet with increasing TTL, routers on route will one  by one reply with time exceeded
+### DHCP
+The Dynamic Host Configuration Protocol deals with automatically assigning IP addresses to hosts when they join a network. DHCP has 4 main stages:
+- Hosts broadcasts a discover message
+- DHCP server replies with a DHCP offer
+- The hosts accepts the offer
+- DHCP acknowledges the assignment
+Since the client doesn't have an IP address, all communications happen in broadcast. The IP address used (255.255.255.255) is limited broadcast, so it does not get forwarded by routers.
+Routers can be configured to forward DHCP messages or else a DHCP router for every network is required.
+DHCP is an application layer protocol (client and server have an assigned socket). The protocol uses UDP because there are no IP addresses on which to set up a TCP connection.
+#### Lease management
+The IP address given by DHCP is valid only for a period of time, after which the lease expires and it becomes available again for other connections. When a lease is about to expire, the hosts can ask for an extension of the lease. Normally, this lease is granted so that the client doesn't have to reopen all the connection that it has set up. If the extension is not granted the client must stop using the address.
+#### DHCP packet
+![300](Images/Pasted%20image%2020231224184453.png)
+![500](Images/Pasted%20image%2020231224185347.png)
+A transaction is made of a request or a response (first field). To distinguish among multiple transactions a Transaction ID field is used. The proposed IP address is put in the Your IP address field. DHCP can provide additional information to the client, such as address of first-hop router, name and IP address of DNS server and network mask.
+#### Networks without DHCP
+If there is no DHCP service offered on a network, clients can manually configure their IP or can pick a random link local address (169.254.0.0/16). In the latter case they use ARP to check if anyone has already taken that IP.
+## Journey of a packet
+Suppose that client A wants to send a packet to host B and that A knows the IP address of B and the IP address and MAC address of the router (possible thanks to ARP and DHCP).
+![](Images/Pasted%20image%2020231224190313.png)
+1. Host A creates an IP packet, setting as source their own IP and as destination the IP address of B. The it encapsulates it in a *frame* with its own MAC address and the MAC address of the router.
+2. The router receives the address, does a lookup on the routing table and chooses the entry with the 222.222.222.220 interface, which has next hop as direct. Therefore the router will do an ARP request asking for B's MAC address. When it receives the response, the router will save it in its cache and set is as the destination MAC address of the packet it has received from A. The router will also set its own MAC address as source and send the packet to B.
+3. B will receive the packet and extract the contents.
+## IPv6
+The IPv6 protocol is an evolution of the IPv4 protocol and it was created to increase the quantity of available addresses, fixing the header length to increase processing speed and to improve the quality of service.
+Since not all routers can be upgraded simultaneously the to protocol versions have to coexist. One solution found is tunnelling, that is encapsulating IPv6 packets inside IPv4 packets.
+### Structure of IPv6 addresses
+IPv6 addresses are 128 bits long and are represented by 32 hexadecimal numbers, grouped in 8 groups by 4 ciphers each. CIDR masks works exactly the same way as in IPv4.
