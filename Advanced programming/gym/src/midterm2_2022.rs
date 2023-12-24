@@ -97,7 +97,7 @@ impl<T> List<T> {
     }
 
     fn add(&mut self, element: T, position: usize) -> Result<(), String> {
-        if position > self.len as usize || position < 0 {
+        if position > self.len as usize {
             return Err("wrong position".to_string());
         }
         if position == 0 {
@@ -106,15 +106,15 @@ impl<T> List<T> {
                 next: self.head.take(),
             }));
         } else {
-            let mut current_node = &mut self.head;
+            let mut current_node = self.head.as_mut().unwrap();
             let mut current = 0;
             while current != position - 1 {
-                current_node = &mut current_node.as_mut().unwrap().next;
+                current_node = current_node.next.as_mut().unwrap();
                 current += 1;
             }
-            current_node.as_mut().unwrap().next = Some(Box::new(Node {
+            current_node.next = Some(Box::new(Node {
                 elem: element,
-                next: current_node.as_mut().unwrap().next.take(),
+                next: current_node.next.take(),
             }));
         }
         self.len += 1;

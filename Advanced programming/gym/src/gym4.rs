@@ -12,7 +12,7 @@ fn find_equal<'a, 'b>(s1: &'a str, s2: &'b str) -> Option<(&'a str, &'b str)> {
 use std::{collections::{LinkedList, HashMap}, ops::{Add, Sub}, fmt::Display, f32::consts::PI};
 
 use rand::{distributions::Uniform, Rng};
-fn lucky_slice<'a>(input_str: &'a str) -> Option<&str> {
+fn lucky_slice(input_str: &str) -> Option<&str> {
     let between = Uniform::from('a'..='z');
     let mut rng = rand::thread_rng();
     let mut new_string: String = String::new();
@@ -71,8 +71,8 @@ impl<'a> Person<'a> {
 struct ImportantExcerpt<'a> {
     part: &'a str,
 }
-impl<'a, 'b> ImportantExcerpt<'b> {
-    fn announce_and_return_part(&'a self, announcement: &'b str) -> &'b str {
+impl<'a, 'b> ImportantExcerpt<'a> {
+    fn announce_and_return_part(&'a self, announcement: &'b str) -> &'a str {
         println!("Attention please: {}", announcement);
         self.part
     }
