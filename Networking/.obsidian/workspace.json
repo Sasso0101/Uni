@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03 Network layer.md",
+                "file": "04 Routing protocols.md",
                 "mode": "source",
                 "backlinks": false,
                 "source": false
@@ -33,8 +33,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -108,24 +107,25 @@
       "command-palette:Open command palette": true
     }
   },
-  "active": "ebf2476f990d07c9",
+  "active": "d9ee58eec5a14d58",
   "lastOpenFiles": [
+    "Images/Pasted image 20231226122517.png",
     "03 Network layer.md",
     "04 Routing protocols.md",
+    "02 Transport layer.md",
+    "01 Application layer.md",
+    "00 Introduction.md",
+    "Images/Pasted image 20231225113815.png",
     "Images/Pasted image 20231224190313.png",
     "Images/Pasted image 20231224185347 1.png",
     "Images/Pasted image 20231224185347.png",
-    "02 Transport layer.md",
     "Images/Pasted image 20231224184453.png",
     "Images/Pasted image 20231224132913.png",
-    "01 Application layer.md",
     "Images/Pasted image 20231114092502.png",
     "Images/Pasted image 20231114092047.png",
     "2023-11-09.md",
     "Images/Selective repeat.png",
     "Images/PDU structure.png",
-    "00 Introduction.md",
-    "Images/ARP message.png",
     "Images",
     "2023-11-06.md",
     "Untitled.canvas"
