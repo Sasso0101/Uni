@@ -144,7 +144,7 @@ If we use a distributed approach we get:
 - $F/d_"min"$ - Minimum time for one peer to download the whole file (possibly from multiple sources)
 - Clients in total have to download NF bits -> download is limited by the maximum upload rate $u_S+sum u_i$
 - $"NF"/(u_S+sum u_i)$ - Total upload capability of the network
-Finally the time to distribute F to N clients hat to be $>= "max"(F/u_S, F/d_"min"), "NF"/(u_S+sum u_i)$. This is still dependent on N, but when we add new peers we also increase the total bandwidth of the network!
+Finally the time to distribute F to N clients hat to be $>= "max"(F/u_S, F/d_"min")$. This is still dependent on N, but when we add new peers we also increase the total bandwidth of the network!
 === BitTorrent implementation
 When a peer joins the BitTorrent network, it will announce its presence to the tracker server and start collecting chunks from other peers and uploading chucks it already has. The rarest chucks are requested first. The peer will upload chucks only for the 4 peers which are sending to it chunks at the highest rate. Every 30 seconds there is a reevaluation and the peer will optimistically change a peer with a different one.
 == Multimedia distribution
