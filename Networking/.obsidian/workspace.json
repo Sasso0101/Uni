@@ -4,29 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "178b290baea29257",
+        "id": "a78068abcf7df97d",
         "type": "tabs",
         "children": [
           {
-            "id": "d9ee58eec5a14d58",
+            "id": "545c1c1e24330534",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "04 Routing protocols.md",
-                "mode": "source",
-                "backlinks": false,
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "ebf2476f990d07c9",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "04 Routing protocols.md",
+                "file": "05 Data Link.md",
                 "mode": "source",
                 "backlinks": false,
                 "source": false
@@ -91,7 +78,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "04 Routing protocols.md"
+                "file": "05 Data Link.md"
               }
             }
           }
@@ -107,25 +94,25 @@
       "command-palette:Open command palette": true
     }
   },
-  "active": "d9ee58eec5a14d58",
+  "active": "545c1c1e24330534",
   "lastOpenFiles": [
-    "Images/Pasted image 20231226122517.png",
+    "05 Data Link.md",
     "03 Network layer.md",
     "04 Routing protocols.md",
     "02 Transport layer.md",
     "01 Application layer.md",
     "00 Introduction.md",
-    "Images/Pasted image 20231225113815.png",
-    "Images/Pasted image 20231224190313.png",
-    "Images/Pasted image 20231224185347 1.png",
-    "Images/Pasted image 20231224185347.png",
-    "Images/Pasted image 20231224184453.png",
-    "Images/Pasted image 20231224132913.png",
-    "Images/Pasted image 20231114092502.png",
-    "Images/Pasted image 20231114092047.png",
+    "Images/Pasted image 20231230002129.png",
+    "Images/Pasted image 20231230001049.png",
+    "Images/Pasted image 20231230001030.png",
+    "Images/Pasted image 20231229210956.png",
+    "Images/Pasted image 20231229203549.png",
+    "Images/Pasted image 20231229202346.png",
+    "Images/Pasted image 20231229201322.png",
+    "Images/Pasted image 20231229185802.png",
+    "Images/Pasted image 20231229184653.png",
+    "Images/Pasted image 20231229183617.png",
     "2023-11-09.md",
-    "Images/Selective repeat.png",
-    "Images/PDU structure.png",
     "Images",
     "2023-11-06.md",
     "Untitled.canvas"
