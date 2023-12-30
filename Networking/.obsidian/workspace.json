@@ -13,14 +13,28 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "02 Transport layer.md",
+                "file": "03 Network layer.md",
+                "mode": "source",
+                "backlinks": false,
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "965ccbf5c6d2e736",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "05 Data Link.md",
                 "mode": "source",
                 "backlinks": false,
                 "source": false
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -78,7 +92,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "02 Transport layer.md"
+                "file": "05 Data Link.md"
               }
             }
           }
@@ -94,24 +108,26 @@
       "command-palette:Open command palette": true
     }
   },
-  "active": "545c1c1e24330534",
+  "active": "965ccbf5c6d2e736",
   "lastOpenFiles": [
-    "03 Network layer.md",
+    "Images/WiFi frame 2.png",
+    "Images/WiFi frame 1.png",
+    "Images/Hidden terminal collision.png",
+    "Images/Hidden terminal.png",
+    "Images/CA wireless 3.png",
+    "Images/CA wireless 2.png",
+    "Images/CA wireless 1.png",
+    "Images/Reference architecture.png",
+    "Images/Wireless structure.png",
+    "Images/Wireless network.png",
+    "Images/Domains.png",
     "04 Routing protocols.md",
+    "03 Network layer.md",
     "05 Data Link.md",
-    "Images/Pasted image 20231230162928.png",
-    "Images/Pasted image 20231230162637.png",
-    "Images/Pasted image 20231230162510.png",
-    "Images/Pasted image 20231230162033.png",
-    "00 Introduction.md",
-    "Images/Pasted image 20231230161035.png",
-    "Images/Pasted image 20231230161021.png",
-    "Images/Pasted image 20231230160958.png",
     "02 Transport layer.md",
     "01 Application layer.md",
-    "Images/Pasted image 20231230002129.png",
-    "Images/Pasted image 20231230001049.png",
-    "Images/Pasted image 20231230001030.png",
+    "00 Introduction.md",
+    "02 Transport layer.html",
     "2023-11-09.md",
     "Images",
     "2023-11-06.md",
