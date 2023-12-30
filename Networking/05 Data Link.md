@@ -125,6 +125,27 @@ Usually WLANs are based on a standard architecture model. In this architecture a
 ![300](Images/Pasted%20image%2020231230002129.png)
 #### Protocols for wireless communications
 Wireless communications are regulated by the 802.11 standard, which divides the spectrum into different intervals of frequencies called channels. If two neighbouring access points use the same channel, interference may happen.
-Hosts connect to access points by scanning the channels and listening for beacon frames containing the AP's name (SSID) and the MAC address. Then the hosts chooses the AP to associate with, authenticates and typically uses DHCP to obtain an IP address. There also exists an active scanning mode: the host sends using broadcast a probe request, to which the access points reply with a probe response.
-There are some key differences between wireless and wired communications: in wireless communications the signal strength is attenuated as it propagates through matter, the signal propagates in different ways over different paths (ex. reflections) and there is a lot more interference from other sources (ex. motors, lights and other access points). Moreover, collision detection in wireless network is impossible to achieve, because a transmitting antenna cannot act as a receiver at the same time. Even if we had an access point with two antennas (one transmitting and one receiving), the power of the transmitted signal will be of many order of magnitude higher than any other signal (note that radio waves are attenuated quadratically). Therefore, the only option to avoid collisions is to reduce the probability of interference by using CSMA/CA.
+Hosts connect to access points by scanning the channels and listening for beacon frames containing the AP's name (SSID) and the MAC address. Then the hosts chooses the AP to associate with, authenticates and typically uses DHCP to obtain an IP address. There also exists an active scanning mode: the host sends a probe request using broadcast, to which the access points reply with a probe response.
+There are some key differences between wireless and wired communications: in wireless communications the signal strength is attenuated as it propagates through matter, the signal propagates in different ways over different paths (ex. reflections) and there is a lot more interference from other sources (ex. motors, lights and other access points). Moreover, collision detection in wireless network is impossible to achieve, because a transmitting antenna cannot act as a receiver at the same time. Even if we had an access point with two antennas (one transmitting and one receiving), the power of the transmitted signal will be of many order of magnitude higher than any other signal received by the received antenna (note that radio waves are attenuated quadratically). Therefore, the only option to avoid collisions is to reduce the probability of interference by using CSMA/CA.
 #### Collision avoidance in wireless networks
+The MAC 802.11 protocol is based on CSMA with collision avoidance. The procedure goes as follows:
+1. If the channel is free for a certain amount of time (DIFS - Distributed Inter-frame space) the the sender will transmit the entire frame. If the channel is busy, the sender will pick a random backoff time, wait for the channel to be free again and additionally wait for the backoff time.
+2. If the receiver has received the frame successfully, it will send back an ACK after a short interval than DIFS (otherwise other frames would be transmitted before the ACK). The ACK is needed because of possible backoff collisions, channel errors (signal was to weak to reach the receiver) or hidden terminal problems. If no ACK has been received, double the backoff interval and retry sending the frame
+Example:
+![](Images/Pasted%20image%2020231230160958.png)
+![](Images/Pasted%20image%2020231230161021.png)
+![450](Images/Pasted%20image%2020231230161035.png)
+#### Hidden terminal problem
+The hidden terminal problem arises when two stations cannot hear each other (A and C), but a third station can hear both (B). This will cause deterministic collisions, which could be avoided by using CSMA/CA with handshaking.
+![500](Images/Pasted%20image%2020231230162033.png)
+The handshaking requires that before transmitting the station has to send a short RTS (Request to send), to which the receiver has to reply with CTS (Clear to send). Therefore, even if a station could not hear the RTS, it will hear the CTS, thus it will know that the channel is busy for a certain amount of time. If two RTSs collide there will be no CTS, but not much time has been wasted because these packets are very short.
+Example:
+![500](Images/Pasted%20image%2020231230162510.png)
+#### 802.11 frame
+![500](Images/Pasted%20image%2020231230162637.png)
+![500](Images/Pasted%20image%2020231230162928.png)
+In an 802.11 frame there are four MAC addresses:
+- address of the sender
+- address of the destination
+- address of router to which the access point is connected to
+- used only when access point is connected to another access point: address of second access point
