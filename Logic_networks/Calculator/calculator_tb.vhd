@@ -1,25 +1,55 @@
 library ieee;
 use ieee.std_logic_1164.all;
-
+use ieee.numeric_std.all;
 
 entity calculator_tb is
 end entity;
 
 architecture rtl of calculator_tb is
-    component calculator is
-        port (
-            in1, in2, in3: in std_logic;
-            out1, out2, out3, out4: out std_logic
-        );
-    end component;
-    signal in1, in2, in3, out1, out2, out3, out4: std_logic;
+    signal clk, reset : std_logic := '0';
+    signal sw : std_logic_vector( 15 downto 0 );
+    signal led : std_logic_vector( 15 downto 0 );
+    signal btnC, btnU, btnL, btnR, btnD : std_logic := '0';
+    signal ca, cb, cc, cd, ce, cf, cg, dp : std_logic;
+    signal an : std_logic_vector( 3 downto 0 );
 begin
-    calculator_0: calculator port map (in1 => in1, in2 => in2, in3 => in3, out1 => out1, out2 => out2, out3 => out3, out4 => out4);
+    dut : entity work.calculator(rtl) port map (
+        CLK => clk,
+        RESET => reset,
+        SW => sw,
+        LED => led,
+        CA => ca, CB => cb, CC => cc, CD => cd, CE => ce, CF => cf, CG => cg, DP => dp,
+        AN => an,
+        BTNC => btnC, BTNU => btnU, BTNL => btnL, BTNR => btnR, BTND => btnD
+    );
+
+    clk <= not(clk) after 5 ns;
+
     process begin
-        in1 <= '0', '1' after 10 ns, '0' after 20 ns, '1' after 40 ns;
-        in2 <= '0', '1' after 10 ns, '0' after 20 ns, '1' after 50 ns;
-        in3 <= '0', '1' after 10 ns, '0' after 30 ns;
-        wait for 60 ns;
+        sw <= (others => '0');
+        BTNC <= '0';
+        BTNU <= '0';
+        BTNL <= '0';
+        BTNR <= '0';
+        BTND <= '0';
+        reset <= '0';
+        wait for 20 ns;
+        reset <= '1';
+        -- Set number '41' on the switches
+        sw <= std_logic_vector(to_unsigned(41, 16));
+        wait for 20 ns;
+
+        -- Perform sum (click on the up button)
+        btnU <= '1';
+        wait for 100 ns;
+        btnU <= '0';
+        wait for 100 ns;
+        -- set number '6' on the switches
+        sw <= std_logic_vector(to_unsigned(6, 16));
+        -- Perform a single multiplication (click on the right button)
+        btnR <= '1';
+        wait for 100 ns;
+        btnR <= '0';
         wait;
     end process;
 end architecture;

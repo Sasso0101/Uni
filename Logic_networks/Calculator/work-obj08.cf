@@ -1,0 +1,16 @@
+v 4
+file . "calculator.vhd" "545b4c406207e6bd0cc5af9c120c4a6691b6b4ba" "20240120145340.513":
+  entity calculator at 1( 0) + 0 on 19;
+  architecture rtl of calculator at 16( 470) + 0 on 20;
+file . "alu.vhd" "8a9b028837b56ec5158afa984dfb93f632c2516c" "20240120145333.466":
+  entity alu at 1( 0) + 0 on 15;
+  architecture rtl of alu at 14( 269) + 0 on 16;
+file . "seven_segment_driver.vhd" "2c0a9eb5c4993ace3c61b95a3e350fa4cdc92d75" "20240120145304.413":
+  entity seven_segment_driver at 1( 0) + 0 on 11;
+  architecture behavioral of seven_segment_driver at 34( 981) + 0 on 12;
+file . "accumulator.vhd" "6ef53f6f77791ea7937a675a25e080118b927a7a" "20240120145327.865":
+  entity accumulator at 1( 0) + 0 on 13;
+  architecture rtl of accumulator at 14( 284) + 0 on 14;
+file . "debouncer.vhd" "8b19c70b14bec9cab096ad3d9be4584642dc89d4" "20240120145337.650":
+  entity debouncer at 1( 0) + 0 on 17;
+  architecture rtl of debouncer at 17( 299) + 0 on 18;

@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity debouncer is
     generic (
-        counter_size : integer := 12
+        counter_size : integer := 3
     );
     port (
         clk   : in std_logic;
@@ -30,6 +30,7 @@ begin
         if reset = '0' then
             counter <= ( others => '1' );
             candidate_value <= '0';
+            stable_value <= '0';
         elsif rising_edge(clk) then
             if bouncy = candidate_value then
                 if counter = 0 then
@@ -49,7 +50,7 @@ begin
     begin
         if reset = '0' then
             delayed_stable_value <= '0';
-        else
+        elsif rising_edge( clk ) then
             delayed_stable_value <= stable_value;
         end if;
     end process;
