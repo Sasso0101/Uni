@@ -1,0 +1,7 @@
+v 4
+file . "square_tb.vhd" "3e041fa6f995731206e4a25e94108ad290d9db90" "20240118162927.585":
+  entity square_tb at 1( 0) + 0 on 36;
+  architecture testbench of square_tb at 8( 103) + 0 on 37;
+file . "square.vhd" "aacaf5a5418a90c0c619ce2d30f244e4525d27f8" "20240118162456.163":
+  entity square at 1( 0) + 0 on 30;
+  architecture behavioral of square at 12( 215) + 0 on 31;
