@@ -50,7 +50,7 @@ begin
         bouncy <= '1';
         wait for 100 ns;
         bouncy <= '0';
-        wait for 100 ns;
+        wait;
     end process;
     
 end architecture;
