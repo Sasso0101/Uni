@@ -126,7 +126,7 @@ mod point_2d {
 }
 
 mod point_3d {
-    use crate::point_2d;
+    use crate::midterm2_2023_1::point_2d;
 
     #[derive(Debug)]
     pub struct Point {
@@ -136,8 +136,8 @@ mod point_3d {
 }
 
 mod util {
-    pub use crate::point_2d::Point as Point2D;
-    pub use crate::point_3d::Point as Point3D;
+    pub use crate::midterm2_2023_1::point_2d::Point as Point2D;
+    pub use crate::midterm2_2023_1::point_3d::Point as Point3D;
 
     pub fn _3d_to_2d(td: Point3D) -> Point2D {
         td.x_y
@@ -236,7 +236,7 @@ fn main() {}
 
 #[cfg(test)]
 mod tests {
-    use crate::{
+    use crate::midterm2_2023_1::{
         concat, get_vec, point_3d, printdouble, Content, SharedCommunications, Tree, Wrapper,
     };
 
