@@ -10,6 +10,8 @@ mod midterm1_mock;
 mod midterm1_2022_v1;
 mod midterm2_mock;
 mod midterm2_2022;
+mod midterm2_2023_1;
+mod midterm2_2023_2;
 mod closures;
 
 pub fn main() {
