@@ -1,9 +1,7 @@
 use std::{
     cell::RefCell,
     fmt::{Debug, Formatter},
-    ops::Deref,
     rc::Rc,
-    slice::Iter,
 };
 
 trait Doublable

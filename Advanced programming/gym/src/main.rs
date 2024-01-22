@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![allow(unused)]
 
 mod gym1;
 mod gym2;
