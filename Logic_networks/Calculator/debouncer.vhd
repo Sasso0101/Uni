@@ -27,7 +27,7 @@ begin
     process (clk, reset)
     begin
         -- If signal is stable for a long time, then set stable_value to candidate_value
-        if reset = '0' then
+        if reset = '1' then
             counter <= ( others => '1' );
             candidate_value <= '0';
             stable_value <= '0';
@@ -48,7 +48,7 @@ begin
     -- (first derivative) and generate a single pulse
     process ( clk, reset )
     begin
-        if reset = '0' then
+        if reset = '1' then
             delayed_stable_value <= '0';
         elsif rising_edge( clk ) then
             delayed_stable_value <= stable_value;

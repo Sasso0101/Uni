@@ -6,7 +6,7 @@ entity calculator_tb is
 end entity;
 
 architecture rtl of calculator_tb is
-    signal clk, reset : std_logic := '0';
+    signal clk : std_logic := '0';
     signal sw : std_logic_vector( 15 downto 0 );
     signal led : std_logic_vector( 15 downto 0 );
     signal btnC, btnU, btnL, btnR, btnD : std_logic := '0';
@@ -15,7 +15,6 @@ architecture rtl of calculator_tb is
 begin
     dut : entity work.calculator(rtl) port map (
         CLK => clk,
-        RESET => reset,
         SW => sw,
         LED => led,
         CA => ca, CB => cb, CC => cc, CD => cd, CE => ce, CF => cf, CG => cg, DP => dp,
@@ -32,24 +31,29 @@ begin
         BTNL <= '0';
         BTNR <= '0';
         BTND <= '0';
-        reset <= '0';
+        sw <= ('1', others => '0');
         wait for 20 ns;
-        reset <= '1';
+        sw <= (others => '0');
         -- Set number '41' on the switches
-        sw <= std_logic_vector(to_unsigned(41, 16));
+        sw <= std_logic_vector(to_signed(5, 16));
         wait for 20 ns;
-
-        -- Perform sum (click on the up button)
+        -- Load value
         btnU <= '1';
         wait for 100 ns;
         btnU <= '0';
         wait for 100 ns;
+
         -- set number '6' on the switches
         sw <= std_logic_vector(to_unsigned(6, 16));
-        -- Perform a single multiplication (click on the right button)
-        btnR <= '1';
+        -- Perform sum (click on the up button)
+        btnL <= '1';
         wait for 100 ns;
-        btnR <= '0';
+        btnL <= '0';
+        wait for 100 ns;
+        -- Perform a single multiplication (click on the right button)
+        -- btnR <= '1';
+        -- wait for 100 ns;
+        -- btnR <= '0';
         wait;
     end process;
 end architecture;

@@ -15,7 +15,7 @@ architecture rtl of accumulator is
 begin
     process (clk, reset)
     begin
-        if reset = '0' then
+        if reset = '1' then
             acc_out <= ( others => '0');
         elsif rising_edge(clk) then
             if acc_init = '1' then
