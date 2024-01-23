@@ -15,10 +15,10 @@ end calculator;
 
 architecture rtl of calculator is
     signal pulseC, pulseU, pulseL, pulseR, pulseD : std_logic;
-    signal acc_in, acc_out : signed (31 downto 0);
-    signal sw_input : std_logic_vector(31 downto 0);
+    signal acc_in, acc_out : signed (15 downto 0);
+    signal sw_input : std_logic_vector(15 downto 0);
     signal acc_enable : std_logic;
-    signal display_value : std_logic_vector( 31 downto 0 );
+    signal display_value : std_logic_vector(15 downto 0);
 begin
     -- Initialize buttons
     center_detect : entity work.debouncer(rtl) 
@@ -84,7 +84,7 @@ begin
     LED <= SW;
 
     -- Sign extended switches (32bit - extension)
-    sw_input <= SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW(15) & SW;
+    sw_input <= SW;
     
     -- Initialize ALU
     alu_0 : entity work.alu(rtl) 
@@ -109,5 +109,5 @@ begin
     );
 
     display_value <= std_logic_vector( acc_out );
-    acc_enable <= btnU or btnL or btnL or btnD;
+    acc_enable <= btnU or btnL or btnL or btnD or btnR;
 end architecture;

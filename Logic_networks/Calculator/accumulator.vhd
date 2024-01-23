@@ -6,8 +6,8 @@ entity accumulator is
     port (
         clk, reset: in std_logic;
         acc_init, acc_enable: in std_logic;
-        acc_in: in signed (31 downto 0);
-        acc_out: out signed (31 downto 0)
+        acc_in: in signed (15 downto 0);
+        acc_out: out signed (15 downto 0)
     );
 end entity;
 
@@ -20,7 +20,7 @@ begin
         elsif rising_edge(clk) then
             if acc_init = '1' then
                 acc_out <= ( others => '0');
-            else
+            elsif acc_enable = '1' then
                 acc_out <= acc_in;
             end if;
         end if;

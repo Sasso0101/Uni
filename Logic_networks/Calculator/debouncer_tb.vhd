@@ -30,8 +30,7 @@ begin
         pulse => pulse
     );
 
-    clk <= not(clk) after 5 ns;
-
+    clk <= not(clk) after 1 us;
     process begin
         reset <= '0';
         wait for 10 ns;
