@@ -16,7 +16,6 @@ end calculator;
 architecture rtl of calculator is
     signal pulseC, pulseU, pulseL, pulseR, pulseD : std_logic;
     signal acc_in, acc_out : signed (15 downto 0);
-    signal sw_input : std_logic_vector(15 downto 0);
     signal acc_enable : std_logic;
     signal display_value : std_logic_vector(15 downto 0);
 begin
@@ -80,17 +79,14 @@ begin
         an     => AN
     );
 
-    -- Connect leds to switches
+    -- Connect LEDs to switches
     LED <= SW;
-
-    -- Sign extended switches (32bit - extension)
-    sw_input <= SW;
     
     -- Initialize ALU
     alu_0 : entity work.alu(rtl) 
     port map (
         in1 => acc_out,
-        in2 => signed (sw_input),
+        in2 => signed (SW),
         sum => pulseU,
         sub => pulseL,
         mul => pulseR,
