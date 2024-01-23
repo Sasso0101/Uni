@@ -33,7 +33,6 @@ begin
         BTND <= '0';
         sw <= ('1', others => '0');
         wait for 20 ns;
-        sw <= (others => '0');
         -- Set number '41' on the switches
         sw <= std_logic_vector(to_signed(5, 16));
         wait for 20 ns;
@@ -45,10 +44,27 @@ begin
 
         -- set number '6' on the switches
         sw <= std_logic_vector(to_unsigned(6, 16));
+        wait for 20 ns;
+        -- Perform sum (click on the up button)
+        btnU <= '1';
+        wait for 100 ns;
+        btnU <= '0';
+        wait for 100 ns;
+        -- set number '2' on the switches
+        sw <= std_logic_vector(to_unsigned(2, 16));
+        wait for 20 ns;
         -- Perform sum (click on the up button)
         btnL <= '1';
         wait for 100 ns;
         btnL <= '0';
+        wait for 100 ns;
+        -- set number '2' on the switches
+        sw <= std_logic_vector(to_unsigned(3, 16));
+        wait for 20 ns;
+        -- Perform sum (click on the up button)
+        btnR <= '1';
+        wait for 100 ns;
+        btnR <= '0';
         wait for 100 ns;
         -- Perform a single multiplication (click on the right button)
         -- btnR <= '1';
