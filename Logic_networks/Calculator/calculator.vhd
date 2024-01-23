@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity calculator is
     port (
-        CLK, RESET : in std_logic;
+        CLK : in std_logic;
         SW : in  STD_LOGIC_VECTOR (15 downto 0); -- Switches
         LED : out  STD_LOGIC_VECTOR (15 downto 0); -- leds
         BTNC, BTNU, BTNL, BTNR, BTND : in std_logic; -- Buttons
@@ -24,14 +24,14 @@ begin
     center_detect : entity work.debouncer(rtl) 
     port map (
         clk => clk,
-        reset   => RESET,
+        reset   => SW(15),
         bouncy  => BTNC,
         pulse   => pulseC
     );
     left_detect : entity work.debouncer(rtl) 
     port map (
         clk => clk,
-        reset   => RESET,
+        reset   => SW(15),
         bouncy  => BTNL,
         pulse   => pulseL
     );
