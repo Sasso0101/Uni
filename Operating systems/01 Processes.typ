@@ -66,3 +66,56 @@ In the UNIX processes are managed using the following system calls:
   raw(text, lang: "c", align: left, block: true),
   caption: [A process that spawns a child process and waits for its termination],
 )
+== Communication between processes
+Processes can communicate using:
+- shared memory: processes that wish to communicate create a shared area of memory, that is managed directly by the processes
+- message passing
+#figure(
+  image("Images/Process communication.png", width: 60%),
+  caption: [Models of communication between processes]
+)
+=== Shared memory
+Processes can communicate using shared memory by creating a dedicated area in memory and writing and reading to it. To access shared memory it processes need to map it to memory using memory mapping. Shared memory can be accessed by their name.
+==== Memory-mapped files
+In modern operating systems files, shared memory objects and other resources that can be addressed by a file descriptor can be accessed by processes using a procedure called "memory mapping". When memory mapping is used, a byte-to-byte correlation with a part of memory and the resource is established. This means that the processor can access the file very quickly, as if it was stored in memory. In UNIX this feature is provided by the ```bash mmap()``` system call.
+#let text = read("Lectures/posix-producer.c")
+#show figure: set block(breakable: true)
+#figure(
+  raw(text, lang: "c", align: left, block: true),
+  caption: [A process that creates a shared memory area and writes to it],
+)
+#let text = read("Lectures/posix-consumer.c")
+#figure(
+  raw(text, lang: "c", align: left, block: true),
+  caption: [A process that opens a shared memory area and reads from it],
+)
+== Message passing
+Processes can communicate without using shared memory by using message passing. This can be physically implemented in the following ways:
+- Shared memory (we already saw that)
+- Hardware bus
+- Network
+We can distinguish the channel on a logical level in the following ways:
+ Direct or indirect
+- Synchronous or asynchronous
+- Automatic or explicit buffering
+=== Pipes
+Pipes provide a way for to processes to communicate directly with each other. We can distinguish among two different types of pipes: ordinary pipes and named pipes. Pipes are accessed using the file descriptor.
+==== Ordinary pipes
+Ordinary pipes cannot be accessed from outside the process that created it. Typically, a parent process creates a pipe and uses it to communicate with a child process that it created. Ordinary pipes are unidirectional, meaning that the parent process can only write to it and the child process can only read from it. In Windows they are called ordinary pipes.
+#let text = read("Lectures/pipe.c")
+#figure(
+  raw(text, lang: "c", align: left, block: true),
+  caption: [A process that spawn a child and communicates to it using an ordinary pipe],
+)
+==== Named pipes
+Named pipes can be accessed without a parent-child relationship. They are bidirectional and multiple processes can read and write to it. When no process holds a reference to the file descriptor the pipe is destroyed by the system.
+#let text = read("Lectures/named_pipe_write.c")
+#figure(
+  raw(text, lang: "c", align: left, block: true),
+  caption: [A process that creates a named pipe and writes the content from the standard input in the pipe],
+)
+#let text = read("Lectures/named_pipe_write.c")
+#figure(
+  raw(text, lang: "c", align: left, block: true),
+  caption: [A process that opens a named pipe and prints the content in the pipe to the standard output],
+)
