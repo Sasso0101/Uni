@@ -1,0 +1,57 @@
+\documentclass[12pt, twoside]{extreport}
+\usepackage[english]{babel}
+\usepackage{amsmath,graphicx, float, enumitem, microtype, tgpagella, bookmark, fancyhdr, underscore, minted}
+\usemintedstyle{vs}
+\usepackage[a4paper, margin={2.5cm}]{geometry}
+\usepackage[hypcap=false]{caption}
+\setlist[itemize]{noitemsep, topsep=0pt}
+\usepackage[T1]{fontenc}
+\usepackage{subfiles} % import last
+\raggedbottom
+\linespread{1.1}
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{20pt}
+\fancyhead[RO,LE]{\small \leftmark}
+
+\newcommand{\image}[3]{
+    \begin{center}
+        \vbox{
+            \includegraphics[width=#2]{#1}
+            \captionof{figure}{#3}
+        }
+    \end{center}
+}
+\newcommand{\italics}[1]{\emph{#1}}
+\newcommand{\bold}[1]{\textbf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\snippet}[3]{
+    \begin{center}
+        \inputminted{#2}{#1}
+        \captionof{listing}{#3}
+    \end{center}
+}
+
+
+
+\begin{document}
+
+\title {
+    \fontsize{40}{60}\bold{Operating systems}
+    \vspace{1.5cm}
+    \begin{center}
+        \includegraphics[width=7cm]{images/cover.png}
+    \end{center}
+}
+  
+\author{\Large Salvatore Andaloro}
+
+\date{\Large \today}
+\maketitle
+
+{\tableofcontents}
+
+\subfile{chapters/00 Introduction.tex}
+\subfile{chapters/01 Processes.tex}
+
+\end{document}
