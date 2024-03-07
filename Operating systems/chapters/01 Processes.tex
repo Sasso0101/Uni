@@ -1,0 +1,127 @@
+\chapter{Processes}
+
+A process is a program in execution. Processes are identified by a \bold{process identifier} (pid). It is composed of multiple parts:
+
+\begin{itemize}
+  \item Text section: the program code
+  \item Data section: contains global variables (initialized and uninitialized)
+  \item Heap: memory dynamically allocated during runtime
+  \item Stack: contains temporarily variables, such as function parameters, return addresses, local variables
+\end{itemize}
+
+\image{images/Process.png}{4cm}{Memory layout for a process}
+
+A process during execution cycles through the following states:
+
+\begin{itemize}
+  \item new: the process is created
+  \item ready: The process is in a queue and is waiting to be assigned to a processor
+  \item running: Instructions are being executed
+  \item waiting: The process is in a queue and is waiting for some event to occur (ex. a memory transfer, an I/O)
+  \item terminated: The process has finished execution
+\end{itemize}
+
+\image{images/Process FSM.png}{8cm}{Process state machine}
+
+The information about the state of the process is stored in the RAM in the process control block (PCB). It contains the following information:
+
+\begin{itemize}
+  \item Process state: running, waiting, etc.
+  \item Program counter: location of next instruction
+  \item CPU registers: contents of registers used by the process
+  \item CPU scheduling information: priorities, scheduling queue pointers
+  \item Memory-management information: memory allocated to the process
+  \item Accounting/Debug information: CPU used, clock time elapsed since start, time limits
+  \item I/O status information: I/O devices allocated to process, list of open files
+  In Linux the PCB for every process is stored as a file in the /proc folder: \code{less /proc/<pid::self>/status}.
+\end{itemize}
+
+When a process is stopped it saves its state in the PCB and if reloads it when it resumes executing. The time when the CPU stores the PCB of a process and loads the PCB of another process is called \bold{context switch}. Context switches can be categorized in:
+
+\begin{itemize}
+  \item voluntary context switch: the process stops itself because needs to wait for a resource
+  \item nonvoluntary context switch: the processor decides to switch process
+\end{itemize}
+
+\section{Multithreading}
+A process can execute multiple instructions at once by using multiple threads. Each thread has its own program counter and uses different registers, therefore all this information has to be also stored in the PCB.
+
+\section{Scheduling}
+The CPU has a process scheduler, which decides which process to execute. The scheduler stores the processes in various queues:
+
+\begin{itemize}
+  \item Job queue: set of all processes in the system
+  \item Ready queue: set of all processes residing in main memory, ready and waiting to execute
+  \item Device queues: set of processes waiting for an I/O device
+\end{itemize}
+
+\image{images/Queues.png}{11cm}{Process queues}
+
+\section{Process creation}
+A process can create other \italics{child} processes, which in turn can have other children. Therefore processes are arranged in a tree data structure. In Linux the process tree can be printed using \code{pstree}.
+
+The parent and children have different options for sharing resources:
+\begin{itemize}
+  \item Parent and children share all resources
+  \item Children share subset of parent's resources
+  \item Parent and child share no resources
+  Moreover they have different options for execution:
+  \item Parent and children execute concurrently
+  \item Parent waits until children terminate
+\end{itemize}
+In a Linux system the root process that spawns all other processes is called \code{systemd}.
+
+In the UNIX processes are managed using the following system calls:
+\begin{itemize}
+  \item \code{fork()}: creates a new process
+  \item \code{exec()}: replaces the parent's memory with the children's one (machine code, data, heap, and stack)
+  \item \code{wait()}: called by parent to wait for the end of the child's execution
+\end{itemize}
+
+\image{images/Process children.png}{14cm}{Creation of children processes}
+
+\snippet{code/fork.c}{c}{A process that spawns a child process and waits for its termination}
+
+\section{Communication between processes}
+Processes can communicate using:
+\begin{itemize}
+  \item shared memory: processes that wish to communicate create a shared area of memory, that is managed directly by the processes
+  \item message passing
+\end{itemize}
+
+\image{images/Process communication.png}{14cm}{Models of communication between processes}
+
+\subsection{Shared memory}
+Processes can communicate using shared memory by creating a dedicated area in memory and writing and reading to it. To access shared memory it processes need to map it to memory using memory mapping. Shared memory can be accessed by their name.
+
+\subsubsection{Memory-mapped files}
+modern operating systems files, shared memory objects and other resources that can be addressed by a file descriptor can be accessed by processes using a procedure called "memory mapping". When memory mapping is used, a byte-to-byte correlation with a part of memory and the resource is established. This means that the processor can access the file very quickly, as if it was stored in memory. In UNIX this feature is provided by the \code{mmap()} system call.
+
+\snippet{code/posix-producer.c}{c}{A process that creates a shared memory area and writes to it}
+\snippet{code/posix-consumer.c}{c}{A process that opens a shared memory area and reads from it}
+
+\subsection{Message passing}
+Processes can communicate without using shared memory by using message passing. This can be physically implemented in the following ways:
+\begin{itemize}
+  \item Shared memory (already seen in the previous section)
+  \item Hardware bus
+  \item Network
+\end{itemize}
+We can distinguish the channel on a logical level in the following ways:
+\begin{itemize}
+  \item Direct or indirect
+  \item Synchronous or asynchronous
+  \item Automatic or explicit buffering
+\end{itemize}
+
+\subsubsection{Pipes}
+Pipes provide a way for to processes to communicate directly with each other. Pipes are accessed using the file descriptor. We can distinguish among two different types of pipes: ordinary pipes and named pipes.
+
+Ordinary pipes cannot be accessed from outside the process that created it. Typically, a parent process creates a pipe and uses it to communicate with a child process that it created. Ordinary pipes are unidirectional, meaning that the parent process can only write to it and the child process can only read from it. In Windows they are called ordinary pipes.
+
+\snippet{code/pipe.c}{c}{A process that spawn a child and communicates to it using an ordinary pipe}
+
+Named pipes can be accessed without a parent-child relationship. They are bidirectional and multiple processes can read and write to it. When no process holds a reference to the file descriptor the pipe is destroyed by the system.
+
+\snippet{code/named_pipe_write.c}{c}{A process that creates a named pipe and writes into it the content from the standard input}
+\snippet{code/named_pipe_read.c}{c}{A process that reads from pipe and writes its content to the standard input}
