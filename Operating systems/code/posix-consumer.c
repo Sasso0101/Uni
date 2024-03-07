@@ -22,14 +22,14 @@ int main()
 		exit(-1);
 	}
 
-	/* now map the shared memory segment in the address space of the process */
+	/* map the shared memory segment in the address space of the process */
 	ptr = mmap(0,SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
 	if (ptr == MAP_FAILED) {
 		printf("Map failed\n");
 		exit(-1);
 	}
 
-	/* now read from the shared memory region */
+	/* read from the shared memory region */
 	printf("%s",(char *)ptr);
 
 	/* remove the shared memory segment */

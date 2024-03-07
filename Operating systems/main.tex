@@ -1,12 +1,14 @@
-\documentclass[12pt, twoside]{extreport}
+\documentclass[12pt]{book}
 \usepackage[english]{babel}
-\usepackage{amsmath,graphicx, float, enumitem, microtype, tgpagella, bookmark, fancyhdr, underscore, minted}
+\usepackage{amsmath,graphicx, float, enumitem, microtype, tgpagella, bookmark, fancyhdr, underscore, minted, emptypage}
 \usemintedstyle{vs}
 \usepackage[a4paper, margin={2.5cm}]{geometry}
-\usepackage[hypcap=false]{caption}
+\usepackage[hypcap=false, skip=0pt]{caption}
 \setlist[itemize]{noitemsep, topsep=0pt}
 \usepackage[T1]{fontenc}
 \usepackage{subfiles} % import last
+\usepackage{color}
+\definecolor{light-gray}{rgb}{0.9,0.9,0.9}
 \raggedbottom
 \linespread{1.1}
 \pagestyle{fancy}
@@ -27,7 +29,7 @@
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\snippet}[3]{
     \begin{center}
-        \inputminted{#2}{#1}
+        \inputminted[tabsize=2,breaklines,bgcolor=light-gray]{#2}{#1}
         \captionof{listing}{#3}
     \end{center}
 }
@@ -47,10 +49,10 @@
 \author{\Large Salvatore Andaloro}
 
 \date{\Large \today}
+\frontmatter
 \maketitle
-
-{\tableofcontents}
-
+\tableofcontents
+\mainmatter
 \subfile{chapters/00 Introduction.tex}
 \subfile{chapters/01 Processes.tex}
 

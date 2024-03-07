@@ -23,7 +23,7 @@ A process during execution cycles through the following states:
 
 \image{images/Process FSM.png}{8cm}{Process state machine}
 
-The information about the state of the process is stored in the RAM in the process control block (PCB). It contains the following information:
+The information about the state of the process is stored in the RAM in a data structure called process control block (PCB). The PCB contains the following information:
 
 \begin{itemize}
   \item Process state: running, waiting, etc.
@@ -89,13 +89,10 @@ Processes can communicate using:
   \item message passing
 \end{itemize}
 
-\image{images/Process communication.png}{14cm}{Models of communication between processes}
+\image{images/Process communication.png}{10cm}{Models of communication between processes}
 
 \subsection{Shared memory}
-Processes can communicate using shared memory by creating a dedicated area in memory and writing and reading to it. To access shared memory it processes need to map it to memory using memory mapping. Shared memory can be accessed by their name.
-
-\subsubsection{Memory-mapped files}
-modern operating systems files, shared memory objects and other resources that can be addressed by a file descriptor can be accessed by processes using a procedure called "memory mapping". When memory mapping is used, a byte-to-byte correlation with a part of memory and the resource is established. This means that the processor can access the file very quickly, as if it was stored in memory. In UNIX this feature is provided by the \code{mmap()} system call.
+Processes can communicate using a feature called shared memory. Processes can allocate an area in memory as shared memory and assign to it a name. Then they can access it by mapping it to their address space\footnote{array of addresses that the process is allowed to use}. In UNIX memory mapping is achieved by the \code{mmap()} system call.
 
 \snippet{code/posix-producer.c}{c}{A process that creates a shared memory area and writes to it}
 \snippet{code/posix-consumer.c}{c}{A process that opens a shared memory area and reads from it}
