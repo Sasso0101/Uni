@@ -7,6 +7,8 @@
   ),
 )
 
+#show figure: set block(breakable: true)
+
 // We generated the example code below so you can see how
 // your document will look. Go ahead and replace it with
 // your own content!
