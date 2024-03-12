@@ -122,3 +122,34 @@ Named pipes can be accessed without a parent-child relationship. They are bidire
 
 \snippet{code/named_pipe_write.c}{c}{A process that creates a named pipe and writes into it the content from the standard input}
 \snippet{code/named_pipe_read.c}{c}{A process that reads from pipe and writes its content to the standard input}
+
+\section{Threads}
+A thread is a basic unit of CPU usage. A process can spawn multiple threads, which share the same data and text (code) section and OS resources of the parent process. On the contrary each thread has its own registers, stack and program counter and is identified by an ID.
+
+\image{images/Thread vs process.png}{13cm}{Single threaded process (left) and multithreaded process (right)}
+
+\subsection{Difference between child processes and threads}
+When a process is forked all information is duplicated (data, code, files), while threads of the same process share the same information. When a thread is created, the parent process has to specify which part of the code the thread has to execute. Therefore threads are more lightweight: resource sharing is easier than memory/message passing, they are quicker to create and can scale easily (can take advantage of multi-core architectures).
+
+\subsection{Applications of threads}
+Threads are used in client-server programs such as web server. Every time a request is received, the program creates a thread which fulfills the request. Another example is running background tasks, such as the spellchecker in a Word program.
+
+\subsection{Linux threads}
+Linux refers to processes and threads as tasks. Processes are created using the \code{fork()} or \code{clone()} system call. Using the first all data structures are copied, while using the latter the same address space is shared (pointers are used). Threads are created using the \code{clone()} call. Flags can be passed to the call to control the behavior of the calls.
+
+The Linux scheduler doesn't make distinctions between threads and processes, but sees all of them as schedulable tasks.
+
+\subsection{Multi-core programming}
+The advantage of having multi-core systems is that tasks can be parallelized. There are two types of parallelism:
+\begin{itemize}
+  \item Data parallelism: data is distributed across multiple cores, each thread performs same operation
+  \item Task parallelism: tasks are distributed across multiple cores, each thread performs a different operation
+\end{itemize}
+
+\subsection{Amdahl's Law}
+Amdahl's Law describes the theoretical performance gain by using parallel code.
+$$ \text{speedup} \le \left (S+\frac{1-S}{N} \right )^{-1} $$
+Where S is the percentage of serial code, N is the number of cores, and $ \text{speedup} = 1 $ means that there is no speedup.
+
+\subsection{Kernel threads}
+To be executed user threads need to be mapped to kernel threads. A kernel thread is a kernel entity, like processes and interrupt handlers; it is the entity handled by the system scheduler. User threads can be mapped to kernel threads in three ways: one-to-one (preferred by Linux and Windows), many-to-one, many-to-many.
