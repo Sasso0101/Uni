@@ -1,0 +1,36 @@
+\chapter{CPU Scheduling}
+
+The system executes tasks in cycles made of CPU bursts and IO bursts. During a CPU burst a process or program demands and actively utilizes the CPU for computation, while during an I/O burst a process or program waits for data to be read from or written to external storage devices.
+
+\image{images/Bursts.png}{6cm}{CPU bursts and IO bursts}
+
+The job of the CPU scheduler is to select among the processes in the ready queue and allocate the CPU to the for some time.
+
+\section{Preemptive scheduling}
+Preemption is the act of temporarily interrupting an executing task, with the intention of resuming it at a later time. Preemptive systems are therefore able to suspend tasks that take a long time, put them back in the ready queue and resume them at a later time. 
+
+Preemptive scheduling can result in race conditions when data is shared among several processes. For example if a thread is interrupted while is writing some data, the information can be left in an inconsistent state, which can become a problem if other threads are reading it.
+
+The unit that gives control of the CPU to a new task is called the dispatcher. The dispatcher handles the context switch, switches to user mode and jumps to the proper location in the program to start execution. The dispatcher latency should be as low as possible.
+
+\section{Scheduling metrics}
+The following are the most important metrics to evaluate the performance of a scheduler:
+\begin{itemize}
+    \item CPU utilization (↑): keep the CPU as busy as possible
+    \item Throughput (↑): \# of processes that complete their execution per time unit
+    \item Turnaround time (↓): amount of time to execute a particular process (completion time - arrival time)
+    \item Waiting time (↓): the amount of time a process has been waiting in the ready queue
+    \item Response time (↓): amount of time it takes from when a process enters the ready queue to when it gets into the CPU the first time
+\end{itemize}
+
+\section{Scheduling algorithms}
+There exist multiple algorithms to implement a scheduling strategy, each one improving certain metrics at the expense of others.
+\subsection{First-come, first-served scheduling (FCFS)}
+FCFS executes tasks in the order they arrive in the queue. FCFS scheduling is non-preemptive: once assigned, a process finishes is execution. The average waiting time is highly dependent at the order in which tasks arrive. For example if a long task arrives before some short tasks, the latter will have a high waiting time. This problem is referred to as convoy effect.
+\subsection{Shortest-Job-First scheduling (SJF)}
+Tasks are executed by their burst time: the task with the shortest burst time is executed first, and the task with the longest waiting time is executed last. Also SJF is non-preemptive. This scheduling strategy theoretically minimizes the average waiting time, but estimating CPU bursts is unfeasible, because it would require an analysis of the code of all scheduled tasks. If we assume that the individual CPU burst times of a task are correlated, we could compute an average of the previous burst times of a task and make an estimate for the next burst time (for example using an exponential average of the previous samples).
+
+Shortest time remaining first scheduling (SRT) is the preemptive version of SJF: every time a new task arrives, the scheduler will stop execution of the current task and will execute the task with the current shortest burst time first.
+
+\subsection{Round robin scheduling }
+In round robin scheduling each process gets a small unit of CPU time (time quantum \italics{q}), usually 10-100 milliseconds. After this time has elapsed, the process is preempted and added to the end of the ready queue. Note that q must be large with respect to context switch, otherwise the overhead is too high. If there are n processes in the ready queue no process waits more than $q(n-1)$ time units. Typically, this scheduling has a higher average turnaround than SJF, but better response.
