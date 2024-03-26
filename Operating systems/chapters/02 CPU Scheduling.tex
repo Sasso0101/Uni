@@ -4,7 +4,7 @@ The system executes tasks in cycles made of CPU bursts and IO bursts. During a C
 
 \image{images/Bursts.png}{6cm}{CPU bursts and IO bursts}
 
-The job of the CPU scheduler is to select among the processes in the ready queue and allocate the CPU to the for some time.
+The job of the CPU scheduler is to select among the processes in the ready queue and allocate the CPU to them for some time.
 
 \section{Preemptive scheduling}
 Preemption is the act of temporarily interrupting an executing task, with the intention of resuming it at a later time. Preemptive systems are therefore able to suspend tasks that take a long time, put them back in the ready queue and resume them at a later time. 
@@ -24,13 +24,59 @@ The following are the most important metrics to evaluate the performance of a sc
 \end{itemize}
 
 \section{Scheduling algorithms}
-There exist multiple algorithms to implement a scheduling strategy, each one improving certain metrics at the expense of others.
+There exist multiple scheduling algorithms, each one prioritizing certain metrics at the expense of others.
 \subsection{First-come, first-served scheduling (FCFS)}
-FCFS executes tasks in the order they arrive in the queue. FCFS scheduling is non-preemptive: once assigned, a process finishes is execution. The average waiting time is highly dependent at the order in which tasks arrive. For example if a long task arrives before some short tasks, the latter will have a high waiting time. This problem is referred to as convoy effect.
-\subsection{Shortest-Job-First scheduling (SJF)}
-Tasks are executed by their burst time: the task with the shortest burst time is executed first, and the task with the longest waiting time is executed last. Also SJF is non-preemptive. This scheduling strategy theoretically minimizes the average waiting time, but estimating CPU bursts is unfeasible, because it would require an analysis of the code of all scheduled tasks. If we assume that the individual CPU burst times of a task are correlated, we could compute an average of the previous burst times of a task and make an estimate for the next burst time (for example using an exponential average of the previous samples).
+FCFS executes tasks in the order they arrive in the queue. FCFS scheduling is non-preemptive: once a process is started, it will execute until the next I/O burst or the end of the process. The average waiting time is highly dependent on the order in which tasks arrive. For example, if a long task arrives before some short tasks, the latter will have a high waiting time (convoy effect).
+\subsection{Shortest-job-first scheduling (SJF)}
+In SJF tasks are executed in order of their burst time: the task with the shortest burst time is executed first. SJF is non-preemptive and theoretically minimizes the average waiting time. The problem of this strategy is that estimating CPU bursts is unfeasible, because it would require estimating how much time a task requires to be executed. If we assume that the individual CPU burst times of a task are correlated, we could compute an average of the previous burst times of a task and make an estimate for the next burst time (for example using an exponential average of the previous samples).
 
 Shortest time remaining first scheduling (SRT) is the preemptive version of SJF: every time a new task arrives, the scheduler will stop execution of the current task and will execute the task with the current shortest burst time first.
 
-\subsection{Round robin scheduling }
-In round robin scheduling each process gets a small unit of CPU time (time quantum \italics{q}), usually 10-100 milliseconds. After this time has elapsed, the process is preempted and added to the end of the ready queue. Note that q must be large with respect to context switch, otherwise the overhead is too high. If there are n processes in the ready queue no process waits more than $q(n-1)$ time units. Typically, this scheduling has a higher average turnaround than SJF, but better response.
+\subsection{Round robin scheduling}
+In round robin scheduling each process gets a small unit of CPU time (called time quantum $q$), usually 10-100 milliseconds. After this time has elapsed, the process is preempted and added to the end of the ready queue. Note that $q$ must be large with respect to context switch, otherwise the overhead is too high. If there are $n$ processes in the ready queue, no process waits more than $q(n-1)$ time units. Typically, this scheduling has a higher average turnaround time than SJF, but better response time.
+
+\subsection{Priority scheduling}
+In priority scheduling a priority number is associated with each process. The CPU is allocated to the process with the highest priority. The problem of this strategy is that low priority processes may never execute (starvation). This can be solved by increasing the priority of the process as time progresses (aging).
+
+The processes that have the same priority will be executed using round-robin.
+
+\subsection{Multilevel queues}
+In this scheduling strategy there are multiple queues, where each one has a different scheduling strategy and a propriety number. The CPU will execute the first task in the highest propriety queue. Tasks can switch queues if their priority changes.
+
+\image{images/Multilevel queues.png}{6cm}{Multilevels queues}
+
+\subsection{Multiple-processor scheduling}
+Schedulers for multiple-processor systems can have a common queue for all processors or a queue for each processor.
+
+When a thread runs on a processor, it uses the cache of a processor (processor affinity). If then that thread gets executed on another processor, it will lose all the cached content.
+
+\subsection{Real-time scheduling}
+Real-time operating systems must be able to meet deadlines for certain tasks deemed as critical. Priority-based scheduling don't provide this guarantee (soft real-time). Also tasks have a new characteristic to consider:  periodic tasks require the CPU at constant intervals.
+
+\image{images/Periodic tasks.png}{14cm}{Periodic task with processing time $t$, deadline $d$ and period $p$}
+
+\subsubsection{Rate monotonic scheduling}
+A priority is assigned based on the inverse of its period. Therefore tasks with shorter periods have the highest priority. This scheduler is not ideal, because tasks with longer periods will be constantly interrupted by tasks with shorter periods, making them miss the deadline.
+
+\image{images/Missing deadlines.png}{14cm}{Task P2 misses the deadline because task P1 always has the highest priority}
+
+\subsubsection{Earliest Deadline First Scheduling}
+Priorities are assigned according to the time missing to the next deadline: the earlier the deadline, the higher the priority.
+
+\image{images/Earliest deadline.png}{13.8cm}{Earliest Deadline First Scheduling}
+
+\section{Scheduling evaluation}
+There are various ways in which scheduling algorithms can be evaluated and compared.
+
+\subsection{Deterministic modeling}
+In deterministic modeling the scheduling algorithms are evaluated on a particular workload. The metrics are then collected and compared. This approach is not always ideal because it considers the behavior of the algorithms in one scenario only.
+
+\subsection{Queueing models}
+A scheduling algorithm can be modeled mathematically: the arrival of processes, and CPU and I/O bursts is described probabilistically.
+
+Little's formula is a general formula that states that in steady state, processes leaving queue must equal processes arriving.
+$$ n = \lambda \cdot W $$
+$n$ is the average queue length, $W$ is the average waiting time in queue and $\lambda$ is the average arrival rate into queue. This formula is valid for any scheduling algorithm and arrival distribution.
+
+\subsection{Simulations}
+The algorithms can be evaluated by looking at their metrics by analyzing their behavior on multiple workloads.
