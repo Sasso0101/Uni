@@ -1,0 +1,36 @@
+\chapter{Synchronization}
+
+In modern operating systems processes can run concurrently. Although concurrency allows to achieve very high performance, it introduces some problems that need to be managed.
+
+\section{Critical section}
+The critical section problem happens when multiple processes are writing and reading from some shared data at the same time. The part of the code that modifies some shared data (updating common variables, writing to a file, updating tables...) is called \bold{critical section}.
+
+A solution to the critical section problem must satisfy the following requirements:
+\begin{enumerate}
+    \item Mutual Exclusion: if process Pi is executing its critical section, then no other processes can be executing in their critical sections
+    \item Progress: if no process is executing its critical section, then a process that want to execute its critical section should be able to do so
+    \item Bounded waiting: a bound must exist on the number of times that other processes are allowed to enter their critical sections after a process has made a request to enter its critical section and before that request is granted (note that this does not imply anything on the time a process stays in its critical section)
+\end{enumerate}
+
+\subsection{Peterson's solution}
+The Peterson's solution applies to single-core processor and with $n$ processes. The processes share two variables: \code{int turn} and \code{boolean flag[n]}. The \code{turn} variable indicates whose turn it is to enter the critical section. The \code{flag} array is used to indicate if a process is ready to enter the critical section.
+
+\snippet{code/03chapter/peterson.c}{c}{Implementation of Peterson's solution for process $i$ with two processes $i$ and $j$}
+
+This solution satisfies the three CS requirements:
+\begin{enumerate}
+    \item Mutual exclusion is preserved (process $i$ enters CS only if: either flag[j] = false or turn = i)
+    \item Progress requirement is satisfied
+    \item Bounded-waiting requirement is met (by using alternating turns )
+\end{enumerate}
+
+Although Peterson's process is theoretically perfect, modern compilers and architectures perform various optimizations on the code. One of them is to change the order in which instructions are executed if they detect that it does not change the logic of the individual process. Therefore the \code{flag[i] = false} statement is not guaranteed to be executed exactly at the end of the critical section, thus breaking the synchronization mechanism.
+
+This can be fixed by using memory barriers. When a memory barrier instruction is performed, the system ensures that all loads and stores of all processes are completed before any subsequent load or store operations are performed. Therefore we can add a memory barrier before setting the flag to false in the while loop.
+
+\section{Hardware solutions}
+Many systems provide hardware support for implementing the critical section code. Special hardware instructions that allow us to either test-and-modify the content of a word, or to swap the contents of two words atomically.
+
+\subsection{Test and set instruction}
+To access a critical section processes have to first call the \code{test_and_set()} instruction. This instruction must be non-interruptible.
+\snippet{code/03chapter/test_and_set.c}{c}{Implementation of the \code{test_and_set()} function}
