@@ -5,6 +5,7 @@
 \usepackage[a4paper, margin={2.5cm}]{geometry}
 \usepackage[hypcap=false, skip=0pt]{caption}
 \setlist[itemize]{noitemsep, topsep=0pt}
+\setlist[enumerate]{noitemsep, topsep=0pt}
 \usepackage[T1]{fontenc}
 \usepackage{subfiles} % import last
 \usepackage{color}
@@ -27,10 +28,10 @@
 \newcommand{\italics}[1]{\emph{#1}}
 \newcommand{\bold}[1]{\textbf{#1}}
 \newcommand{\code}[1]{\texttt{#1}}
+\mdfdefinestyle{MyFrame}{
+    backgroundcolor=light-gray
+}
 \newcommand{\snippet}[3]{
-    \mdfdefinestyle{MyFrame}{
-        backgroundcolor=light-gray
-    }
     \begin{center}
         \begin{mdframed}[style=MyFrame]
             \inputminted[tabsize=2,breaklines]{#2}{#1}
@@ -59,5 +60,6 @@
 \subfile{chapters/00 Introduction.tex}
 \subfile{chapters/01 Processes.tex}
 \subfile{chapters/02 CPU Scheduling.tex}
+\subfile{chapters/03 Synchronization.tex}
 
 \end{document}
