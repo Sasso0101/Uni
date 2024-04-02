@@ -21,7 +21,7 @@ This solution satisfies the three CS requirements:
 \begin{enumerate}
     \item Mutual exclusion is preserved (process $i$ enters CS only if: either flag[j] = false or turn = i)
     \item Progress requirement is satisfied
-    \item Bounded-waiting requirement is met (by using alternating turns )
+    \item Bounded-waiting requirement is met (because of alternating turns)
 \end{enumerate}
 
 Although Peterson's process is theoretically perfect, modern compilers and architectures perform various optimizations on the code. One of them is to change the order in which instructions are executed if they detect that it does not change the logic of the individual process. Therefore the \code{flag[i] = false} statement is not guaranteed to be executed exactly at the end of the critical section, thus breaking the synchronization mechanism.
@@ -32,5 +32,55 @@ This can be fixed by using memory barriers. When a memory barrier instruction is
 Many systems provide hardware support for implementing the critical section code. Special hardware instructions that allow us to either test-and-modify the content of a word, or to swap the contents of two words atomically.
 
 \subsection{Test and set instruction}
-To access a critical section processes have to first call the \code{test_and_set()} instruction. This instruction must be non-interruptible.
+To access a critical section processes have to first call the \code{test_and_set()} instruction. This instruction must be non-interruptible (i.e. it has to be executed atomically).
 \snippet{code/03chapter/test_and_set.c}{c}{Implementation of the \code{test_and_set()} function}
+This solution satisfies mutual exclusion and progress, but it does not satisfy the bounded waiting requirement, because there is no mechanism that ensures that a process that requested access will enter the critical section.
+
+\subsection{Compare and swap instruction}
+The \code{compare_and_swap()} function must be executed atomically (for example it must be non-interruptible). When used with the lock it ensures that nobody else is reading or modifying the lock when it is executing.
+
+To access a critical section processes have to first call the \code{compare_and_swap()} instruction on the lock and check if it is their turn. Then they will give the lock to the next process in line or release the lock. 
+\snippet{code/03chapter/compare_and_swap.c}{c}{Implementation of the \code{compare_and_swap()} function}
+This solution satisfies all requirements for the critical section.
+
+The \code{lock} variable from the previous example is an example of an \bold{atomic variable}, i.e. a variable whose value changes atomically (non-interruptible).
+
+\section{Software solutions}
+Previous solutions are complicated and generally inaccessible to application programmers. In this section some software solutions will be shown, under the assumption that the programmer has access to some atomic functions.
+
+\subsection{Mutex locks}
+A simple solution for solving the critical section problem in software is using a mutex lock. A mutex lock is a boolean variable indicating if lock is available or not. When a process wants to access a critical section, it tries to acquire the lock and waits until it is able to do so using the \code{acquire()} atomic function. Then, it releases it when it is done executing using the \code{release()} atomic function. This solution requires busy waiting (this lock therefore called a spinlock), which is undesirable.
+
+\subsection{Semaphore}
+Semaphores are similar to semaphores, but can be also generalized to more than one process. Let \code{S} be an integer variable. When a process wants to enter its critical section, it calls the \code{wait(S)} atomic function, which will wait until the \code{S} variable is one. Then it will decrement it back to zero and let the process execute its critical section. After the process has finished executing its critical section it will call the \code{signal(S)} atomic function. This function will increment \code{S}, thus signalling to the next process that it can execute. This solution is also affected by the busy waiting problem.
+
+\subsection{Semaphore without busy wait}
+Semaphores can be used to solve the busy waiting problem. This can be done by making the variable \code{S} a queue of processes that wish to execute their critical section. Processes are added to the queue using the \code{block()} atomic function. Now the \code{wait()} function will just call the \code{block()} function, thus avoiding busy waiting. The next process in the queue is executed by calling the \code{wakeup()} function. Therefore the \code{signal()} function will call the \code{wakeup()} function.
+
+\subsection{Monitors}
+Monitors are structures that abstracts synchronization and exposes to the programmer a set of functions to access the data that the monitor holds. 
+The monitor structure supports condition variables: these variables have a \code{x.wait()} method, which suspends the code of that process until the \code{x.signal()} method is called.
+
+\image{images/Monitor.png}{12cm}{Monitor with condition variables}
+
+Monitors can be implemented using semaphores and mutex.
+
+\subsubsection{Resource allocator}
+The resource allocator is an example of a monitor. Assume that a single resource has to be shared among multiple processes with different priorities. This can be implemented using a monitor structure implementing an \code{acquire()} and \code{release()} procedure. The \code{x.wait(c)} is a \italics{conditional-wait} function, where $c$ is the priority. When \code{x.signal()} is called, the process with the lowest priority number will be executed.
+\snippet{code/03chapter/monitor.c}{c}{Monitor for resource allocator}
+
+\section{Liveness and deadlock}
+\bold{Liveness} refers to a set of properties that a system must satisfy to ensure processes make progress. Indefinite waiting is an example of a liveness failure.
+
+\bold{Deadlock} is a situation where two or more processes are waiting indefinitely for an event that can be caused by only one of the waiting processes.
+
+Deadlock happens in the following scenarios:
+\begin{itemize}
+    \item When two processes are waiting for each other
+    \item Starvation: a process may never be removed from the semaphore queue in which it is suspended
+    \item Priority inversion: scheduling problem when lower-priority process holds a lock needed by higher-priority process
+\end{itemize}
+
+% \begin{quote}
+% A fool with a tool is still a fool.
+% \end{quote}
