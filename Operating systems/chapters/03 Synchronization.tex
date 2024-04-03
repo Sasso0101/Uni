@@ -78,8 +78,37 @@ Deadlock happens in the following scenarios:
 \begin{itemize}
     \item When two processes are waiting for each other
     \item Starvation: a process may never be removed from the semaphore queue in which it is suspended
-    \item Priority inversion: scheduling problem when lower-priority process holds a lock needed by higher-priority process
+    \item Priority inversion: scheduling problem when lower-priority process holds a lock needed by higher-priority processes. The solution to this problem is that when a task blocks one or more higher-priority tasks, it ignores its original priority assignment and executes its critical section at the highest priority level of all the tasks it blocks
 \end{itemize}
+
+\section{Well-known synchronization problems}
+In the literature there are some well known synchronization problems which have been solved already, namely:
+\begin{itemize}
+    \item Bounded buffer problem
+    \item Readers-writers problem
+\end{itemize}
+
+\subsection{Bounded buffer problem}
+A bounded buffer lets multiple producers and multiple consumers share a single buffer. Producers write data to the beginning of the buffer, while consumers read data from the end of the buffer. Producers must stop pushing data if the buffer is full, and consumers must stop if the buffer is empty.
+
+\image{images/Bounded buffer.png}{12cm}{Bounded buffer with capacity $n$}
+\snippet{code/03chapter/bounded_buffer.c}{c}{Solution for bounded buffer problem}
+
+\subsection{Readers-writers problem}
+A data set is shared among a number of concurrent processes: some processes are only readers, others can read and write. The problem to be solved is to allow multiple readers to read at the same time, but allowing only one writer to write at the same time.
+
+\image{images/Readers writers.png}{12cm}{Readers-writers problem}
+
+\snippet{code/03chapter/readers_writers.c}{c}{Solution for readers-writers problem}
+
+\subsection{Dining philosophers}
+N philosophers sit at a round table. Each has one chopstick on the left and one on the right and a bowl of rice. Each philosopher can only alternately think and eat. Occasionally they try to pick up two chopsticks (one at a time) to eat from the bowl (need both to eat, then release both when done). 
+
+The problem is how to design a concurrent algorithm such that any philosopher will not starve; i.e., each can forever continue to alternate between eating and thinking.
+
+Note that if each philosopher takes a chopstick at the same time, then they will wait indefinitely for the other one and no one will eat, thus creating a deadlock.
+
+\image{images/Philosophers.png}{6cm}{Philosophers' problem}
 
 % \begin{quote}
 % A fool with a tool is still a fool.
