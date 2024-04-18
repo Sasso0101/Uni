@@ -113,3 +113,39 @@ Note that if each philosopher takes a chopstick at the same time, then they will
 % \begin{quote}
 % A fool with a tool is still a fool.
 % \end{quote}
+
+\section{Deadlock}
+A deadlock can happen if the following conditions hold:
+\begin{itemize}
+    \item Mutual exclusion: only one thread at a time can use the resource
+    \item Hold and wait: a thread holding one resource is waiting to acquire additional resources held by other threads
+    \item No preemption: a resource can be freed only voluntarily by the thread holding it
+    \item Circular wait: in a set of threads $\{T_0, T_1, T_2, \dots , T_n\}$, thread $T_0$ is waiting for $T_1$, $T_1$ is waiting for $T_2$, $T_{n-1}$ is waiting for $T_n$ and $T_n$ is waiting for $T_0$
+\end{itemize}
+
+\subsection{Resource allocation graph}
+Deadlocks can be represented using oriented graphs, called resource allocation graphs. Let the set of vertices $V$ be of two types:
+\begin{itemize}
+    \item $\{T_1, T_2, \dots, T_n\}$ the set of threads
+    \item $\{R_1, R_2, \dots, R_n\}$ the set of resources
+\end{itemize}
+The request edges are denoted by $T_i \rightarrow R_j$ and the assignment edges are denoted by $R_j \rightarrow T_i$.
+
+A deadlock happens if there are cycles in the graph and all resource instances of the cycles are inside a cycle.
+
+\image{images/Deadlock.png}{4cm}{Resource allocation graph with deadlock}
+
+\subsection{Deadlock prevention}
+Deadlock can be prevented by avoiding one of the necessary conditions for deadlock.
+\begin{itemize}
+    \item Mutual exclusion: not feasible to not require it, must hold if there are non-sharable resources (such as when writing to files)
+    \item Hold and wait: must guarantee that whenever a thread requests a resource, it does not hold any other resources. The cons of this solution are low resource utilization and possibility of Starvation
+    \item No preemption
+    \item Circular wait (solutions implemented in OSs): to avoid circular wait an order can be given to the resources. If a process wants to access two or more resources, it need to first obtain access to the resource with the lower index
+\end{itemize}
+
+\subsection{Deadlock avoidance}
+Deadlock can be avoided if the system knows which resources threads want to access. Then they can execute an algorithm that detects possible deadlocks and prevents them before they happen. This technique is feasible in real-time operating systems, where tasks have to be allocated in advance for schedulability evaluation.
+
+\section{Thread-safe states}
+A state is safe if the system can allocate resources to the various processes in some particular order and avoid deadlock in doing so. An unsafe state is a state that may lead to deadlock. Not all unsafe states are actual deadlock.
