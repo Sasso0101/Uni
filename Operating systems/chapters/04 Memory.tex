@@ -1,19 +1,51 @@
-\chapter{Memory management and IO}
+\chapter{Memory management}
 
 The CPU can access only data that is located inside the main memory (RAM). Therefore processes need to be copied from the disk into main memory. Then, the process uses registers to perform its tasks. Temporary data can be stored in cache registers, that are larger in size than CPU registers, but are slower.
 
 \image{images/Memory hierarchy.png}{12cm}{Memory hierarchy}
 
-The OS needs to ensure that a process can access only those addresses in its address space. To do so the OS keeps track of the starting and ending address (or offset) that the process is able to access. Some dedicated hardware in the CPU then uses this information to checks if the accesses to memory are legitimate.
+\section{Dynamic loading}
+Programs don't have to be fully copied to memory, but can be loaded dynamically. This process is called linking. This is especially useful when using external libraries: to use a library a program does not have to have it embedded in its code (static linking), but it can use the ones provided by the operating system, usually referred to as shared libraries.
 
 \section{Logical and physical address space}
-Memories are complicated systems: for example, they are composed of multiple banks of memory chips. Therefore numbering and accessing a specific position in memory is not straightforward. This complexity is hidden to the user by the introduction of logical (or virtual) addresses. Then, there is a special hardware component called MMU (Memory management unit) that maps these logical addresses to real physical addresses.
+The addresses used by the RAM chips are called physical addresses. In primitive computing devices, the address a programmer/processor use is the actual address, but modern memories are complicated: for example, they are composed of multiple banks of memory chips. Therefore numbering and accessing a specific position in memory is not straightforward. In advanced computers, the processor operates in a separate address space, called logical address, or virtual address. A Memory Management Unit (MMU) is used to map logical addresses to physical addresses.
 
-\section{Dynamic loading}
-Programs don't have to be fully copied to memory, but can be loaded dynamically. This process is called linking. This is especially useful when using external libraries: to use a library a program does not have to have it embedded in its code (static linking), but can use the ones provided by the operating system, called shared libraries.
+\imageside{images/Dynamic relocation.png}{7cm}{Memory view}{images/Relocation hardware.png}{7cm}{Relocation register inside MMU}{Dynamic relocation}
 
-\subsection{Fragmentation}
-When programs get loaded and unloaded from memory they create "holes". This phenomenon is called fragmentation and can be mitigated by using smart algorithms to choose where to load new programs or by running a tool that compacts the programs and places them contiguously. This process is slow and very IO intensive.
+\section{Hardware access protection}
+The OS needs to ensure that a process can access only those addresses in its address space. A simple way to protect memory is using a relocation and limit register. When the OS allocates one contiguous span of primary memory to a process P, it stores the lowest address allocated to P in the relocation register. The limit register contains the number of bytes in the allocation. Using the values in the relocation and limit registers, hardware checks every address generated in user mode. Any attempt in user mode to access memory out of bounds results in a trap. Changing relocation or limit registers are privileged instructions.
+
+\image{images/Memory control.png}{12cm}{Hardware access protection}
+
+\section{Contiguous Allocation}
+Main memory is usually divided into two partitions:
+\begin{itemize}
+    \item Resident operating system, usually with low memory address
+    \item User processes, with high memory addresses
+\end{itemize}
+When programs are loaded and unloaded from memory they create "holes". This phenomenon is called fragmentation and can be mitigated by using smart algorithms to choose where to load new programs or by running a tool that periodically shuffles the location of programs in memory and places them contiguously (compaction). The downside of this process is that it is slow and very IO intensive.
+
+\image{images/Fragmentation.png}{8cm}{Fragmentation}
 
 \subsection{Paging and TLB}
-The fragmentation problem can be solved by allowing programs to be split into multiple segments. Logical memory is divided into blocks of same size called pages. Also physical memory is divided into fixed-sized blocks. Then a table is maintained to translate logical addresses to physical addresses.
+The fragmentation problem can be solved by allowing programs to be split into multiple segments. The program's logical memory is divided into blocks of same size called pages. Also physical memory is divided into same sized blocks. Then a table is maintained to translate logical addresses to physical addresses.
+
+\image{images/Paging.png}{8cm}{Paging}
+
+Each address generated by CPU is divided into:
+\begin{itemize}
+    \item Page number (p) - used as an index into a page table which contains base address of each page in physical memory
+    \item Page offset (d) - combined with base address to define the physical memory address that is sent to the memory unit
+\end{itemize}
+
+\image{images/Paging hardware.png}{12cm}{Paging hardware}
+\image{images/Paging example.png}{7cm}{Paging example}
+
+The page table is kept in main memory. Two pointers are maintained:
+\begin{itemize}
+    \item Page-table base register (PTBR) points to the page table
+    \item Page-table length register (PRLR) indicates size of the page table
+\end{itemize}
+In this scheme every data/instruction access requires two memory accesses: one for the page table and one for the data/instruction. The two memory access problem can be solved by the use of a special fast-lookup hardware cache called translation look-aside buffers (TLBs). Usage of cache is justified because it exploits temporal locality of programs (the tendency of programs to use data items over and again during the course of their execution). TLBs store also address-space identifiers (ASIDs) in each TLB entry - uniquely identifies each process to provide address-space protection for that process.
+
+\image{images/Paging TLB.png}{8cm}{Paging with TLB}

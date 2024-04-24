@@ -1,6 +1,6 @@
 \documentclass[12pt]{book}
 \usepackage[english]{babel}
-\usepackage{amsmath,graphicx, float, enumitem, microtype, tgpagella, bookmark, fancyhdr, underscore, minted, emptypage, mdframed}
+\usepackage{amsmath,graphicx, float, enumitem, microtype, tgpagella, bookmark, fancyhdr, underscore, minted, emptypage, mdframed, subfig}
 \usemintedstyle{vs}
 \usepackage[a4paper, margin={2.5cm}]{geometry}
 \usepackage[hypcap=false, skip=0pt]{caption}
@@ -18,12 +18,20 @@
 \fancyhead[RO,LE]{\small \leftmark}
 
 \newcommand{\image}[3]{
-    \begin{center}
-        \vbox{
-            \includegraphics[width=#2]{#1}
-            \captionof{figure}{#3}
-        }
-    \end{center}
+    \begin{figure}[H]%
+        \centering
+        \includegraphics[width=#2]{#1}
+        \caption{#3}
+    \end{figure}
+}
+\newcommand{\imageside}[7] {
+    \begin{figure}[H]%
+        \centering
+        \subfloat[\centering #3]{{\includegraphics[width=#2]{#1} }}%
+        \qquad
+        \subfloat[\centering #6]{{\includegraphics[width=#5]{#4} }}%
+        \caption{#7}%
+    \end{figure}
 }
 \newcommand{\italics}[1]{\emph{#1}}
 \newcommand{\bold}[1]{\textbf{#1}}
