@@ -1,0 +1,19 @@
+\chapter{Memory management and IO}
+
+The CPU can access only data that is located inside the main memory (RAM). Therefore processes need to be copied from the disk into main memory. Then, the process uses registers to perform its tasks. Temporary data can be stored in cache registers, that are larger in size than CPU registers, but are slower.
+
+\image{images/Memory hierarchy.png}{12cm}{Memory hierarchy}
+
+The OS needs to ensure that a process can access only those addresses in its address space. To do so the OS keeps track of the starting and ending address (or offset) that the process is able to access. Some dedicated hardware in the CPU then uses this information to checks if the accesses to memory are legitimate.
+
+\section{Logical and physical address space}
+Memories are complicated systems: for example, they are composed of multiple banks of memory chips. Therefore numbering and accessing a specific position in memory is not straightforward. This complexity is hidden to the user by the introduction of logical (or virtual) addresses. Then, there is a special hardware component called MMU (Memory management unit) that maps these logical addresses to real physical addresses.
+
+\section{Dynamic loading}
+Programs don't have to be fully copied to memory, but can be loaded dynamically. This process is called linking. This is especially useful when using external libraries: to use a library a program does not have to have it embedded in its code (static linking), but can use the ones provided by the operating system, called shared libraries.
+
+\subsection{Fragmentation}
+When programs get loaded and unloaded from memory they create "holes". This phenomenon is called fragmentation and can be mitigated by using smart algorithms to choose where to load new programs or by running a tool that compacts the programs and places them contiguously. This process is slow and very IO intensive.
+
+\subsection{Paging and TLB}
+The fragmentation problem can be solved by allowing programs to be split into multiple segments. Logical memory is divided into blocks of same size called pages. Also physical memory is divided into fixed-sized blocks. Then a table is maintained to translate logical addresses to physical addresses.
