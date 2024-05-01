@@ -1,4 +1,4 @@
-\chapter{Synchronization}
+\chapter{Process synchronization}
 
 In modern operating systems processes can run concurrently. Although concurrency allows to achieve very high performance, it introduces some problems that need to be managed.
 
@@ -11,6 +11,8 @@ A solution to the critical section problem must satisfy the following requiremen
     \item Progress: if no process is executing its critical section, then a process that want to execute its critical section should be able to do so
     \item Bounded waiting: a bound must exist on the number of times that other processes are allowed to enter their critical sections after a process has made a request to enter its critical section and before that request is granted (note that this does not imply anything on the time a process stays in its critical section)
 \end{enumerate}
+
+\bold{Liveness} refers to a set of properties that a system must satisfy to ensure processes make progress. Indefinite waiting is an example of a liveness failure.
 
 \subsection{Peterson's solution}
 The Peterson's solution applies to single-core processor and with $n$ processes. The processes share two variables: \code{int turn} and \code{boolean flag[n]}. The \code{turn} variable indicates whose turn it is to enter the critical section. The \code{flag} array is used to indicate if a process is ready to enter the critical section.
@@ -69,24 +71,8 @@ Monitors can be implemented using semaphores and mutex.
 The resource allocator is an example of a monitor. Assume that a single resource has to be shared among multiple processes with different priorities. This can be implemented using a monitor structure implementing an \code{acquire()} and \code{release()} procedure. The \code{x.wait(c)} is a \italics{conditional-wait} function, where $c$ is the priority. When \code{x.signal()} is called, the process with the lowest priority number will be executed.
 \snippet{code/03chapter/monitor.c}{c}{Monitor for resource allocator}
 
-\section{Liveness and deadlock}
-\bold{Liveness} refers to a set of properties that a system must satisfy to ensure processes make progress. Indefinite waiting is an example of a liveness failure.
-
-\bold{Deadlock} is a situation where two or more processes are waiting indefinitely for an event that can be caused by only one of the waiting processes.
-
-Deadlock happens in the following scenarios:
-\begin{itemize}
-    \item When two processes are waiting for each other
-    \item Starvation: a process may never be removed from the semaphore queue in which it is suspended
-    \item Priority inversion: scheduling problem when lower-priority process holds a lock needed by higher-priority processes. The solution to this problem is that when a task blocks one or more higher-priority tasks, it ignores its original priority assignment and executes its critical section at the highest priority level of all the tasks it blocks
-\end{itemize}
-
 \section{Well-known synchronization problems}
-In the literature there are some well known synchronization problems which have been solved already, namely:
-\begin{itemize}
-    \item Bounded buffer problem
-    \item Readers-writers problem
-\end{itemize}
+In the literature there are some well known synchronization problems which have been solved already, namely the bounded buffer problem, the readers-writers problem and the dining philosophers problem.
 
 \subsection{Bounded buffer problem}
 A bounded buffer lets multiple producers and multiple consumers share a single buffer. Producers write data to the beginning of the buffer, while consumers read data from the end of the buffer. Producers must stop pushing data if the buffer is full, and consumers must stop if the buffer is empty.
@@ -115,6 +101,8 @@ Note that if each philosopher takes a chopstick at the same time, then they will
 % \end{quote}
 
 \section{Deadlock}
+Deadlock is a situation where two or more processes are waiting indefinitely for an event that can be caused by only one of the waiting processes.
+
 A deadlock can happen if the following conditions hold:
 \begin{itemize}
     \item Mutual exclusion: only one thread at a time can use the resource

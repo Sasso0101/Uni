@@ -5,7 +5,10 @@ The CPU can access only data that is located inside the main memory (RAM). There
 \image{images/Memory hierarchy.png}{12cm}{Memory hierarchy}
 
 \section{Dynamic loading}
-Programs don't have to be fully copied to memory, but can be loaded dynamically. This process is called linking. This is especially useful when using external libraries: to use a library a program does not have to have it embedded in its code (static linking), but it can use the ones provided by the operating system, usually referred to as shared libraries.
+Programs don't have to be fully copied to memory to be executed. With dynamic loading, routines (parts of a program) are not loaded until they are called.
+
+\section{Static and dynamic linking}
+Programs can use external libraries in two ways: static or dynamic linking. In static linking system libraries and program code is combined by the loader into the binary program image at compile-time. In dynamic linking, the program uses the libraries provided by the operating system, called shared libraries or DLLs (Dynamically linked libraries). It does so by postponing the linking of libraries until execution time, so when the program calls a function of a library, the OS will locate it and communicate the address to the program.
 
 \section{Logical and physical address space}
 The addresses used by the RAM chips are called physical addresses. In primitive computing devices, the address a programmer/processor use is the actual address, but modern memories are complicated: for example, they are composed of multiple banks of memory chips. Therefore numbering and accessing a specific position in memory is not straightforward. In advanced computers, the processor operates in a separate address space, called logical address, or virtual address. A Memory Management Unit (MMU) is used to map logical addresses to physical addresses.
@@ -27,7 +30,7 @@ When programs are loaded and unloaded from memory they create "holes". This phen
 
 \image{images/Fragmentation.png}{8cm}{Fragmentation}
 
-\subsection{Paging and TLB}
+\section{Paging and TLB}
 The fragmentation problem can be solved by allowing programs to be split into multiple segments. The program's logical memory is divided into blocks of same size called pages. Also physical memory is divided into same sized blocks. Then a table is maintained to translate logical addresses to physical addresses.
 
 \image{images/Paging.png}{8cm}{Paging}
@@ -46,6 +49,56 @@ The page table is kept in main memory. Two pointers are maintained:
     \item Page-table base register (PTBR) points to the page table
     \item Page-table length register (PRLR) indicates size of the page table
 \end{itemize}
-In this scheme every data/instruction access requires two memory accesses: one for the page table and one for the data/instruction. The two memory access problem can be solved by the use of a special fast-lookup hardware cache called translation look-aside buffers (TLBs). Usage of cache is justified because it exploits temporal locality of programs (the tendency of programs to use data items over and again during the course of their execution). TLBs store also address-space identifiers (ASIDs) in each TLB entry - uniquely identifies each process to provide address-space protection for that process.
+In this scheme every data/instruction access requires two memory accesses: one for the page table and one for the data/instruction. The lookup time can be improved by using a cache, which contains a table called translation look-aside buffer (TLB). Usage of cache is justified because it exploits temporal locality of programs (the tendency of programs to use data items over and again during the course of their execution). Each TLB entry stores also address-space identifiers (ASIDs), which stores which process owns that entry for address-space protection.
 
 \image{images/Paging TLB.png}{8cm}{Paging with TLB}
+
+\section{Page faults}
+
+Pages in the virtual memory space can be stored as frames in the physical memory or disks. Pages are brought into memory only when they are needed. In the page table each entry has a valid-invalid bit, which tells if the page is in memory or not. A \bold{page fault} happens a page is not in main memory.
+
+\image{images/Virtual memory.png}{9cm}{Virtual memory}
+
+When a page fault happens, the operating system will look for an unoccupied frame in memory, copy the page from disk to memory and set the bit in the page table to valid.
+
+Most operating systems maintain a free-frame list to quickly find a free frame. When a system starts up, all available memory is placed on the free-frame list.
+
+\subsection{Cost of a page fault}
+
+Let $p$ be the probability of page faults (where $p=0$ means there are no page faults and $p=1$ means that every access is a page fault), then the effective access time is
+$$ \text{EAT}=(1-p)\cdot\text{memory access time} + p\cdot\text{page fault overhead} $$
+Usually memory access time is around $200\mu s$ and page fault overhead is $8 ms$.
+
+\subsection{Page replacement algorithms}
+
+If there is not enough space in memory, a page will be removed of memory with a procedure called page replacement. There are various algorithms for page replacements: FIFO, optimal, least recently used (LRU), most recently used (MRU), second chance.
+
+\subsubsection{First-in first-out}
+The first page that was brought into memory will be the one swapped first. This algorithm is not optimal and may exhibit Belady's Anomaly: more frames are supposed to produce less page faults, but this is not commonly true with FIFO. For example, let be given the sequence of frames 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5. A memory that holds four frames will produce more faults than a memory with three frames.
+
+\subsubsection{Optimal replacement}
+If we know the sequence of the next pages that will be used, the page that won't be used for the longest time will be removed first. Of course it is impossible to know the future, so this algorithm is impossible to implement. Nonetheless it can be used as a benchmark for other algorithms, since it is the optimal solution.
+
+\subsubsection{Least frequently used (LFU) algorithm}
+The operating system will replace the page that has not been used for the longest amount of time. This algorithm can be implemented by storing the current timestamp for each page when it gets accessed. The page with the lowest timestamp will be the one removed. This algorithm can be implemented also using a doubly linked list: every time a page is accessed it will be moved to the top of the list. The page at the bottom of the list will be the one removed.
+
+There exists also a variant called most frequently used algorithm, which purges the most frequently used page first. It is based on the argument that the page with the smallest count was probably just brought in and has yet to be used.
+
+\subsubsection{Approximated LFU}
+Each page has an has an associated reference bit, initially set to zero. When the page is referenced, the bit is set to one. The pages with the bits set to zero will be the one replaced.
+
+\subsubsection{Second chance algorithm}
+Pages are stored in a LIFO queue, but have an additional reference bit. When a page gets loaded, it has the reference bit set to one. Then, when a page needs to be loaded, a scanner will go through the queue and flip the reference bit to zero. If it finds a page with the reference bit already set to zero, it will remove that page.
+
+\subsubsection{Counting algorithms}
+In counting algorithms the OS keeps a counter of the number of references that have been made to each page. Then, depending on the algorithm chosen (least frequently used or most frequently used), the page with the smallest count or the largest count will be removed.
+
+\section{Allocation of frames to processes}
+Each process needs a minimum number of frames to be able to work without too many page faults. There are various algorithms to allocate frames to processes, the simplest ones are equal allocation and proportional allocation. In equal allocation each process gets the same amount of frames. In proportional allocation, each process gets a number of frames proportional to its size.
+
+With multiple processes competing for frames, we can classify page-replacement algorithms into two broad categories: global replacement and local replacement. Global replacement allows a process to select a replacement frame from the set of all frames, even if that frame is currently allocated to some other process. Local replacement requires that each process select from only its own set of allocated frames.
+
+A global replacement algorithm can be one that starts to remove pages when the number of free memory goes below a certain threshold. The kernel process that manages it is called reaper. This strategy can be applied to any of the algorithms seen previously.
+
+\section{Thrashing}
+If a process does not have enough frames to perform to perform its operations, the page-fault rate is very high. This high paging activity is called thrashing and leads to low CPU utilization and might induce the OS to spawn more processes, which worsen the situation. The problem can be solved by monitoring the page-fault frequency for every process. If the frequency is low, the process will lose a frame, while if it is too high the process will gain one frame.
