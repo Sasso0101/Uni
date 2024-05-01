@@ -15,7 +15,8 @@
 \pagestyle{fancy}
 \fancyhf{}
 \setlength{\headheight}{20pt}
-\fancyhead[RO,LE]{\small \leftmark}
+\fancyhead[LE,RO]{\small \leftmark}
+\fancyfoot[LE,RO]{\thepage}
 
 \newcommand{\image}[3]{
     \begin{figure}[H]%
@@ -47,6 +48,13 @@
         \captionof{listing}{#3}
     \end{center}
 }
+
+\makeatletter
+% don't use roman numbers in the front matter
+\renewcommand{\frontmatter}{\cleardoublepage\@mainmatterfalse\pagenumbering{arabic}}
+% don't reset page numbering at \mainmatter
+\renewcommand{\mainmatter}{\cleardoublepage\@mainmattertrue}
+\makeatother
 
 \begin{document}
 
