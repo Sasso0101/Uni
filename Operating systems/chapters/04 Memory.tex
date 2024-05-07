@@ -101,4 +101,30 @@ With multiple processes competing for frames, we can classify page-replacement a
 A global replacement algorithm can be one that starts to remove pages when the number of free memory goes below a certain threshold. The kernel process that manages it is called reaper. This strategy can be applied to any of the algorithms seen previously.
 
 \section{Thrashing}
-If a process does not have enough frames to perform to perform its operations, the page-fault rate is very high. This high paging activity is called thrashing and leads to low CPU utilization and might induce the OS to spawn more processes, which worsen the situation. The problem can be solved by monitoring the page-fault frequency for every process. If the frequency is low, the process will lose a frame, while if it is too high the process will gain one frame.
+If a process does not have enough frames to perform to perform its operations, the page-fault rate becomes very high. This high paging activity is called thrashing and leads to low CPU utilization and might induce the OS to spawn more processes, which worsen the situation. The problem can be solved by monitoring the page-fault frequency for every process. If the frequency is low, the process will lose a frame, while if it is too high the process will gain one frame.
+
+\section{Swapping}
+A process can be swapped temporarily out of memory to a backing store, and then brought back into memory when execution is resumed.
+
+Swapping can increase dramatically the time for the context switch. For example, if a 100MB process is swapped to hard disk with transfer rate of 50MB/sec, the swap out time of 2 seconds and additionally the swap in time for the new process is 2 more seconds.
+
+\section{Management of the page table}
+The page table can be very big for large memories. For example, if each page table addresses 4KB of memory and the memory is 4GB big ($\approx 2^32$), then the page table would contain one million entries. Given that each process may use any number of pages, if each entry is 4 bytes, then the page table for each process is 4 MB big. Since it is very unlikely that a single process would use the whole memory, the page table can be stored in more efficient data structures, at the tradeoff of speed.
+
+\subsection{Hierarchical page tables}
+The page table can be broken into multiple pieces, and a quick lookup table can be maintained to access the various pieces of the page table. The time complexity for accessing a page is $O(logn)$, with respect to the constant complexity $O(1)$ of the basic table approach.
+
+\image{images/Hierarchical page table.png}{8cm}{Hierarchical page table}
+
+\subsection{Hashed page tables}
+Another possible data structure is the hash table. In case of collisions a linked list is maintained. In case of no collisions, the time complexity of this data structure is again $O(1)$.
+
+\image{images/Hashed page table.png}{8cm}{Hashed page table}
+
+\subsection{Inverted page table}
+Rather than each process having a page table and keeping track of all possible logical pages, track all physical pages in a single table. Each entry consists of the virtual address of the page stored in that real memory location, with information about the process that owns that page.
+
+\section{Segmentation}
+Using pages of fixed sizes opens the problem of internal fragmentation. This problem can be solved by dividing a process in multiple variable-sized pages, called segments. The segment table stores the information about all such segments, namely the base address and the limit (length).
+
+\image{images/Segmentation.png}{10cm}{Segmentation}
