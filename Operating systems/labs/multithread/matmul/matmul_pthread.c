@@ -5,7 +5,7 @@
 #include <sys/time.h>
 
 struct thread_params {
-    int* m1, *m2;
+    int *m1, *m2;
     int min_index, max_index, size;
     int* pipe;
 };
@@ -19,9 +19,7 @@ void generate_matrix(int *matrix, int size) {
     for(int i = 0; i < size; i++) {
         for(int j = 0; j < size; j++) {
             *(matrix + i*size + j) = rand() % 10;
-            printf("%d ", *(matrix + i*size + j));
         }
-        printf("\n");
     }
 }
 
@@ -41,7 +39,6 @@ void* runner(void* params) {
     }
     struct result res = {.m1 = sum_m1, .m2 = sum_m2, .prod = sum_prod};
     write(*((par->pipe)+1), &res, sizeof(struct result));
-    printf("sent %d %d %d\n", sum_m1, sum_m2, sum_prod);
     pthread_exit(0);
 }
 
@@ -80,6 +77,7 @@ int main(int argc, char *argv[]) {
 
     int pipes[n_processes][2];
     int indices[n_processes][2];
+    struct thread_params params[n_processes];
     partition_indices(size, n_processes, (int*)indices);
     
     for (int i = 0; i < n_processes; i++) {
@@ -87,7 +85,7 @@ int main(int argc, char *argv[]) {
         pthread_attr_t attr;
         pipe(pipes[i]);
         pthread_attr_init(&attr);
-        struct thread_params params = {
+        params[i] = (struct thread_params){
             .m1 = (int*) matrix1,
             .m2 = (int*) matrix2,
             .min_index = indices[i][0],
@@ -95,19 +93,16 @@ int main(int argc, char *argv[]) {
             .size = size,
             .pipe = pipes[i]
         };
-        pthread_create(&tid, &attr, runner, (void*)&params);
-        printf("created thread %d (from %d to %d)\n", i, indices[i][0], indices[i][1]);
+        pthread_create(&tid, NULL, runner, (void*)&params[i]);
     }
 
     int sum_m1 = 0, sum_m2 = 0, sum_prod = 0;
     for (int i = 0; i < n_processes; i++) {
         struct result res;
-        printf("waiting for %d\n", i);
         read(pipes[i][0], &res, sizeof(struct result));
         sum_m1 += res.m1;
         sum_m2 += res.m2;
         sum_prod += res.prod;
-        printf("received from %d %d %d %d\n", i, res.m1, res.m2, res.prod);
 	}
     
     // print timings

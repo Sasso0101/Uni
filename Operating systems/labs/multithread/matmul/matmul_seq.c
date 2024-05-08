@@ -1,9 +1,3 @@
-/*
- * Modified from 
- *
- * https://github.com/mkitzan/pthread-exercises/blob/master/matmul.c
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>  
@@ -57,7 +51,7 @@ int main(int argc, char *argv[]) {
     gettimeofday(&tv2, NULL);
     double cpu_time_used = (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + (double) (tv2.tv_sec - tv1.tv_sec);
     printf("Sum m1: %d, Sum m2: %d, Sum m1xm2: %d\n", sum_m1, sum_m2, sum_prod);
-    printf("Elapsed time with %dx%d matrix shape, sequential, took %.3f secs\n", N, N, cpu_time_used);
+    printf("Elapsed time with %dx%d matrix shape: %.3f secs\n", N, N, cpu_time_used);
     
     return 0;
 }
