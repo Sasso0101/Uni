@@ -128,3 +128,39 @@ Rather than each process having a page table and keeping track of all possible l
 Using pages of fixed sizes opens the problem of internal fragmentation. This problem can be solved by dividing a process in multiple variable-sized pages, called segments. The segment table stores the information about all such segments, namely the base address and the limit (length).
 
 \image{images/Segmentation.png}{10cm}{Segmentation}
+
+\section{Mass storage systems}
+The most used devices for secondary storage in modern computers are hard disk drives (HDDs) and nonvolatile memory (NVM) devices.
+
+HDDs are made of spin platters of magnetically-coated material under moving read-write heads. Data is organized in sectors located in concentric tracks called cylinders. The access time to access a random sector is given by time to move the disk arm to the desired cylinder (seek time) and the time for desired sector to rotate under the disk head (rotational latency).
+
+\image{images/Hard drive machanism.png}{10cm}{Hard drive mechanism}
+
+The alternative to hard disks are nonvolatile memory devices, such as solid-state disks (SSD) or USB drives. They do not have mechanical parts, therefore they are more reliable to vibrations and impacts and faster. They are more expensive and are more complicated to manage. For example, the information stored can be erased only in chucks. There is also a limited amount of erasures, before the drive warns out. This complexity is managed by a NAND flash controller, which is attached to the memory and regulates access to the memory.
+
+\subsection{Scheduling}
+The latency time and the seek time of HDDs can be reduced by implementing smart algorithms that reorder the read and write requests to minimize the movements of the arm and the rotations of the platters. The basic algorithm, which does no optimization on the queue of requests, is the first-come first-served algorithm.
+
+The SCAN algorithm (or elevator algorithm) moves the arm at the end of the disk and moves towards the center. While moving it serves the requests received. The SCAN-C algorithm (C for circular) is an optimized version, that instead of servicing requests also on the trip back it jumps immediately to the center. The rationale is that it is very likely that there are no requests that need to be served immediately, since the head just passed on the outer sectors.
+
+\subsection{Storage device management}
+A disk is divided into different sectors. Each sector can hold header information, plus data, plus error correction code. The sector size can be changed by low-level formatting.
+
+A disk can be partitioned into one or more groups of cylinders, each treated as a logical disk. For each partition the operating system can then manage however it wants, usually using storing data in a data structure called filesystem. The operating system itself is stored in a boot partition, which is loaded into RAM at startup.
+
+\subsection{Network attached storage and cloud storage}
+Network-attached storage (NAS) is storage made available over a network rather than over a local channel. Usually it is implemented via remote procedure calls (RPCs) between host and storage over typically TCP or UDP on IP network. The user sees this storage as if it was a physical disk attached to the machine.
+
+Cloud storage also provides access to storage across a network, but unlike NAS, data is retrieved using API calls at a software level.
+
+\subsection{RAID}
+RAID (redundant array of inexpensive disks) is a technique to offer redundancy of data. To achieve this it creates copies of the same data across multiple disk drives. It can also improve the read and write speed by using a technique called striping, where data is written in parallel to a group of disks. RAID is arranged into six different levels:
+\begin{itemize}
+    \item Mirroring or shadowing (RAID 1) keeps duplicate of each
+    \item Striped mirrors (RAID 1+0) or mirrored stripes (RAID 0+1) provides high performance and high reliability
+    \item Block interleaved parity (RAID 4, 5, 6) uses much less redundancy
+\end{itemize}
+RAID within a storage array can still fail if the array fails, so automatic replication of the data between arrays is common. Frequently, a small number of hot-spare disks are left unallocated, automatically replacing a failed disk and having data rebuilt onto them.
+
+\section{Error correction and detection}
+Error detection and correction is a fundamental aspect for storage devices and is often implemented in the storage device controller itself. Error detection determines if a problem has occurred. Two such algorithms are parity bit and cyclic redundancy check (CRC). Error correcting codes (ECC) not only detect, but can also correct some errors.
