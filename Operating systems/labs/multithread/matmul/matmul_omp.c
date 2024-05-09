@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>  
+#include <omp.h>
 
 // C code that performs + - * of squared matrixes that are initialized randomly
 int main(int argc, char *argv[]) {
@@ -13,21 +14,20 @@ int main(int argc, char *argv[]) {
     int N = atoi(argv[1]);
     
     // Used vars
-    int i, j, k; 
     int matrix1[N][N];
     int matrix2[N][N];
     int sum_m1 = 0, sum_m2 = 0, sum_prod = 0;
     
     // seed values in operand matrixes
-    for(i = 0; i < N; i++) {
-        for(j = 0; j < N; j++) {
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
             matrix1[i][j] = rand() % 10;
         }
     }
-    for(i = 0; i < N; i++) {
-        for(j = 0; j < N; j++) {
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
             matrix2[i][j] = rand() % 10;
-       }
+        }
     }
     
     // getting start time
@@ -35,17 +35,18 @@ int main(int argc, char *argv[]) {
     gettimeofday(&tv1, NULL);
     
     // main computation
-    for(i = 0; i < N; i++) {
-        for(j = 0; j < N; j++) {
+    #pragma omp parallel for reduction(+:sum_prod,sum_m1,sum_m2)
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
             int res = 0;
-            for(k = 0; k < N; k++) {
+            for(int k = 0; k < N; k++) {
         	    res += matrix1[i][k] * matrix2[k][j];
             }
             sum_prod += res;
             sum_m1 += matrix1[i][j];
             sum_m2 += matrix2[i][j];
         }
-    }   
+    }
     
     // print timings 
     gettimeofday(&tv2, NULL);
