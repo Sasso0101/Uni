@@ -18,7 +18,7 @@ architecture rtl of counter_tb is
     end component;
 
     signal clk : std_logic := '0';
-    signal res : std_logic := '0';
+    signal reset : std_logic := '0';
     signal tc_1 : std_logic := '0';
     signal tc_2 : std_logic := '0';
 begin
@@ -28,7 +28,7 @@ begin
     )
     port map (
         clk => clk,
-        res => res,
+        reset => reset,
         tc => tc_1
     );
     counter_1: counter
@@ -37,7 +37,7 @@ begin
     )
     port map (
         clk => clk,
-        res => res,
+        reset => reset,
         tc => tc_2
     );
 
