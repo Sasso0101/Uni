@@ -8,14 +8,14 @@ entity counter is
   generic
   (
     -- Size of counter
-    counter_size  : natural   := 3
+    counter_size: natural := 3
   );
   port
   (
     -- System clock
     clk : in std_logic;
-    -- System reset (active low)
-    res : in std_logic;
+    -- System reset (active high)
+    reset : in std_logic;
     -- Terminal count
     tc: out std_logic
   );
@@ -24,9 +24,9 @@ end entity counter;
 architecture rtl of counter is
   signal count: unsigned (counter_size - 1 downto 0);
 begin
-  process ( clk, res )
+  process ( clk, reset )
   begin
-    if res = '1' then
+    if reset = '1' then
       count <= ( others => '1' );
     elsif rising_edge( clk ) then
       count <= count - 1;
