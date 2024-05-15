@@ -1,0 +1,32 @@
+\chapter{Filesystem}
+A file system is a structure used by an operating system to organize and manage files on a storage device.
+
+\section{Files}
+Files can be of many types: text files, source files, executable files etc. Depending on the implementation of the operating system, each file has some attributes assigned to it, namely:
+\begin{itemize}
+    \item Name: human-readable name
+    \item Identifier: unique ID inside the filesystem
+    \item Type: type of the file
+    \item Location: pointer to the file location in memory
+    \item Size: size of the file
+    \item Protection: defines who can write/read/execute the file
+    \item Other fields: time, date, user identification...
+\end{itemize}
+
+\subsection{Operations on files}
+A filesystem should support the following operations: create, write, read, seek, delete, truncate, open, close.
+
+\subsection{Writing}
+When a file is opened, the OS updates an "open file table", which tracks the files that are currently opened. The OS may offer the ability to lock a file, so that a process can earn the exclusive right to write to a file.
+
+\subsection{Reading}
+A file is fixed length logical record. Content stored in it can be accessed sequentially or by direct access. More advanced methods involve the creating of an index of the file for a faster lookup.
+
+\subsection{Memory-mapped files}
+Similar to processes, also files can be loaded in smaller chunks into memory. To achieve this, the files are mapped to an address range within a process's virtual address space, and then paged in as needed using the ordinary demand paging system. File writes are done to the memory page frames, and are not immediately written out to disk.
+
+\section{Disk and filesystems}
+The entity containing file system is known as a volume. A disk or partition can be used "raw", i.e. without a file system or formatted with a file system.
+
+\section{Directories}
+Directories are a collection of nodes, which contain information about files or point to other directories.
