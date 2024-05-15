@@ -30,8 +30,9 @@ begin
   begin
     if reset = '1' then
       count <= ( others => '1' );
+      tc <= '0';
     elsif rising_edge( clk ) then
-      if count_enable = '1'then
+      if count_enable = '1' then
         count <= count - 1;
         if count = 0 then
           tc <= '1';
