@@ -1,7 +1,12 @@
 \chapter{Filesystem}
 A file system is a structure used by an operating system to organize and manage files on a storage device.
 
-\section{Files}
+Filesystems can be divided into general-purpose filesystems and specialized filesystems. General-purpose filesystems are the ones generally used to hold user data, such as files, directories, programs etc. General purpose filesystems are used by the operating system to help it implement special tasks, such as IO management and daemon management.
+
+\section{Features of a filesystem}
+A filesystem should manage files, access control, synchronization and protect, provide a high level interface for programs to use and interface with the physical hardware.
+
+\subsection{Files}
 Files can be of many types: text files, source files, executable files etc. Depending on the implementation of the operating system, each file has some attributes assigned to it, namely:
 \begin{itemize}
     \item Name: human-readable name
@@ -13,20 +18,83 @@ Files can be of many types: text files, source files, executable files etc. Depe
     \item Other fields: time, date, user identification...
 \end{itemize}
 
-\subsection{Operations on files}
+\subsubsection{Operations on files}
 A filesystem should support the following operations: create, write, read, seek, delete, truncate, open, close.
 
-\subsection{Writing}
 When a file is opened, the OS updates an "open file table", which tracks the files that are currently opened. The OS may offer the ability to lock a file, so that a process can earn the exclusive right to write to a file.
 
-\subsection{Reading}
-A file is fixed length logical record. Content stored in it can be accessed sequentially or by direct access. More advanced methods involve the creating of an index of the file for a faster lookup.
+A file can be read sequentially or by direct access. More advanced methods involve the creating of an index of the file for a faster lookup.
 
 \subsection{Memory-mapped files}
 Similar to processes, also files can be loaded in smaller chunks into memory. To achieve this, the files are mapped to an address range within a process's virtual address space, and then paged in as needed using the ordinary demand paging system. File writes are done to the memory page frames, and are not immediately written out to disk.
 
-\section{Disk and filesystems}
-The entity containing file system is known as a volume. A disk or partition can be used "raw", i.e. without a file system or formatted with a file system.
+\subsection{Directories}
+Directories are a collection of nodes, which contain information about files or point to other directories. This implies that they create tree structures.
 
-\section{Directories}
-Directories are a collection of nodes, which contain information about files or point to other directories.
+Most filesystems support creating "virtual" files that point to other files, which are located in other directories. While doing this, the filesystem creates also a backpointer to the "virtual" file. In this way, when the original file is deleted, also all aliases can be tracked back and deleted, too. Another problem that  has to be avoided is creating cycles (ex. "virtual" file that points to another "virtual" file that points to it). This check can be done when a link is created, by using a cycle detection algorithm.
+
+\subsection{Protection}
+Filesystems should implement a protection mechanism, such that the file owner/creator should be able to control what can be done by other users. For example, the owner may restrict the following modes of access: read, write, execute, append, delete, list. In Unix there are three modes of access: read, write, execute. Moreover, there are three classes of users: owner, group, others.
+
+\section{Volumes}
+The entity containing file system is known as a volume. Each volume contains a volume control block (also known as superblock or master file table), which contains volume details, such as: total number of blocks, number of free blocks, block size and free block pointers or array.
+
+\section{File system implementation}
+A filesystem provides the user  an interface to the physical storage, creating a mapping between the logical layer to the physical hardware. A filesystems is usually implemented in layers. Layering useful for reducing complexity and redundancy, but adds overhead and can decrease performance.
+
+\image{images/Layered filesystem.png}{6cm}{Layered filesystem}
+
+\subsection{Filesystem layers}
+The device driver controls the devices by using commands, such as: read drive1, cylinder 72, track 2, sector 10, into memory location 1060. It outputs low-level hardware specific commands to hardware
+controller.
+
+The basic file system translates command like "retrieve block 123" to a command that can be interpreted by the device driver. It also manages memory buffers and caches (allocation, freeing, replacement). The file organization module translates logical block numbers to physical block numbers and manages free space and disk allocation. 
+
+The logical file system manages metadata information about files. This information is stored in a file control block (FCB). The FCB is called inode (index node) in Linux.
+
+The Linux inode contains the following information:
+\begin{itemize}
+    \item file type (regular file/directory/symbolic link/block special file/character special file/etc)
+    \item permissions
+    \item owner/group id
+    \item size
+    \item last accessed/modified time
+    \item number of hard links
+    \item memory position of the blocks composing the file
+\end{itemize}
+In Linux the items of the table are called file descriptors.
+
+\image{images/Linux inode.png}{7cm}{Linux inode}
+
+This is the layer to which programs talk to, using systems calls such as \code{open()}.
+
+\subsection{Directory implementation}
+A simple implementation of directories is using a linked list. This implementation is simple to program, but it is slow, since it has a linear search time. The lookup can be sped up by using a hash table to quickly find the position in memory.
+
+\image{images/Directory hash table.png}{10cm}{Directory implementation using list and hash table}
+
+\subsection{File allocation method}
+The allocation method refers to how disk blocks are allocated for files: contiguous allocation, linked allocation, allocation using a File Allocation Table (FAT), indexed allocation method.
+
+\subsubsection{Contiguous allocation method}
+Using contiguous allocation each file occupies set of contiguous blocks. This method is simple (requires no more information than the size of the file)  and has the best performance in most cases. The downside is that is prone to external fragmentation, thus requires frequent compaction (defragmentation).
+
+\image{images/Contiguous allocation.png}{6.5cm}{Contiguous allocation}
+
+\subsubsection{Linked allocation}
+In linked allocation each file is a linked list of blocks. The file ends at NULL pointer. This method does not have the problem of external fragmentation. The big problem of this allocation method is that locating a block takes many I/Os and disk seeks.
+
+\image{images/Linked allocation.png}{6.5cm}{Linked allocation}
+
+\subsubsection{FAT allocation method}
+In FATthe beginning of volume has a file allocation table, which holds the position in memory of each block. This greatly increases the speed of searching files. This allocation method still uses linked allocation for files, thus retaining also its advantages.
+
+\subsubsection{Indexed allocation method}
+In this allocation method each file has its own table of pointers to its data blocks.
+
+\image{images/Indexed allocation method.png}{6.5cm}{Indexed allocation method}
+
+\subsection{Free space management}
+To provide quick file creation, the filesystem maintains a list of available blocks. This table consumes some disk space. An alternative would be to store in each free memory location the pointer to the next free position. The  upside is that this method does not waste any space, but obtaining a contiguous space may require a long search. This can be improved by modifying the linked list to store the address of the next $n-1$ free blocks in first free block, plus a pointer to next block that contains free-block pointers.
+
+\image{images/Improved free space list.png}{6.5cm}{Improved free space linked list}
