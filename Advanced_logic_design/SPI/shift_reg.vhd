@@ -13,32 +13,33 @@ entity shift_reg is
     reset : in std_logic;
     -- Shift enable
     shift_enable : in std_logic;
-    -- Data to load
-    load_data : in std_logic_vector(7 downto 0);
-    -- Data in shift register
-    shift_data : out std_logic_vector(7 downto 0);
     -- Load enable
-    load_enable: in std_logic;
-    -- Data out
+    load_enable : in std_logic;
+    -- Parallel data input
+    parallel_in : in std_logic_vector(7 downto 0);
+    -- Data in shift register
+    data : out std_logic_vector(7 downto 0);
+    -- Serial data in
+    data_in: in std_logic;
+    -- Serial data out
     data_out: out std_logic
   );
 end entity shift_reg;
 
 architecture rtl of shift_reg is
 begin
-  process ( clk, reset )
+  process ( clk, reset, load_enable )
   begin
     if reset = '1' then
-      shift_data <= ( others => '0' );
       data_out <= '0';
+      data <= ( others => '0' );
     elsif rising_edge( clk ) then
-      data_out <= '0';
-      if load_enable = '1' then
-        shift_data <= load_data;
-      elsif shift_enable = '1' then
-        shift_data <= shift_data(shift_data'high - 1 downto shift_data'low) & '0';
-        data_out <= shift_data(shift_data'high);
+      if shift_enable = '1' then
+        data <= data(data'high - 1 downto data'low) & data_in;
+        data_out <= data(data'high);
       end if;
+    elsif load_enable = '1' then
+      data <= parallel_in;
     end if;
   end process;
 end architecture;
