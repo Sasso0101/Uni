@@ -20,6 +20,10 @@ architecture rtl of spi_master_tb is
   signal SS : std_logic := '0';
 begin
     spi_master_0: entity work.spi_master
+    generic map (
+      CPOL => '0',
+      CPHA => '0'
+    )
     port map (
         clk => clk,
         reset => reset,
@@ -39,13 +43,30 @@ begin
         reset <= '1';
         wait for 10 us;
         reset <= '0';
-        data <= "01001001";
+        data <= "10001001";
         load_data <= '1';
         wait for 10 us;
         load_data <= '0';
         start <= '1';
-        wait for 20 us;
+        wait for 100 ns; -- for CPHA = 0
+        -- wait for 3.5 us; -- for CPHA = 1
         start <= '0';
+        MISO <= '1';
+        wait for 6.4 us;
+        MISO <= '0';
+        wait for 6.4 us;
+        MISO <= '1';
+        wait for 6.4 us;
+        MISO <= '1';
+        wait for 6.4 us;
+        MISO <= '0';
+        wait for 6.4 us;
+        MISO <= '1';
+        wait for 6.4 us;
+        MISO <= '0';
+        wait for 6.4 us;
+        MISO <= '1';
+        wait for 6.4 us;
         wait;
     end process;
 end architecture;

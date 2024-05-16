@@ -31,9 +31,9 @@ begin
   process ( clk, reset, load_enable )
   begin
     if reset = '1' then
-      data_out <= '0';
+      data_out <= 'Z';
       data <= ( others => '0' );
-    elsif rising_edge( clk ) then
+    elsif rising_edge(clk) then
       if shift_enable = '1' then
         data <= data(data'high - 1 downto data'low) & data_in;
         data_out <= data(data'high);

@@ -4,15 +4,13 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 -- A generic Master SPI interface
 entity spi_master is
-  generic
-  (
+  generic (
     -- Number of bits to transfer
     NUM  : natural   := 8;
     CPOL : std_logic := '1';
     CPHA : std_logic := '1'
   );
-  port
-  (
+  port (
     -- System clock
     clk : in std_logic;
     -- System reset (active low)
@@ -36,34 +34,32 @@ entity spi_master is
 end entity spi_master;
 
 architecture rtl of spi_master is
-  type t_State is (Sending, Receiving, Idle);
+  type t_State is (Idle, Transceiving);
   signal state : t_State := Idle;
-  signal shift_enable_tx: std_logic := '0';
-  signal shift_enable_rx: std_logic := '0';
-  signal bit_count_en: std_logic := '0';
+  signal clk_tx: std_logic := '0';
+  signal clk_rx: std_logic := '0';
+  signal data_out_tx: std_logic := '0';
   signal bit_count_tc: std_logic := '0';
-  signal clk_count_en: std_logic := '0';
+  signal bit_count_en: std_logic := '0';
   signal clk_count_tc: std_logic := '0';
-  signal data_tx_reg: std_logic := '0';
+  signal clk_count_en: std_logic := '0';
 begin
   register_tx : entity work.shift_reg
-  port map
-  (
-    clk => SCK,
+  port map (
+    clk => clk_tx,
     reset => reset,
-    shift_enable => shift_enable_tx,
+    shift_enable => '1',
     load_enable => load_data,
     parallel_in => data,
     data => data_tx,
     data_in => '0',
-    data_out => data_tx_reg
+    data_out => data_out_tx
   );
   register_rx : entity work.shift_reg
-  port map
-  (
-    clk => SCK,
+  port map (
+    clk => clk_rx,
     reset => reset,
-    shift_enable => shift_enable_rx,
+    shift_enable => '1',
     load_enable => '0',
     parallel_in => (others => '0') ,
     data => data_rx,
@@ -75,7 +71,7 @@ begin
     counter_size => 3
   )
   port map (
-    clk => SCK,
+    clk => clk_tx,
     reset => reset,
     count_enable => bit_count_en,
     tc => bit_count_tc
@@ -91,44 +87,41 @@ begin
     tc => clk_count_tc
   );
 
+  MOSI <= data_out_tx when state = Transceiving else 'Z';
+
   process ( clk, reset )
-  begin
-    clk_count_en <= '1';
-    
+  begin    
     if reset = '1' then
-      shift_enable_tx <= '0';
-      shift_enable_rx <= '0';
-      SCK <= '0';
-      SS <= '0';
+      clk_tx <= '0';
+      clk_rx <= '0';
+      clk_count_en <= '0';
+      SCK <= CPOL;
+      SS <= '1';
       MOSI <= 'Z';
     else
       if rising_edge (clk) then
-        if clk_count_tc = '1' then
+        if state = Transceiving and clk_count_tc = '1' then
+          clk_tx <= not(clk_tx);
+          clk_rx <= not(clk_rx);
           SCK <= not(SCK);
+          if bit_count_tc = '1' and clk_tx = '0' then
+            clk_count_en <= '0';
+            bit_count_en <= '0';
+            clk_tx <= '0';
+            clk_rx <= '0';
+            MOSI <= 'Z';
+            SS <= '1';
+            SCK <= CPOL;
+            state <= Idle;
+          end if;
+        elsif State = Idle and start = '1' then
+          clk_count_en <= '1';
+          bit_count_en <= '1';
+          state <= Transceiving;
+          SS <= '0';
+          clk_tx <= '1' when CPHA = '0' else '0';
+          clk_rx <= '0' when CPHA = '0' else '1';
         end if;
-        case state is
-          when Idle =>
-            if clk_count_tc = '1' and start = '1' then
-              bit_count_en <= '1';
-              shift_enable_tx <= '1';
-              state <= Sending;
-            end if;
-          when Sending =>
-            MOSI <= data_tx_reg;
-            if bit_count_tc = '1' then
-              shift_enable_tx <= '0';
-              -- bit_count_en <= '0';
-              MOSI <= 'Z';
-              shift_enable_rx <= '1';
-              state <= Receiving;
-            end if;
-          when Receiving =>
-            if bit_count_tc = '1' then
-              shift_enable_rx <= '0';
-              bit_count_en <= '0';
-              state <= Idle;
-            end if;
-        end case;
       end if;
     end if;
   end process;
