@@ -98,6 +98,7 @@ begin
       SCK <= CPOL;
       SS <= '1';
       MOSI <= 'Z';
+      state <= Idle;
     else
       if rising_edge (clk) then
         if state = Transceiving and clk_count_tc = '1' then
