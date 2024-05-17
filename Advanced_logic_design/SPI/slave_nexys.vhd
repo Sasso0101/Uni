@@ -8,8 +8,8 @@ entity slave_nexys is
         sw : in  STD_LOGIC_VECTOR (15 downto 0); -- Switches
         led : out  STD_LOGIC_VECTOR (15 downto 0); -- leds
         btnL, btnD : in std_logic; -- Buttons
-        JA(3), JA(4), JA(10) : in std_logic; -- MOSI, SCK, SS
-        JA(9) : out std_logic -- MISO
+        JA3, JA4, JA10 : in std_logic; -- MOSI, SCK, SS
+        JA9 : out std_logic -- MISO
     );
 end slave_nexys;
 
