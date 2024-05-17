@@ -33,12 +33,12 @@ begin
       tc <= '0';
     elsif rising_edge( clk ) then
       if count_enable = '1' then
-        count <= count - 1;
+        tc <= '0';
         if count = 0 then
           tc <= '1';
           count <= ( others => '1' );
         else
-          tc <= '0';
+          count <= count - 1;
         end if;
       end if;
     end if;
