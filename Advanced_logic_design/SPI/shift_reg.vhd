@@ -18,7 +18,7 @@ entity shift_reg is
     -- Parallel data input
     parallel_in : in std_logic_vector(7 downto 0);
     -- Data in shift register
-    data : out std_logic_vector(7 downto 0);
+    data : inout std_logic_vector(7 downto 0);
     -- Serial data in
     data_in: in std_logic;
     -- Serial data out
@@ -34,12 +34,12 @@ begin
       data_out <= 'Z';
       data <= ( others => '0' );
     elsif rising_edge(clk) then
-      if shift_enable = '1' then
+      if load_enable = '1' then
+        data <= parallel_in;
+      elsif shift_enable = '1' then
         data <= data(data'high - 1 downto data'low) & data_in;
         data_out <= data(data'high);
       end if;
-    elsif load_enable = '1' then
-      data <= parallel_in;
     end if;
   end process;
 end architecture;

@@ -19,9 +19,9 @@ entity spi_slave is
     -- Data: the data to be sent
     data : in std_logic_vector(7 downto 0);
     -- Data the be sent currently in shift register
-    data_tx : out std_logic_vector( 7 downto 0 );
+    data_tx : inout std_logic_vector( 7 downto 0 );
     -- Data received
-    data_rx : out std_logic_vector( 7 downto 0 );
+    data_rx : inout std_logic_vector( 7 downto 0 );
     -- SPI interface signals (Master)
     MOSI : in std_logic;
     MISO : out std_logic;

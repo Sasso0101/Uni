@@ -34,10 +34,10 @@ entity spi_master is
 end entity spi_master;
 
 architecture rtl of spi_master is
-  type t_State is (Idle, Transceiving);
+  type t_State is (Idle, Transmitting, Receiving);
   signal state : t_State := Idle;
-  signal clk_tx: std_logic := '0';
-  signal clk_rx: std_logic := '0';
+  signal enable_tx: std_logic := '0';
+  signal enable_rx: std_logic := '0';
   signal data_out_tx: std_logic := '0';
   signal bit_count_tc: std_logic := '0';
   signal bit_count_en: std_logic := '0';
@@ -46,9 +46,9 @@ architecture rtl of spi_master is
 begin
   register_tx : entity work.shift_reg
   port map (
-    clk => clk_tx,
+    clk => clk,
     reset => reset,
-    shift_enable => '1',
+    shift_enable => enable_tx,
     load_enable => load_data,
     parallel_in => data,
     data => data_tx,
@@ -57,9 +57,9 @@ begin
   );
   register_rx : entity work.shift_reg
   port map (
-    clk => clk_rx,
+    clk => clk,
     reset => reset,
-    shift_enable => '1',
+    shift_enable => enable_rx,
     load_enable => '0',
     parallel_in => (others => '0') ,
     data => data_rx,
@@ -71,7 +71,7 @@ begin
     counter_size => 3
   )
   port map (
-    clk => clk_tx,
+    clk => clk,
     reset => reset,
     count_enable => bit_count_en,
     tc => bit_count_tc
@@ -87,13 +87,13 @@ begin
     tc => clk_count_tc
   );
 
-  MOSI <= data_out_tx when state = Transceiving else 'Z';
+  MOSI <= data_out_tx when SS = '0' else 'Z';
 
   process ( clk, reset )
   begin    
     if reset = '1' then
-      clk_tx <= '0';
-      clk_rx <= '0';
+      enable_rx <= '0';
+      enable_tx <= '0';
       clk_count_en <= '0';
       SCK <= CPOL;
       SS <= '1';
@@ -101,27 +101,51 @@ begin
       state <= Idle;
     else
       if rising_edge (clk) then
-        if state = Transceiving and clk_count_tc = '1' then
-          clk_tx <= not(clk_tx);
-          clk_rx <= not(clk_rx);
-          SCK <= not(SCK);
-          if bit_count_tc = '1' and clk_tx = '0' then
-            clk_count_en <= '0';
-            bit_count_en <= '0';
-            clk_tx <= '0';
-            clk_rx <= '0';
-            MOSI <= 'Z';
-            SS <= '1';
-            SCK <= CPOL;
-            state <= Idle;
+        if bit_count_tc = '1' and enable_tx = '1' then
+          enable_tx <= '0';
+          enable_rx <= '0';
+          bit_count_en <= '0';
+          clk_count_en <= '0';
+          MOSI <= 'Z';
+          SS <= '1';
+          SCK <= CPOL;
+          state <= Idle;
+        elsif state = Receiving then
+          SS <= '0';
+          if (CPHA = '0' and CPOL = '1') or (CPHA = '1' and CPOL = '0') then
+            SCK <= '0';
+          else
+            SCK <= '1';
+          end if;
+          bit_count_en <= '0';
+          enable_rx <= '0';
+          if clk_count_tc = '1' then
+            bit_count_en <= '1';
+            enable_tx <= '1';
+            state <= Transmitting;
+          end if;
+        elsif state = Transmitting then
+          bit_count_en <= '0';
+          SS <= '0';
+          if (CPHA = '0' and CPOL = '0') or (CPHA = '1' and CPOL = '1') then
+            SCK <= '0';
+          else
+            SCK <= '1';
+          end if;
+          enable_tx <= '0';
+          if clk_count_tc = '1' then
+            enable_rx <= '1';
+            state <= Receiving;
           end if;
         elsif State = Idle and start = '1' then
           clk_count_en <= '1';
-          bit_count_en <= '1';
-          state <= Transceiving;
-          SS <= '0';
-          clk_tx <= '1' when CPHA = '0' else '0';
-          clk_rx <= '0' when CPHA = '0' else '1';
+          if CPHA = '0' then
+            bit_count_en <= '1';
+            enable_tx <= '1';
+            state <= Transmitting;
+          else
+            state <= Receiving;
+          end if;
         end if;
       end if;
     end if;
