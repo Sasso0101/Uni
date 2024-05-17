@@ -12,6 +12,8 @@ entity shift_reg is
     -- System reset (active high)
     reset : in std_logic;
     -- Shift enable
+    chip_enable : in std_logic;
+    -- Shift enable
     shift_enable : in std_logic;
     -- Load enable
     load_enable : in std_logic;
@@ -34,7 +36,9 @@ begin
       data_out <= 'Z';
       data <= ( others => '0' );
     elsif rising_edge(clk) then
-      if load_enable = '1' then
+      if chip_enable = '0' then
+        data_out <= 'Z';
+      elsif load_enable = '1' then
         data <= parallel_in;
       elsif shift_enable = '1' then
         data <= data(data'high - 1 downto data'low) & data_in;

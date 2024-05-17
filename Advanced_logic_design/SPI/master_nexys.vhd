@@ -63,11 +63,13 @@ begin
 
     process (clk)
     begin
-        if rising_edge(clk) and pulseD = '1' then
-            if display = Rx then
-                display <= Tx;
-            else
-                display <= Rx;
+        if rising_edge(clk) then
+            if pulseD = '1' then
+                if display = Rx then
+                    display <= Tx;
+                else
+                    display <= Rx;
+                end if;
             end if;
         end if;
     end process;
