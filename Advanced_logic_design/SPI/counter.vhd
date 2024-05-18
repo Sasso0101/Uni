@@ -28,7 +28,7 @@ architecture rtl of counter is
 begin
   process ( clk, reset )
   begin
-    if reset = '1' then
+    if reset = '0' then
       count <= ( others => '1' );
       tc <= '0';
     elsif rising_edge( clk ) then
