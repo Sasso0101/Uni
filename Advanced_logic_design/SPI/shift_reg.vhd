@@ -32,15 +32,17 @@ architecture rtl of shift_reg is
 begin
   process ( clk, reset, load_enable )
   begin
-    if reset = '1' then
+    if reset = '0' then
       data_out <= 'Z';
       data <= ( others => '0' );
     elsif rising_edge(clk) then
-      if chip_enable = '0' then
+      if chip_enable = '1' then
         data_out <= 'Z';
-      elsif load_enable = '1' then
+      end if;
+      if load_enable = '1' then
         data <= parallel_in;
-      elsif shift_enable = '1' then
+      end if;
+      if shift_enable = '1' then
         data <= data(data'high - 1 downto data'low) & data_in;
         data_out <= data(data'high);
       end if;

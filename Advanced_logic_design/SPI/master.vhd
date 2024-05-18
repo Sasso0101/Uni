@@ -38,10 +38,8 @@ architecture rtl of spi_master is
   signal state : t_State := Idle;
   signal enable_tx: std_logic := '0';
   signal enable_rx: std_logic := '0';
-  signal bit_count_tc: std_logic := '0';
-  signal bit_count_en: std_logic := '0';
-  signal clk_count_tc: std_logic := '0';
-  signal clk_count_en: std_logic := '0';
+  signal clk_count_res, clk_count_tc, clk_count_en: std_logic := '0';
+  signal bit_count_res, bit_count_tc, bit_count_en: std_logic := '0';
   signal chip_enable: std_logic := '0';
 begin
   register_tx : entity work.shift_reg
@@ -74,7 +72,7 @@ begin
   )
   port map (
     clk => clk,
-    reset => reset,
+    reset => bit_count_res,
     count_enable => bit_count_en,
     tc => bit_count_tc
   );
@@ -84,20 +82,22 @@ begin
   )
   port map (
     clk => clk,
-    reset => reset,
+    reset => clk_count_res,
     count_enable => clk_count_en,
     tc => clk_count_tc
   );
 
   process ( clk, reset )
   begin    
-    if reset = '1' then
+    if reset = '0' then
       enable_rx <= '0';
-      chip_enable <= '0';
       bit_count_en <= '0';
       enable_tx <= '0';
       clk_count_en <= '0';
+      clk_count_res <= '0';
+      bit_count_res <= '0';
       SCK <= CPOL;
+      chip_enable <= '1';
       SS <= '1';
       MOSI <= 'Z';
       state <= Idle;
@@ -105,17 +105,19 @@ begin
       if rising_edge (clk) then
         if bit_count_tc = '1' and enable_tx = '1' then
           enable_tx <= '0';
-          chip_enable <= '0';
           enable_rx <= '0';
+          bit_count_res <= '0';
+          clk_count_res <= '0';
           bit_count_en <= '0';
           clk_count_en <= '0';
+          chip_enable <= '1';
           MOSI <= 'Z';
           SS <= '1';
           SCK <= CPOL;
           state <= Idle;
         elsif state = Receiving then
           SS <= '0';
-          chip_enable <= '1';
+          chip_enable <= '0';
           if (CPHA = '0' and CPOL = '1') or (CPHA = '1' and CPOL = '0') then
             SCK <= '0';
           else
@@ -130,7 +132,7 @@ begin
           end if;
         elsif state = Transmitting then
           bit_count_en <= '0';
-          chip_enable <= '1';
+          chip_enable <= '0';
           SS <= '0';
           if (CPHA = '0' and CPOL = '0') or (CPHA = '1' and CPOL = '1') then
             SCK <= '0';
@@ -144,6 +146,8 @@ begin
           end if;
         elsif State = Idle and start = '1' then
           clk_count_en <= '1';
+          bit_count_res <= '1';
+          clk_count_res <= '1';
           if CPHA = '0' then
             bit_count_en <= '1';
             enable_tx <= '1';

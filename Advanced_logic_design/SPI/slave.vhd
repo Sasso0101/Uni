@@ -43,6 +43,7 @@ begin
     clk => clk,
     reset => reset,
     shift_enable => shift_tx,
+    chip_enable => SS,
     load_enable => load_data,
     parallel_in => data,
     data => data_tx,
@@ -54,6 +55,7 @@ begin
     clk => clk,
     reset => reset,
     shift_enable => shift_rx,
+    chip_enable => SS,
     load_enable => '0',
     parallel_in => (others => '0') ,
     data => data_rx,
@@ -65,7 +67,7 @@ begin
 
   process ( clk, reset )
   begin    
-    if reset = '1' then
+    if reset = '0' then
       shift_rx <= '0';
       shift_tx <= '0';
       prev_clk <= '0';
