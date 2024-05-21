@@ -1,0 +1,46 @@
+\chapter{Other topics}
+\section{Virtualization}
+The idea of virtualization is to abstract the access to the hardware, so that multiple operating systems can run at the same time. The software in charge of that is the virtual machine manager (VMM) or hypervisor. The OS that interfaces directly to the hardware is called host, while the ones running through a VMM are called guests. There are different types of VMMs:
+\begin{itemize}
+    \item Type 0 VMM: the VMM is implemented directly in hardware
+    \item Type 1 VMM: the VMM is an OS-like program which allows execution of virtual machines and it runs at boot
+    \item Type 2 VMM: the VMM is run as a normal user process on a real operating system. This solution is the one that gives the less freedom, since the host OS regulates the access to resources, the processor used, the amount of CPU time etc.
+\end{itemize}
+
+There are other variations of VMMs, namely:
+\begin{itemize}
+    \item Paravirtualization: the guest operating system is optimized to work well with the VMM
+    \item Emulators: allow applications written for one hardware
+    environment to run on a very different hardware environment
+    \item Application containment: not actual virtualization, provides virtualization-like features by segregating applications from the operating system, making them more secure,
+    manageable
+\end{itemize}
+
+\subsubsection{Running Mode}
+The VMM is run in user mode on the host OS, but the guest OS need s to run some software in kernel mode. This means that the VMM needs to virtualize the kernel mode, which is known as trap-and-emulate.
+
+\subsection{Containers}
+Containers are a form of operating system virtualization. Inside a container are all the necessary executables, binary code, libraries, and configuration files to execute a software. The main difference with virtual machines is that they do not contain an OS. They still require a translation layer to interface with the host operating system, such as the Docker engine.
+
+\subsection{Other applications of virtualization}
+Another application of the virtualization idea is the programming environment virtualization. In this case the programming language is designed to run within a custom-built virtualized environment. For example Java has many features that depend on running in Java Virtual Machine (JVM).
+
+\section{Security}
+A system is said to be secure if resources are accesses and used as intended under all circumstances. \bold{Intruders} attempt to breach security. A \bold{threat} is a potential security violation. An \bold{attack} is an attempt to brach security, which can be accidental or malicious.
+
+There are different types of security violations: breach of confidentiality (unauthorized access to data), breach of integrity (unauthorized modification/destruction of data), breach of availability (system/service is not ready for users).
+
+There are different types of attacks: ransomware, replay attack, MITM attack, session hijacking, privilege escalation, trojan, backdoor, malware, spyware.
+
+Security measures against attacks can be implemented at all layers of the system to be effective (physical, application, OS or network layer). Security is as weak as the weakest link in the chain.
+
+Cryptography can be used as a tool to improve security (ex. authentication and communications). It can be implemented at various layers of the ISO reference model (network layer - IPSec, transport layer - SSL aka TLS).
+
+Firewalls are software or hardware solutions that limit network access between two security domains.
+
+\subsection{Principles of protection}
+\subsubsection{Principle of least privilege}
+Programs, users and systems should be given just enough privileges to perform their tasks. Properly set permissions can limit damage if entity has a bug or gets abused. Privileges can be set statically or dynamically. Rough-grained privilege management is simpler, but less effective. Fine-grained management is more complex and adds more overhead, but is more protective. Additionally, an audit log can be maintained to record all sensitive activities.
+
+\subsubsection{Protection rings}
+Components in a secure system can ordered by amount of privilege using the analogy of rings. For example, the kernel is in one ring and user applications in another.
