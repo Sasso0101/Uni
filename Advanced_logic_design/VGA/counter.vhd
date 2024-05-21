@@ -16,6 +16,8 @@ entity counter is
     clk : in std_logic;
     -- System reset (active high)
     reset : in std_logic;
+    -- Count init
+    count_init: in std_logic;
     -- Count enable
     count_enable: in std_logic;
     -- Count
@@ -34,7 +36,10 @@ begin
       count <= ( others => '0' );
       tc <= '0';
     elsif rising_edge( clk ) then
-      if count_enable = '1' then
+      if count_init = '1' then
+        count <= ( others => '0' );
+        tc <= '0';
+      elsif count_enable = '1' then
         tc <= '0';
         if count = all_ones then
           tc <= '1';
