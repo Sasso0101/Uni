@@ -12,8 +12,8 @@ entity vga_nexys is
 end vga_nexys;
 
 architecture rtl of vga_nexys is
-    signal pxl_res, pxl_tc : std_logic := '0';
-    signal ver_res, hor_res : std_logic := '0';
+    signal pxl_init, pxl_tc : std_logic := '0';
+    signal ver_init, hor_init : std_logic := '0';
     signal ver_en, hor_en : std_logic := '0';
     signal ver_cnt, hor_cnt : unsigned (9 downto 0);
     signal res: std_logic := '1';
@@ -24,7 +24,8 @@ begin
     )
     port map (
         clk => CLK100MHZ,
-        reset   => pxl_res,
+        reset   => CPU_RESETN,
+        count_init => pxl_init,
         count_enable => '1',
         tc => pxl_tc
     );
@@ -34,7 +35,8 @@ begin
     )
     port map (
         clk => CLK100MHZ,
-        reset   => hor_res,
+        reset   => CPU_RESETN,
+        count_init => hor_init,
         count_enable => hor_en,
         count => hor_cnt,
         tc => open
@@ -45,7 +47,8 @@ begin
     )
     port map (
         clk => CLK100MHZ,
-        reset   => ver_res,
+        reset   => CPU_RESETN,
+        count_init => ver_init,
         count_enable => ver_en,
         count => ver_cnt,
         tc => open
@@ -54,32 +57,30 @@ begin
     process (CLK100MHZ, CPU_RESETN)
     begin
         if CPU_RESETN = '0' then
-            hor_res <= '0';
-            ver_res <= '0';
             hor_en <= '0';
             ver_en <= '0';
-            pxl_res <= '0';
+            pxl_init <= '1';
             VGA_R <= (others => '0');
             VGA_G <= (others => '0');
             VGA_B <= (others => '0');
             VGA_HS <= '0';
             VGA_VS <= '0';
         elsif rising_edge(CLK100MHZ) then
-            pxl_res <= '1';
+            pxl_init <= '0';
             ver_en <= '0';
             if pxl_tc = '1' then
                 hor_en <= '1';
                 if ver_cnt = 0 then
                     VGA_VS <= '1';
-                    ver_res <= '1';
+                    ver_init <= '0';
                 elsif ver_cnt = 2 then
                     VGA_VS <= '0';
                 elsif ver_cnt = 525 then
-                    ver_res <= '0';
+                    ver_init <= '1';
                 end if;
                 if hor_cnt = 0 then
                     VGA_HS <= '1';
-                    hor_res <= '1';
+                    hor_init <= '0';
                 elsif hor_cnt >= 97 and hor_cnt < 145 then
                     VGA_HS <= '0';
                 elsif hor_cnt >= 145 and hor_cnt < 785 then
@@ -88,7 +89,7 @@ begin
                 elsif hor_cnt < 800 then
                     VGA_R <= (others => '0') ;
                 elsif hor_cnt = 800 then
-                    hor_res <= '0';
+                    hor_init <= '1';
                     ver_en <= '1';
                 end if;
             else
