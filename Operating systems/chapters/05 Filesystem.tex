@@ -98,3 +98,12 @@ In this allocation method each file has its own table of pointers to its data bl
 To provide quick file creation, the filesystem maintains a list of available blocks. This table consumes some disk space. An alternative would be to store in each free memory location the pointer to the next free position. The  upside is that this method does not waste any space, but obtaining a contiguous space may require a long search. This can be improved by modifying the linked list to store the address of the next $n-1$ free blocks in first free block, plus a pointer to next block that contains free-block pointers.
 
 \image{images/Improved free space list.png}{6.5cm}{Improved free space linked list}
+
+\section{Remote file systems}
+Distributed file systems allow the users to use the filesystem as normal, but the files and folders are actually stored on a remote machine. They are normally implemented based on the client-server model: the client asks the server to perform the various operations on files (read, write, delete, update etc.).
+
+\section{Virtual file systems}
+A virtual file system is an abstract layer on top of a more concrete file system. A VFS specifies the interface (API) between the kernel and a concrete file system. In this way the kernel can use different filesystems (such as remote filesystems) in the same way. The virtual equivalent of the Linux inode is the vnode.
+
+\image{images/Virtual filesystem.png}{8cm}{Virtual filesystem}
+
