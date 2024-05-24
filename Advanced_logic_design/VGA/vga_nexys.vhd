@@ -55,6 +55,7 @@ begin
     );
     
     process (CLK100MHZ, CPU_RESETN)
+        variable displayable : std_logic := '0';
     begin
         if CPU_RESETN = '0' then
             hor_en <= '0';
@@ -67,32 +68,47 @@ begin
             VGA_VS <= '0';
         elsif rising_edge(CLK100MHZ) then
             pxl_init <= '0';
-            ver_en <= '0';
             if pxl_tc = '1' then
                 hor_en <= '1';
+                -- Vertical sync pulse
                 if ver_cnt = 0 then
                     VGA_VS <= '1';
                     ver_init <= '0';
-                elsif ver_cnt = 2 then
+                -- Vertical front porch
+                elsif ver_cnt >= 2 and ver_cnt < 35 then
                     VGA_VS <= '0';
-                elsif ver_cnt = 525 then
-                    ver_init <= '1';
+                -- Vertical display time
+                elsif ver_cnt >= 35 and ver_cnt < 515 then
+                    displayable := '1';
+                -- Vertical back porch
+                elsif ver_cnt >= 515 and ver_cnt < 525 then
+                    displayable := '0';
+                -- End of drawing, reset row to 0
+                -- elsif ver_cnt = 525 then
+                --     ver_init <= '1';
                 end if;
+                -- Horizontal sync pulse
                 if hor_cnt = 0 then
                     VGA_HS <= '1';
                     hor_init <= '0';
-                elsif hor_cnt >= 97 and hor_cnt < 145 then
+                -- Horizontal front porch
+                elsif hor_cnt >= 96 and hor_cnt < 144 then
                     VGA_HS <= '0';
-                elsif hor_cnt >= 145 and hor_cnt < 785 then
-                    VGA_HS <= '0';
+                -- Horizontal display time
+                elsif hor_cnt >= 144 and hor_cnt < 784 and displayable = '1' then
                     VGA_R <= (others => '1') ;
+                -- Horizontal back porch
                 elsif hor_cnt < 800 then
                     VGA_R <= (others => '0') ;
                 elsif hor_cnt = 800 then
                     hor_init <= '1';
                     ver_en <= '1';
+                    if ver_cnt = 525 then
+                        ver_init <= '1';
+                    end if;
                 end if;
             else
+                ver_en <= '0';
                 hor_en <= '0';
             end if;
         end if;
