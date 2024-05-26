@@ -56,6 +56,7 @@ begin
     
     process (CLK100MHZ, CPU_RESETN)
         variable displayable : std_logic := '0';
+        variable color : std_logic_vector(3 downto 0) := (others => '0') ;
     begin
         if CPU_RESETN = '0' then
             hor_en <= '0';
@@ -83,9 +84,6 @@ begin
                 -- Vertical back porch
                 elsif ver_cnt >= 515 and ver_cnt < 525 then
                     displayable := '0';
-                -- End of drawing, reset row to 0
-                -- elsif ver_cnt = 525 then
-                --     ver_init <= '1';
                 end if;
                 -- Horizontal sync pulse
                 if hor_cnt = 0 then
@@ -96,10 +94,39 @@ begin
                     VGA_HS <= '0';
                 -- Horizontal display time
                 elsif hor_cnt >= 144 and hor_cnt < 784 and displayable = '1' then
-                    VGA_R <= (others => '1') ;
+                    VGA_R <= (others => '0');
+                    VGA_G <= (others => '0');
+                    VGA_B <= (others => '0');
+                    if ver_cnt < 102 then
+                        VGA_R <= "1101";
+                        VGA_G <= "0011";
+                        VGA_B <= "0010";
+                    elsif ver_cnt < 168 then
+                        VGA_R <= "1111";
+                        VGA_G <= "1010";
+                        VGA_B <= "0100";
+                    elsif ver_cnt < 235 then
+                        VGA_R <= "1111";
+                        VGA_G <= "1111";
+                        VGA_B <= "0101";
+                    elsif ver_cnt < 302 then
+                        VGA_R <= "0100";
+                        VGA_G <= "1000";
+                        VGA_B <= "0011";
+                    elsif ver_cnt < 368 then
+                        VGA_R <= "0010";
+                        VGA_G <= "0101";
+                        VGA_B <= "1111";
+                    else
+                        VGA_R <= "0111";
+                        VGA_G <= "0010";
+                        VGA_B <= "1000";
+                    end if;
                 -- Horizontal back porch
                 elsif hor_cnt < 800 then
-                    VGA_R <= (others => '0') ;
+                    VGA_R <= (others => '0');
+                    VGA_G <= (others => '0');
+                    VGA_B <= (others => '0');
                 elsif hor_cnt = 800 then
                     hor_init <= '1';
                     ver_en <= '1';
