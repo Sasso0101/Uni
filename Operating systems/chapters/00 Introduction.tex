@@ -1,17 +1,19 @@
 \chapter{Introduction}
 
-An operating system is a program that acts as an intermediary between the user and the hardware. The main goals of an operating system are to be:
+An operating system is a program that acts as an intermediary between the user and the hardware. The main goals of an operating system are:
 \begin{itemize}
-    \item User side: friendly, reliable, safe, fast
-    \item System side: easy to design, modular, error-free, flexible, efficient
+    \item Execute user programs and make problem solving easier
+    \item Make the computer easy to use
+    \item Use hardware in an efficient manner
 \end{itemize}
 
-An operating system is composed of a kernel, system programs and user programs. The \bold{kernel} is the core of the operating system, has complete control over everything that is happening in the system and runs for the whole time the system is turned on. System programs are other programs that are shipped with the operating system.
+The operating system is just a single component in a computer system; the others are the hardware, the application programs and the users and other machines. The operating system is therefore tasked with managing resources and conflicts and control the execution of programs to prevent and manage errors and improper use of resources.
+
+An operating system is composed of a kernel and other system programs. The \bold{kernel} is the core of the operating system, has complete control over everything that is happening in the system and runs for the whole time the system is turned on. System programs are other programs that are shipped with the operating system.
 
 \section{Computer startup}
 
-The first program that runs on startup is the \italics{bootstrap program}. This program is stored in the ROM or EEPROM and is usually called
-\bold{firmware}. It initializes registers, memories and device controllers and loads the kernel into the main memory. The kernel starts \bold{daemons}, i.e. background processes that provide various services to the user. Examples of daemons in Linux systems are \code{systemd} (daemon that starts other daemons), \code{syslogd} (logging daemon) and \code{sshd} (serves SSH connections).
+The first program that runs on startup is the \italics{bootstrap program}. This program is stored in the ROM or EEPROM and is generally known as \bold{firmware}. It initializes registers, memories and device controllers and loads the kernel into the main memory. The kernel starts \bold{daemons}, i.e. background processes that provide various services to the user. Examples of daemons in Linux systems are \code{systemd} (daemon that starts other daemons), \code{syslogd} (logging daemon) and \code{sshd} (serves SSH connections).
 
 \section{Interrupts}
 
@@ -27,7 +29,7 @@ interrupt.
 
 \image{images/Interrupts.png}{8cm}{Interrupt timing diagram}
 
-When an interrupt happens, the OS saves the current program counter (PC) and jumps to the routine that is responsible of handling the interrupt. The list of routines and its addresses are stored in the interrupt table. The table is initialized at startup and is stored in RAM for fast access.
+When an interrupt happens, the OS saves the current program counter (PC) and jumps to the routine that is responsible of handling the interrupt. The list of routines and its addresses are stored in the interrupt table or interrupt vector. The table is initialized at startup and is stored in RAM for fast access.
 
 A trap or exception is a software-generated interrupt caused by an error or an user request.
 
@@ -37,7 +39,7 @@ While transferring data, the CPU receives an interrupt when every chunk of data 
 
 \section{Storage}
 
-Storage systems are categorized by speed, cost and volatility. Each storage systems has therefore its advantages and disadvantages, therefore there is no "best" storage device. Therefore a computer has multiple types of storage.
+Storage systems are categorized by speed, cost and volatility. Each storage system has therefore its advantages and disadvantages, therefore there is no "best" storage device. Therefore a computer has multiple types of storage.
 
 The primary memory is DRAM (dynamic random access memory, based on charged capacitors) or SRAM (static random access memory, based on inverters), which is usually volatile. On the contrary secondary storage is non-volatile, has much bigger capacity but is slower (ex. hard disks, solid-state drives).
 
@@ -49,7 +51,7 @@ Caching is a very common technique for speeding up access to commonly used data.
 
 \section{Modern system architectures}
 
-Currently most systems are multiprocessor and/or multi-core. In these systems, tasks can be allocated in two ways:
+Currently most systems are multiprocessor or multi-core. In these systems, tasks can be allocated in two ways:
 \begin{itemize}
   \item asymmetric processing: each processor/core is assigned a specific task
   \item symmetric processing: each processor/core performs all tasks
@@ -58,7 +60,7 @@ Currently most systems are multiprocessor and/or multi-core. In these systems, t
 
 \subsection{Difference between multiprocessor and multi-core}
 
-Multiprocessor systems have multiple processors with a single CPU and share the same system bus and sometimes the clock. Multi-core systems have a single processor that contains multiple CPUs. Multi-core systems are more widespread because they usually consume less power than multiprocessor systems and because on-chip buses are faster.
+Multiprocessor systems have multiple processors with a single CPU and share the same system bus and sometimes the clock. Multi-core systems have a single processor that contains multiple CPUs. Multi-core systems are more widespread than multiprocessor systems because they usually consume less power and have on-chip buses, which are faster than standard buses.
 
 \image{images/Multicore.png}{5cm}{A multi-core processor}
 
@@ -66,11 +68,8 @@ Multiprocessor systems have multiple processors with a single CPU and share the 
 
 Clustered systems are systems composed of multiple machines that usually share the same storage via a storage-area network (SAN). These systems provide a high-availability service that can survive failures of single machines.
 \begin{itemize}
-  \item Symmetric clustering: all machines can run tasks and they monitor each
-  other. If a machine fails the other can take over.
-  \item Asymmetric clustering: each machine is assigned to a specific set of
-  tasks. If a machine fails another machine that was turned on and in
-  ``hot-standby mode'' takes over.
+  \item Symmetric clustering: all machines can run tasks and they monitor each other. If a machine fails the others can take over.
+  \item Asymmetric clustering: each machine is assigned to a specific set of tasks. If a machine fails, another machine that was turned on and in "hot-standby mode" takes over.
 \end{itemize}
 
 \subsection{Multi-programmed systems}
@@ -79,18 +78,17 @@ The OS can run multiple tasks on the same CPU by using a technique called multip
 
 \image{images/Memory layout.png}{4cm}{Memory layout for multiprogrammed systems}
 
-The OS and users share the same hardware, devices and software resources. To protect the system and avoid that different jobs can write in some areas of the memory a privilege system is established. In dual-mode systems jobs can be run in user mode or kernel mode. Some instructions are allowed only for kernel mode systems. For example Intel processors have for modes of operation, where 0 is fully privileged and 3 is fully restricted.
+The OS and users share the same hardware, devices and software resources. To protect the system a dual-mode system is established. In such system, jobs can be run in user mode or kernel mode. Some instructions are allowed only for kernel mode systems. To switch between user mode and kernel mode, applications need to perform a system call. Intel processors have four modes of operation, where 0 is fully privileged and 3 is fully restricted.
 
 \subsection{Process management}
 
-A process is a program in execution. The \italics{program} is a passive entity, while the \italics{process} is an active entity. The life of the process is generally managed by the operating system. Single-threaded processes have a program counter specifying the location of the next instruction to execute. Instructions are executed sequentially, until the end fo the program is reached. Multi-threaded process has one program counter per thread.
+A process is a program in execution. The \italics{program} is a passive entity, while the \italics{process} is an active entity. The life of the process is generally managed by the operating system. Single-threaded processes have a program counter specifying the location of the next instruction to execute. Instructions are executed sequentially, until the end of the program is reached. Multi-threaded processes have one program counter per thread.
 
 If a system has more cores, each core has its own program counter.
 
 \subsection{Memory management}
 
-To execute a program, the instructions must be in memory. Memory management is
-handled by the operating system and has the following goals:
+To execute a program, the instructions must be in memory. Memory management is handled by the operating system and has the following goals:
 \begin{itemize}
   \item Keeping track of which parts of memory are currently being used and by
   whom
@@ -101,7 +99,7 @@ handled by the operating system and has the following goals:
 
 \subsection{Storage management}
 
-The OS provides a logical view of the storage and abstracts the physical properties in *files*. Files are organized in directories and there usually is an access control system. The OS deals with free-space management, storage allocation and disk scheduling.
+The OS provides a logical view of the storage and abstracts the physical properties in \bold{files}. Files are organized in directories and there is usually an access control system. The OS deals with free-space management, storage allocation and disk scheduling.
 
 The memory is therefore organized in a hierarchy, where each level offers different access speeds. While transferring data from a level to another, the OS must ensure that the data stays consistent. Moreover, multiprocessor environment must provide cache coherency in hardware such that all CPUs have the most recent value in their cache.
 
