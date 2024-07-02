@@ -23,7 +23,7 @@ A process during execution cycles through the following states:
 
 \image{images/Process FSM.png}{11cm}{Process state machine}
 
-The OS also keeps track of the state of the process is stored in the RAM in a data structure called process control block (PCB). The PCB contains the following information:
+The OS keeps track of the state of the process in a data structure stored in RAM called process control block (PCB). The PCB contains the following information:
 
 \begin{itemize}
   \item Process state: running, waiting, etc.
@@ -33,18 +33,23 @@ The OS also keeps track of the state of the process is stored in the RAM in a da
   \item Memory-management information: memory allocated to the process
   \item Accounting/Debug information: CPU used, clock time elapsed since start, time limits
   \item I/O status information: I/O devices allocated to process, list of open files
-  In Linux the PCB for every process is stored as a file in the /proc folder: \code{less /proc/<pid::self>/status}.
 \end{itemize}
 
-A \bold{context switch} is the process of storing the state of a process in the PCB, so that it can be restored and resume execution at a later point. Context switches can be categorized in:
+In Linux the PCB for every process is stored as a file in the /proc folder: \code{less /proc/<pid::self>/status}.
+
+A \bold{context switch} is the process of storing the state of the currently executing process in the PCB (so that its execution can be resumed at a later point) and loading the PCB of the next process. Performance-wise, context switches are pure overhead, since they do not perform actual work. Context switches can be categorized in:
 
 \begin{itemize}
   \item voluntary context switch: the process stops itself because needs to wait for a resource
   \item nonvoluntary context switch: the processor decides to switch process
 \end{itemize}
 
+\image{images/Context switch.png}{11cm}{Context switch}
+
+Modern OSes have extended the process model to include threads. By using threads programs can execute multiple tasks at the same time. OSes that support threads store their information in the PCB of the process that started them.
+
 \section{Scheduling}
-The CPU has a process scheduler, which decides which process to execute. The scheduler stores the processes in various queues:
+The CPU has a process scheduler, which decides which process to execute. The job of the CPU scheduler is to maximize CPU utilization, i.e. having a process running at all times and switching quickly among processes to achieve effective time sharing. The scheduler stores the processes in various queues:
 
 \begin{itemize}
   \item Job queue: set of all processes in the system
@@ -62,18 +67,24 @@ Resources among the parent and children can be shared in different ways:
   \item Parent and children share all resources
   \item Children share subset of parent's resources
   \item Parent and child share no resources
-  Moreover they have different options for execution:
+\end{itemize}
+
+Moreover they have different options for execution:
+\begin{itemize}
   \item Parent and children execute concurrently
   \item Parent waits until children terminate
 \end{itemize}
+If there is no parent waiting for the child process, then the child process is called zombie process. If the parent is instead terminated, the child process is called orphan process. Some OSes don't allow processes without a parent. In such OSes, if the parent process terminates, then also all child processes get killed.
+
 In a Linux system the root process that spawns all other processes is called \code{systemd}.
 
 In UNIX processes are managed using the following system calls:
 \begin{itemize}
   \item \code{fork()}: creates a new process by copying all data structures
-  \item \code{clone()}: creates a new process which uses the same data structures as the parent process
+  \item \code{clone()}: creates a new thread which uses the same data structures as the parent process
   \item \code{exec()}: replaces the parent's memory with the children's one (machine code, data, heap, and stack)
   \item \code{wait()}: called by parent to wait for the end of the child's execution
+  \item \code{abort()}: called by parent to kill the child process
 \end{itemize}
 
 \image{images/Process children.png}{14cm}{Creation of children processes}
@@ -87,32 +98,54 @@ Processes can communicate using:
   \item message passing
 \end{itemize}
 
+A common paradigm for inter-process communication is the producer-consumer model. A producer process produces information that is consumed by a consumer process. The information passes through a buffer, which can be of bounded or unbounded size. If it is bounded and the buffer is full, then the producer must wait, while if it is unbounded the producer does never have to wait.
+
 \image{images/Process communication.png}{10cm}{Models of communication between processes}
 
 \subsection{Shared memory}
-Processes can communicate using shared memory. Processes can allocate a part in RAM as shared memory. Then they can access it by mapping it to their address space\footnote{array of addresses that the process is allowed to use}. In UNIX memory mapping is done by the \code{mmap()} system call.
+Processes can communicate using shared memory. Processes can allocate a part in RAM as shared memory. Then they can access it by mapping it to their address space\footnote{array of addresses that the process is allowed to use}. The size of the shared memory is controlled by the processes, not by the OS. In UNIX memory mapping is done by the \code{mmap()} system call.
 
 \snippet{code/posix-producer.c}{c}{A process that creates a shared memory area and writes to it}
 \snippet{code/posix-consumer.c}{c}{A process that opens a shared memory area and reads from it}
 
 \subsection{Message passing}
-Alternatively processes can communicate using message passing. This can be implemented in the following ways:
+Alternatively processes can communicate using message passing. Message passing provides two operations: \code{send(message)} and \code{receive(message)}. Depending on the implementation, the message size can be fixed or variable. Message passing can be implemented using the following channels:
 \begin{itemize}
   \item Shared memory (already seen in the previous section)
   \item Shared hardware bus
   \item Network
 \end{itemize}
-We can distinguish the channel on a logical level in the following ways:
+We can distinguish the channel on a logical level as follows:
 \begin{itemize}
   \item Direct or indirect
-  \item Synchronous or asynchronous
+  
+  In direct communication, processes must name each other explicitly and a link is associated with exactly one pair of communicating processes. 
+  In indirect communication, message is sent in a queue of a "mailbox". Each mailbox is identified by an id and multiple processes can send and receive messages from it. Multiple processes reading from a mailbox at the same time should be avoided in the following ways: by allowing a link to be associated with at most two processes, by allowing only one process at a time to execute a receive operation or by letting the system select arbitrarily the receiver.
+  \item Synchronous (blocking) or asynchronous (non-blocking)
+  
+  \begin{itemize}
+    \item Blocking send - the sender is blocked until the message is
+    received
+    \item Blocking receive - the receiver is blocked until a message is
+    available
+    \item Non-blocking send - the sender sends the message and
+    continues
+    \item Non-blocking receive - the receiver receives either a valid message or null
+  \end{itemize}
+  
   \item Automatic or explicit buffering
+  
+  \begin{enumerate}
+    \item Zero capacity - no messages are queued on a link (sender must wait for receiver)
+    \item Bounded capacity (explicit buffering) - finite length of n messages (sender must wait only if link full)
+    \item Unbounded capacity (automatic buffering) - infinite length (sender never waits)
+  \end{enumerate}
 \end{itemize}
 
 \subsubsection{Pipes}
-Pipes provide a way for to processes to communicate directly with each other. Pipes are accessed using the file descriptor. We can distinguish among two different types of pipes: ordinary pipes and named pipes.
+Pipes provide a way for to processes to communicate with each other. OSes implement two types of pipes: ordinary pipes and named pipes.
 
-Ordinary pipes cannot be accessed from outside the process that created it. Typically, a parent process creates a pipe and uses it to communicate with a child process that it created. Ordinary pipes are unidirectional, meaning that the parent process can only write to it and the child process can only read from it.
+Ordinary (or unnamed pipes or anonymous pipes in Windows) cannot be accessed from outside the process that created it. Typically, a parent process creates a pipe and uses it to communicate with a child process that it created. Ordinary pipes are unidirectional, which means that the parent process can only write to it and the child process can only read from it.
 
 \snippet{code/pipe.c}{c}{A process that spawn a child and communicates to it using an ordinary pipe}
 
@@ -122,32 +155,56 @@ Named pipes can be accessed outside a parent-child relationship. They are bidire
 \snippet{code/named_pipe_read.c}{c}{A process that reads from pipe and writes its content to the standard input}
 
 \section{Threads}
-A process can execute multiple instructions at once by using multiple threads. The OS keeps track of threads in the PCB. Threads share the same data and text (code) section and OS resources of the parent process. On the contrary each thread has its own registers, stack and program counter.
+A process can execute multiple instructions at once by using multiple threads. The OS keeps track of threads in the PCB. Threads share the same data and text (code) section and OS resources of the parent process. On the contrary each thread has its own thread id, register data, stack and program counter.
 
 \image{images/Thread vs process.png}{13cm}{Single threaded process (left) and multithreaded process (right)}
 
 \subsection{Difference between child processes and threads}
-When a process is forked all information is duplicated (data, code, files), while threads of the same process share the same information. When a thread is created, the parent process has to specify which part of the code the thread has to execute. Therefore threads are more lightweight: resource sharing is easier than memory/message passing, they are quicker to create and can scale easily (can take advantage of multi-core architectures).
+When a process is forked all information is duplicated (data, code, files), while threads of the same process share the same information. When a thread is created, the parent process has to specify which part of the code the thread has to execute. Therefore threads are more lightweight: resources are shared by default (meanwhile processes have to communicate using shared memory or message passing), they are quicker to create, use less memory, context switching is faster and can scale easily (can take advantage of multi-core architectures).
 
 \subsection{Applications of threads}
 Threads are used in client-server programs such as web server. Every time a request is received, the program creates a thread which fulfills the request. Another example is running background tasks, such as the spellchecker in a Word program.
 
 \subsection{Linux threads}
-Threads are created using the \code{clone()} call. Flags can be passed to the call to control the behavior of the calls.
+Threads are created using the \code{clone()} call. Threads shares the address space of the parent task. Flags can be passed to the call to control the behavior of the calls.
 
 The Linux scheduler doesn't make distinctions between threads and processes, but sees all of them as schedulable tasks.
 
 \subsection{Multi-core programming}
 The advantage of having multi-core systems is that tasks can be parallelized. There are two types of parallelism:
 \begin{itemize}
-  \item Data parallelism: data is distributed across multiple cores, each thread performs same operation
-  \item Task parallelism: tasks are distributed across multiple cores, each thread performs a different operation
+  \item Data parallelism: data is distributed across multiple cores, each thread performs same operation (ex. quicksort)
+  \item Task parallelism: tasks are distributed across multiple cores, each thread performs a different operation (ex. pipelining)
 \end{itemize}
+
+The challenges with maintaining multi-core or multiprocessor systems are: dividing activities, load balancing, data splitting and data dependency, testing and debugging.
+
+\italics{Concurrency} means supporting more than one task by allowing all tasks to make progress. Is can be implemented even in single-core/single processor system by using time sharing.
+
+\italics{Parallelism} means that the system can perform more than one task simultaneously. Therefore a system can support concurrency without parallelism.
 
 \subsection{Amdahl's Law}
 Amdahl's Law describes the theoretical performance gain by using parallel code.
 $$ \text{speedup} \le \left (S+\frac{1-S}{N} \right )^{-1} $$
-Where S is the percentage of serial code, N is the number of cores, and $ \text{speedup} = 1 $ means that there is no speedup.
+Where S is the percentage of code that has to be serial, N is the number of cores, and $ \text{speedup} = 1 $ means that there is no speedup.
 
 \subsection{Kernel threads}
-User threads need to be mapped to kernel threads to be executed. A kernel thread is a kernel entity (an entity that can be handled by the system scheduler), like processes and interrupt handlers. User threads can be mapped to kernel threads in three ways: one-to-one (preferred by Linux and Windows), many-to-one, many-to-many.
+User threads need to be mapped to kernel threads to be executed. A kernel thread is a kernel entity (an entity that can be handled by the system scheduler), like processes and interrupt handlers. User threads can be mapped to kernel threads in three ways: one-to-one (preferred by Linux and Windows), many-to-one, many-to-many. In the many-to-one mapping one thread causes all threads to block, therefore cannot take advantage of multithreading. The one-to-one mapping takes full advantage of multithreading (one blocking call doesn't cause all other threads to be blocked), but many threads may be created, causing a lot of overhead. In the many-to-many mapping, OS can choose how many threads it needs to manage. This mapping is more complicated to implement and manage.
+
+\section{Thread libraries}
+Thread libraries provide the programmer an API for creating and managing threads. They can be implemented entirely in user-space or the OS bay provide them at the kernel level. For example, pthreads is an API defined by the POSIX standard. Since it is just a specification, the implementation is up to the developer of the library.
+
+\section{Implicit threading}
+Implicit threading is a strategy which transfers the burden of the creation and management of threads done to compilers and run-time libraries rather than programmers. It is a technique which is growing in popularity since as the numbers of threads increase, guaranteeing program correctness becomes more and more difficult with explicit threads. Programmers can take advantage of implicit threading in using different tools:
+\begin{itemize}
+  \item Thread pools
+  
+  Thread pools is a design pattern where a fixed amount of threads is created, which all wait for work. It is justified because it is usually slightly faster to service a request with an existing thread than creating a new thread, the total number of threads is always bounded and threads can be scheduled to run programmatically
+  \item Fork join parallelism
+  
+  In this strategy, multiple threads are forked and then joined
+
+  \item OpenMP
+  
+  In OpenMP the programmer defines parallel regions, which then get automatically executed in parallel
+\end{itemize}
