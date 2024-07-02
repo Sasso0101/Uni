@@ -97,6 +97,7 @@ To execute a program, the instructions must be in memory. Memory management is h
   \item Allocating and deallocating memory space as needed
 \end{itemize}
 
+
 \subsection{Storage management}
 
 The OS provides a logical view of the storage and abstracts the physical properties in \bold{files}. Files are organized in directories and there is usually an access control system. The OS deals with free-space management, storage allocation and disk scheduling.
@@ -121,9 +122,7 @@ There exist many computing environments, such as:
   \item Real-time embedded systems: operating system that runs processes with
   very important time constraints
   \item Cloud computing
-  \item Client-server computing
-  \item Peer-to-peer computing
-  \item Distributed computing: many systems connected together over a network
+  \item Distributed computing: many systems connected together over a network (client-server or peer-to-peer)
   \item Virtualization: guest OS emulates another OS or hardware and runs
   software on it. The program that manages this is called VMM (Virtual machine
   manager).
@@ -134,8 +133,8 @@ There exist many computing environments, such as:
 
 Operating systems provide the following services:
 \begin{itemize}
-  \item User interface: can be command-line (CLI), Graphics User Interface
-  (GUI), Batch
+  \item User interface: can be command-line (shell - specific flavour of CLI, can be implemented in kernel or as a system program), Graphics User Interface
+  (GUI)
   \item Program execution - The system must be able to load a program into
   memory and to run that program
   \item I/O operations
@@ -147,19 +146,19 @@ Operating systems provide the following services:
   concurrently, resources must be allocated to each of them
   \item Accounting: to keep track of which users use how much and what kinds
   of computer resources
-  \item Protection and security
+  \item Protection (i.e. control access to system resources)
+  \item Security (guarantees protection against threats)
 \end{itemize}
 \image{images/Services.png}{12cm}{Services provided by an operating system}
 
 \section{System calls}
 
-System calls are an interface provided by the operating system to interact with it. They are mostly accessed by using a high-level API provided by a language such as C, C++ etc. In this way developers can use a single API that works on all operating systems and leave the actual system call to the underlying library written for that specific platform. The high-level API can also check for errors before calling the system call.
-
+System calls are an interface provided by the operating system to interact with it. They are mostly accessed by using a high-level API provided by a language such as C, C++ etc. APIs are the preferred method to interact with the system because they are simpler and easier to use that direct system calls and provide portability to all systems that support that API. Examples of APIs are the POSIX API for UNIX systems, the Win32 API for Windows systems and the Java API for machines running the JVM. API calls are translated into system calls by the system call interface. Usually the translation is done at runtime. This is because if the translation were to be done at compile time the compiled program would be much larger in size and much more platform dependant.
 \image{images/C example.png}{6cm}{The \code{printf()} function in C uses the \code{write()} system call to print to the screen}
 
 \subsection{Parameter passing}
 
-A system call usually requires some parameters, for ex. the \code{open_file()} system call needs to know the name of the file. Parameters can be passed using predefined specific registers. Often there are not enough registers for all required parameters, so parameters can be also stored in memory in a table and just the address of the table is put into the register.
+A system call usually requires some parameters, for ex. the \code{open_file()} system call needs to know the name of the file. Parameters can be passed to the system call by using registers. If there are not enough registers they can be stored in the stack or inside a table in memory. Then just the pointer to the data is passed to the system call.
 
 \image{images/Parameter passing.png}{10cm}{Parameter passing}
 
@@ -173,14 +172,34 @@ Examples of system calls:
     \item Protection: control access to resources, get and set permissions, allow/deny user access
 \end{itemize}
 
+\section{System programs}
+All operating systems come bundled with convenient programs, which ease program execution and development. System programs can be part of the following categories:
+\begin{itemize}
+  \item File manipulation/management
+  \item Status information: date, time, available resources, logging, debugging information, performance statistics, registry (database for storing configurations for programs)
+  \item Program language support: compilers, assemblers, debuggers, interpreters
+  \item Program loading and execution: linkers, loaders
+  \item Communications: provide mechanisms for communications among processes, users and computer systems
+  \item Background services: usually start at boot and may run fow whole time system is on, known as services or deamons, perform disk checking, process scheduling, error loading, printing
+\end{itemize}
+
+\section{OS design and implementation}
+The first problem in designing a system is to define goals and specifications. The goals can be divided into two basic groups: user goals and system goals. User goals could be that the operating system should be convenient to use, easy to learn, reliable, safe and fast. System goals could be that the operating system should be easy to design, implement and maintain, flexible, reliable, error-free and efficient.
+
+One important principle is OS design is the separation of policy from mechanism. Policies define what needs to be done, while mechanisms define how it should be done. This separation is useful because policies are likely to change, but most of the times the mechanism doesn't need to be changed substantially. For example, a mechanism could be process scheduling, and possible policies are to schedule processes that use disk first or processes from a given user first or daemons first etc.
+
 \section{OS structure}
 OSs may be structured in different ways or may be designed according to different architectures.
 \subsection{Simple structure - MS-DOS}
-MS-DOS has a very simple structure: a shell starts a program and when the process ends the shell is rebooted into a new program. There is at most one process running.
+MS-DOS has a very simple structure: a shell starts a program and when the process ends the shell is rebooted into a new program. There is at most one process running. When a new program starts, it overwrites all memory except the part that contains the kernel.
 \subsection{Monolithic kernel - UNIX}
-Originally UNIX had a monolithic structure. The kernel provided a large number of functions, such as the file system, CPU scheduling, memory management. The advantages of using a monolithic kernel are that it is fast and energy-efficient, but it is not modular and even small changes require refactoring of the code and recompilation of the whole OS.
+Originally UNIX had a monolithic structure. The kernel manages everything below the system call interface and above the hardware. For example, it manages the file system, CPU scheduling, memory management. Basically, the kernel managed  The advantages of using a monolithic kernel are that it is fast and energy-efficient, but it is not modular and even small changes require refactoring of the code and recompilation of the whole OS.
+\image{Images/UNIX structure.png}{10cm}{UNIX structure}
+
 \subsection{Layered approach}
 The operating system is divided into multiple layers, where each layer is built on top of the lower layers (similar to ISO/ISO reference model and TCP/IP stack). This allows for more modularity and a change of one layer doesn't always imply a recompilation of the whole operating system. An example of a possible layered structure is the following: hardware -> drivers -> file system -> error detection and protection -> user programs.
 \subsection{Microkernel}
-The microkernel approach moves processes as much as possible outside the kernel into the user space. Communication between modules is achieved using message passing. The advantages of this approach are full modularity and extendability, security (a malicious process can't damage others) and reliability (less code is running in kernel mode). Message passing introduces additional overhead, thus has a negative performance impact.
+The microkernel approach moves processes as much as possible outside the kernel into the user space. Communication between user modules is achieved using message passing though the kernel. The advantages of this approach are full modularity and extendability, security (a malicious process can't damage others) and reliability (less code is running in kernel mode). Communicating through the kernel introduces additional overhead, thus has a negative performance impact.
 \image{Images/Microkernel structure.png}{10cm}{Microkernel structure}
+\subsection{Modular OS}
+Modern OSes implement loadable kernel modules, which can be loaded on-demand at runtime. This structure follows the object-oriented approach. The base kernel contains only the core functions such as message passing and process management. Modules talk to each other over known interfaces. Examples of modules are device drivers, system calls, network drivers and interpreters.
