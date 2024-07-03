@@ -1,8 +1,12 @@
 \chapter{CPU Scheduling}
 
-The system executes tasks in cycles made of CPU bursts and IO bursts. During a CPU burst a process or program demands and actively utilizes the CPU for computation, while during an I/O burst a process or program waits for data to be read from or written to external storage devices.
+The system executes tasks in cycles made of CPU bursts and I/O bursts. During a CPU burst a process or program demands and actively utilizes the CPU for computation, while during an I/O burst a process or program waits for data to be read from or written to external storage devices. 
 
 \image{images/Bursts.png}{6cm}{CPU bursts and IO bursts}
+
+Generally CPU bursts are short.
+
+\image{images/CPU burst duration.png}{4cm}{CPU burst duration frequency}
 
 The job of the CPU scheduler is to select among the processes in the ready queue and allocate the CPU to them for some time.
 
@@ -30,10 +34,10 @@ FCFS executes tasks in the order they arrive in the queue. FCFS scheduling is no
 \subsection{Shortest-job-first scheduling (SJF)}
 In SJF tasks are executed in order of their burst time: the task with the shortest burst time is executed first. SJF is non-preemptive and theoretically minimizes the average waiting time. The problem of this strategy is that estimating CPU bursts is unfeasible, because it would require estimating how much time a task requires to be executed. If we assume that the individual CPU burst times of a task are correlated, we could compute an average of the previous burst times of a task and make an estimate for the next burst time (for example using an exponential average of the previous samples).
 
-Shortest time remaining first scheduling (SRT) is the preemptive version of SJF: every time a new task arrives, the scheduler will stop execution of the current task and will execute the task with the current shortest burst time first.
+Shortest time remaining first scheduling (SRT) is the preemptive version of SJF: every time a new task arrives, the scheduler will stop execution of the current task and will execute the task with the current shortest burst time first. In general SRT is better than the non-preemptive version.
 
 \subsection{Round robin scheduling}
-In round robin scheduling each process gets a small unit of CPU time (called time quantum $q$), usually 10-100 milliseconds. After this time has elapsed, the process is preempted and added to the end of the ready queue. Note that $q$ must be large with respect to context switch, otherwise the overhead is too high. If there are $n$ processes in the ready queue, no process waits more than $q(n-1)$ time units. Typically, this scheduling has a higher average turnaround time than SJF, but better response time.
+In round robin scheduling each process gets a small unit of CPU time (called time quantum $q$), usually 10-100 milliseconds. After this time has elapsed, the process is preempted and added to the end of the ready queue. $q$ must be large with respect to context switch (otherwise the overhead is too high), but $q$ not too high (otherwise performance will be similar to FCFS). If there are $n$ processes in the ready queue, no process waits more than $q(n-1)$ time units. Typically, this scheduling has a higher average turnaround time than SJF, but better response time.
 
 \subsection{Priority scheduling}
 In priority scheduling a priority number is associated with each process. The CPU is allocated to the process with the highest priority. The problem of this strategy is that low priority processes may never execute (starvation). This can be solved by increasing the priority of the process as time progresses (aging).
@@ -46,17 +50,20 @@ In this scheduling strategy there are multiple queues, where each one has a diff
 \image{images/Multilevel queues.png}{6cm}{Multilevels queues}
 
 \subsection{Multiple-processor scheduling}
-Schedulers for multiple-processor systems can have a common queue for all processors or a queue for each processor.
+CPU scheduling is more complex when multiple CPUs are available. In multiprocessor systems each processor generally independently decides which thread to execute next (symmetric multiprocessing). All threads may be in a common ready queue or each processor may have its own queue.
 
-When a thread runs on a processor, it uses the cache of a processor (processor affinity). If then that thread gets executed on another processor, it will lose all the cached content.
+In modern multicore processors a single core can assign itself multiple threads and switch among them when a memory stall happens (in Intel CPUs this feature is called multithreading). The physical core exposes itself to the OS as multiple virtual cores.
+
+When a thread has been running on one processor, the cache contents of that processor stores the memory information accessed by that thread. This is referred to as a thread having affinity for a processor (
+"processor affinity"). If then that thread gets executed on another processor, it will lose all the cached content. To address this inefficiency, the OS can try to keep a thread running on the same processor (soft affinity) or force it to run on the same processor (hard affinity).
 
 \subsection{Real-time scheduling}
-Real-time operating systems must be able to meet deadlines for certain tasks deemed as critical. Priority-based scheduling don't provide this guarantee (soft real-time). Also tasks have a new characteristic to consider:  periodic tasks require the CPU at constant intervals.
+Real-time operating systems must be able to meet deadlines for certain tasks deemed as critical. Priority-based scheduling don't provide this guarantee. Systems where there is no guarantee as to when tasks will be scheduled are called soft real-time systems, while system that can guarantee that tasks meet the deadline are called hard real-time systems. Real-time systems also have periodic tasks: tasks that require the CPU at constant intervals.
 
 \image{images/Periodic tasks.png}{14cm}{Periodic task with processing time $t$, deadline $d$ and period $p$}
 
 \subsubsection{Rate monotonic scheduling}
-A priority is assigned based on the inverse of its period. Therefore tasks with shorter periods have the highest priority. This scheduler is not ideal, because tasks with longer periods will be constantly interrupted by tasks with shorter periods, making them miss the deadline.
+Each process gets assigned priority based on the inverse of the period of the task. Therefore tasks with shorter periods have the highest priority. This scheduler is not ideal, because tasks with longer periods will be constantly interrupted by tasks with shorter periods, making them miss the deadline.
 
 \image{images/Missing deadlines.png}{14cm}{Task P2 misses the deadline because task P1 always has the highest priority}
 
@@ -69,10 +76,10 @@ Priorities are assigned according to the time missing to the next deadline: the 
 There are various ways in which scheduling algorithms can be evaluated and compared.
 
 \subsection{Deterministic modeling}
-In deterministic modeling the scheduling algorithms are evaluated on a particular workload. The metrics are then collected and compared. This approach is not always ideal because it considers the behavior of the algorithms in one scenario only.
+In deterministic modeling the scheduling algorithms are evaluated on a particular workload. The metrics are then collected and compared. This approach is not always ideal because it considers the behavior of the algorithms in one scenario only, but is simple to perform and fast.
 
 \subsection{Queueing models}
-A scheduling algorithm can be modeled mathematically: the arrival of processes, and CPU and I/O bursts is described probabilistically.
+A scheduling algorithm can be modeled mathematically: the arrival of processes, and CPU and I/O bursts is described probabilistically. Then the various metrics are collected and compared.
 
 Little's formula is a general formula that states that in steady state, processes leaving queue must equal processes arriving.
 $$ n = \lambda \cdot W $$
