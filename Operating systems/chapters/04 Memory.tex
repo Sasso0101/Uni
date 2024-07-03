@@ -1,24 +1,28 @@
 \chapter{Memory management}
 
-The CPU can access only data that is located inside the main memory (RAM). Therefore processes need to be copied from the disk into main memory. Then, the process uses registers to perform its tasks. Temporary data can be stored in cache registers, that are larger in size than CPU registers, but are slower.
+The CPU can access only information located inside registers and main memory (RAM). Therefore processes to be run need to be copied disk into main memory. When information needs to be retrieved from main memory, many cycles are needed, causing a stall. To reduce the time wasted, a faster memory storage called cache is used. Cache is larger in size than CPU registers, but also slower.
 
 \image{images/Memory hierarchy.png}{12cm}{Memory hierarchy}
 
-\section{Dynamic loading}
-Programs don't have to be fully copied to memory to be executed. With dynamic loading, routines (parts of a program) are not loaded until they are called.
+\section{Hardware access protection}
+The OS has to ensure that a process can only access addresses in its address space. This protection can be implemented using a pair of base and limit registers, which define the address space of the process. Any attempt in user mode to access memory out of bounds results in a trap. Changing relocation or limit registers are privileged instructions.
 
-\section{Static and dynamic linking}
-Programs can use external libraries in two ways: static or dynamic linking. In static linking system libraries and program code is combined by the loader into the binary program image at compile-time. In dynamic linking, the program uses the libraries provided by the operating system, called shared libraries or DLLs (Dynamically linked libraries). It does so by postponing the linking of libraries until execution time, so when the program calls a function of a library, the OS will locate it and communicate the address to the program.
+\image{images/Address space.png}{8cm}{Base and limit registers}
+\image{images/Memory control.png}{10cm}{Hardware access protection}
+
+\section{Address binding}
+Addresses are represented in different ways at different stages of a program's life. Addresses in source code are usually symbolic. A compiler typically binds these symbolic addresses to relocatable addresses (ex. "14 bytes from the beginning of this module"). The linker or loader will then bind relocatable addresses to absolute addresses. Address binding of instructions and data to memory addresses can happen at compile time, load time or execution time.
 
 \section{Logical and physical address space}
-The addresses used by the RAM chips are called physical addresses. In primitive computing devices, the address a programmer/processor use is the actual address, but modern memories are complicated: for example, they are composed of multiple banks of memory chips. Therefore numbering and accessing a specific position in memory is not straightforward. In advanced computers, the processor operates in a separate address space, called logical address, or virtual address. A Memory Management Unit (MMU) is used to map logical addresses to physical addresses.
+The addresses used by the physical memory unit are called physical addresses. In primitive computing devices, the addresses used by programmers were the actual physical address, but modern memories are more complicated: for example, they are composed of multiple banks of memory chips. Therefore numbering and accessing a specific position in memory is not straightforward. In advanced computer architectures, the processor uses a separate address space. Addresses belonging to this space are called logical or virtual addresses. The memory management unit (MMU) is used to map logical addresses to physical addresses.
 
-\imageside{images/Dynamic relocation.png}{7cm}{Memory view}{images/Relocation hardware.png}{7cm}{Relocation register inside MMU}{Dynamic relocation}
+\imageside{images/Dynamic relocation.png}{7cm}{Memory view}{images/Relocation hardware.png}{7cm}{Relocation register inside MMU}{A simple MMU which offsets all virtual addresses by a constant value defined in the relocation register}
 
-\section{Hardware access protection}
-The OS needs to ensure that a process can access only those addresses in its address space. A simple way to protect memory is using a relocation and limit register. When the OS allocates one contiguous span of primary memory to a process P, it stores the lowest address allocated to P in the relocation register. The limit register contains the number of bytes in the allocation. Using the values in the relocation and limit registers, hardware checks every address generated in user mode. Any attempt in user mode to access memory out of bounds results in a trap. Changing relocation or limit registers are privileged instructions.
+\section{Dynamic loading}
+Programs don't have to be fully copied to memory to be executed. With dynamic loading, routines (parts of a program) are not loaded until they are called. Routines are stored in memory in a relocatable format. No special support from the OS is required, dynamic loading is implemented by the programmer (although OS can help by providing libraries).
 
-\image{images/Memory control.png}{12cm}{Hardware access protection}
+\section{Static and dynamic linking}
+Programs can use external libraries in two ways: static or dynamic linking. In static linking, system libraries and program code is combined by the loader into the binary program image at compile-time. In dynamic linking, the linking phase of routines is postponed until execution time. Instead of the routine, a small piece of code, stub, is placed. When run, the stub replaces itself with the address of the routine at runtime. The operating system checks if the routine is in processes' address space and if not, it adds it. Dynamic linking is particularly useful for linking shared system libraries.
 
 \section{Contiguous Allocation}
 Main memory is usually divided into two partitions:
@@ -26,20 +30,38 @@ Main memory is usually divided into two partitions:
     \item Resident operating system, usually with low memory address
     \item User processes, with high memory addresses
 \end{itemize}
-When programs are loaded and unloaded from memory they create "holes". This phenomenon is called fragmentation and can be mitigated by using smart algorithms to choose where to load new programs or by running a tool that periodically shuffles the location of programs in memory and places them contiguously (compaction). The downside of this process is that it is slow and very IO intensive.
+When programs are loaded and unloaded from memory they create "holes". When a new request for allocation arrives, the OS has to decide where to place the new information. Three such strategies are:
+\begin{itemize}
+    \item First fit: allocate in the first hole that is big enough
+    \item Best-fit: allocate in the smallest hole that is big enough
+    \item Worst-fit: allocate in the largest hole
+\end{itemize}
+The last two strategies require searching over whole memory, unless holes are ordered by size.
 
-\image{images/Fragmentation.png}{8cm}{Fragmentation}
+\section{Fragmentation}
+This phenomenon of having non-contiguous data is called fragmentation. There are two types of fragmentation:
+\begin{itemize}
+    \item External fragmentation: memory space is not contiguous
+    \item Internal fragmentation: allocated memory is be slightly larger than requested memory
+\end{itemize}
+
+\image{images/External fragmentation.png}{8cm}{External fragmentation}
+\image{images/Internal fragmentation.png}{8cm}{Internal fragmentation}
+
+External fragmentation can be reduced by compaction. Compaction is done by a tool that periodically shuffles the location of programs in memory and places them contiguously. This process reduces wasted space, but it is slow and very IO intensive.
 
 \section{Paging and TLB}
-The fragmentation problem can be solved by allowing programs to be split into multiple segments. The program's logical memory is divided into blocks of same size called pages. Also physical memory is divided into same sized blocks. Then a table is maintained to translate logical addresses to physical addresses.
+The fragmentation problem can be solved by allowing programs to be split into multiple segments (this implies that the physical address space is not contiguous anymore). The program's logical memory is divided into blocks of same size called pages. Also physical memory is divided into same sized blocks called frames. Then a table called \italics{page table} is maintained to translate logical addresses to physical addresses.
 
 \image{images/Paging.png}{8cm}{Paging}
 
-Each address generated by CPU is divided into:
+Each virtual address generated by CPU is divided into:
 \begin{itemize}
     \item Page number (p) - used as an index into a page table which contains base address of each page in physical memory
     \item Page offset (d) - combined with base address to define the physical memory address that is sent to the memory unit
 \end{itemize}
+
+The page size must not be too large, otherwise there will be a lot of space wasted due to internal fragmentation. Also, the page size must not be too small, otherwise there will be a lot of overhead due to the large number of pages. Typically, a page size of 4KB is used.
 
 \image{images/Paging hardware.png}{12cm}{Paging hardware}
 \image{images/Paging example.png}{7cm}{Paging example}
@@ -49,19 +71,35 @@ The page table is kept in main memory. Two pointers are maintained:
     \item Page-table base register (PTBR) points to the page table
     \item Page-table length register (PRLR) indicates size of the page table
 \end{itemize}
-In this scheme every data/instruction access requires two memory accesses: one for the page table and one for the data/instruction. The lookup time can be improved by using a cache, which contains a table called translation look-aside buffer (TLB). Usage of cache is justified because it exploits temporal locality of programs (the tendency of programs to use data items over and again during the course of their execution). Each TLB entry stores also address-space identifiers (ASIDs), which stores which process owns that entry for address-space protection.
+In this scheme every data/instruction access requires two memory accesses: one to the page table and one to the actual page. The lookup time can be improved by using a cache, which contains a table called translation look-aside buffer (TLB). Usage of cache is justified because it exploits temporal locality of programs (the tendency of programs to use data items over and again during the course of their execution). Each TLB entry stores also address-space identifiers (ASIDs), which identifies which process owns that entry for address-space protection. In this way the TLB doesn't have to be flushed at every context switch. On a TLB miss, the entry is loaded into the TLB for faster access next time. This means that appropriate replacement algorithms need to be considered.
+
+The hit ratio is percentage of times that a page number is found in the TLB. The effective access time (EAT) for the TLB is given by
+$$ EAT = \text{hit ratio}\cdot \text{memory access time} + (1-\text{hit ratio})\cdot 2 \cdot \text{memory access time} $$
 
 \image{images/Paging TLB.png}{8cm}{Paging with TLB}
 
+\subsection{Memory protection}
+Memory protection is implemented by associating a protection bit with each frame to indicate if read-only or read-write access is allowed. 
+
+A valid/invalid bit attached to each entry in the page table: valid indicated that the associated page is in the process' logical address space, invalid that is not.
+
 \section{Page faults}
 
-Pages in the virtual memory space can be stored as frames in the physical memory or disks. Pages are brought into memory only when they are needed. In the page table each entry has a valid-invalid bit, which tells if the page is in memory or not. A \bold{page fault} happens a page is not in main memory.
+Pages in the virtual memory space can be stored as frames in the physical memory or disks. Pages are brought into memory only when they are needed (dynamic loading). A \bold{page fault} happens a page is not in main memory. To mark pages that are in RAM already a valid/invalid bit is used.
 
 \image{images/Virtual memory.png}{9cm}{Virtual memory}
 
-When a page fault happens, the operating system will look for an unoccupied frame in memory, copy the page from disk to memory and set the bit in the page table to valid.
+The full procedure for retrieving a page from memory goes as follows:
+\begin{enumerate}
+    \item Look up page table to see if valid bit is set. If not, a page fault happens and a trap is fired to the OS
+    \item If the reference is invalid, terminate the process. If it was valid but we have not yet brought in that page, we now page it in.
+    \item Find a free frame in memory
+    \item Swap page into frame via scheduled disk operation
+    \item Change page table to indicate page now in memory
+    \item Restart the instruction that caused the page fault
+\end{enumerate}
 
-Most operating systems maintain a free-frame list to quickly find a free frame. When a system starts up, all available memory is placed on the free-frame list.
+\image{images/Page fault.png}{9cm}{Page fault}
 
 \subsection{Cost of a page fault}
 
@@ -69,50 +107,53 @@ Let $p$ be the probability of page faults (where $p=0$ means there are no page f
 $$ \text{EAT}=(1-p)\cdot\text{memory access time} + p\cdot\text{page fault overhead} $$
 Usually memory access time is around $200\mu s$ and page fault overhead is $8 ms$.
 
-\subsection{Page replacement algorithms}
+\subsection{Page replacement strategies}
 
-If there is not enough space in memory, a page will be removed of memory with a procedure called page replacement. There are various algorithms for page replacements: FIFO, optimal, least recently used (LRU), most recently used (MRU), second chance.
+When a page fault occurs, the operating system must bring the desired page from secondary storage into main memory. Most operating systems maintain a free-frame list: a pool of free frames for satisfying such requests. If there are no free frames left, a page will be removed of memory with a procedure called page replacement. The goal of a page replacement algorithm is to have the lowest amount of page faults. Therefore, the algorithm is evaluated by running it on a particular string of memory
+references (reference string) and computing the number of page faults
+on that string.
+
+There are various algorithms for page replacements: FIFO, optimal, least recently used (LRU), most recently used (MRU), second chance.
 
 \subsubsection{First-in first-out}
-The first page that was brought into memory will be the one swapped first. This algorithm is not optimal and may exhibit Belady's Anomaly: more frames are supposed to produce less page faults, but this is not commonly true with FIFO. For example, let be given the sequence of frames 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5. A memory that holds four frames will produce more faults than a memory with three frames.
+The first page that was brought into memory will be the one swapped first. This algorithm can be implemented by storing the arrival time of each page. This algorithm is not optimal and may exhibit Belady's Anomaly: more frames are supposed to produce less page faults, but this is not usually true with FIFO. For example, let be given the sequence of frames 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5. A memory that holds four frames will produce more faults than a memory with three frames.
 
 \subsubsection{Optimal replacement}
 If we know the sequence of the next pages that will be used, the page that won't be used for the longest time will be removed first. Of course it is impossible to know the future, so this algorithm is impossible to implement. Nonetheless it can be used as a benchmark for other algorithms, since it is the optimal solution.
 
-\subsubsection{Least frequently used (LFU) algorithm}
-The operating system will replace the page that has not been used for the longest amount of time. This algorithm can be implemented by storing the current timestamp for each page when it gets accessed. The page with the lowest timestamp will be the one removed. This algorithm can be implemented also using a doubly linked list: every time a page is accessed it will be moved to the top of the list. The page at the bottom of the list will be the one removed.
+\subsubsection{Least recently used (LRU) algorithm}
+This algorithm exploits the principle of temporal locality. The operating system will replace the page that has not been used for the longest amount of time. This algorithm can be implemented by storing the current timestamp for each page when it gets accessed. The page with the lowest timestamp will be the one removed. This algorithm can be implemented also using a doubly linked list: every time a page is accessed it will be moved to the top of the list. The page at the bottom of the list will be the one removed.
 
-There exists also a variant called most frequently used algorithm, which purges the most frequently used page first. It is based on the argument that the page with the smallest count was probably just brought in and has yet to be used.
+\subsubsection{LRU approximations}
+LRU is a slow algorithm because it requires searching, therefore there have been found some approximated LRU algorithms which are quicker.
 
-\subsubsection{Approximated LFU}
-Each page has an has an associated reference bit, initially set to zero. When the page is referenced, the bit is set to one. The pages with the bits set to zero will be the one replaced.
+Reference bit: each page has a reference bit, initially set to zero. When the page is referenced, the bit is set to one. When a page needs to be replaced, the pages with the bit set to zero will be chosen first.
 
-\subsubsection{Second chance algorithm}
-Pages are stored in a LIFO queue, but have an additional reference bit. When a page gets loaded, it has the reference bit set to one. Then, when a page needs to be loaded, a scanner will go through the queue and flip the reference bit to zero. If it finds a page with the reference bit already set to zero, it will remove that page.
+Second chance algorithm: it is a FIFO algorithm, but each page has also the reference bit. If the page that has to be replaced according to FIFO has its reference bit is 1 it will be just set to zero and the algorithm will try to replace the next page in the FIFO queue (thus giving it a second chance).
 
-\subsubsection{Counting algorithms}
+\subsubsection{Counting algorithms (LFU and MFU)}
 In counting algorithms the OS keeps a counter of the number of references that have been made to each page. Then, depending on the algorithm chosen (least frequently used or most frequently used), the page with the smallest count or the largest count will be removed.
 
 \section{Allocation of frames to processes}
-Each process needs a minimum number of frames to be able to work without too many page faults. There are various algorithms to allocate frames to processes, the simplest ones are equal allocation and proportional allocation. In equal allocation each process gets the same amount of frames. In proportional allocation, each process gets a number of frames proportional to its size.
+Each process needs a minimum number of frames to be able to work without too many page faults. There are various algorithms to allocate frames to processes, the simplest ones are equal allocation and proportional allocation. In equal allocation each process gets the same amount of frames. In proportional allocation, each process gets a number of frames proportional to its size. Both of these strategies don't account for high and low priority tasks: assigning more frames to one process is likely to make it go faster and finish earlier.
 
-With multiple processes competing for frames, we can classify page-replacement algorithms into two broad categories: global replacement and local replacement. Global replacement allows a process to select a replacement frame from the set of all frames, even if that frame is currently allocated to some other process. Local replacement requires that each process select from only its own set of allocated frames.
+With multiple processes competing for frames, we can classify page-replacement algorithms into two broad categories: global replacement and local replacement. Global replacement allows a process to select a replacement frame from the set of all frames, even if that frame is currently allocated to some other process. Local replacement requires that each process select from only its own set of allocated frames. Global replacement is more common because it gives greater throughput, but the single process execution time is more variable. Local replacement gives more consistent results, but memory may be underutilized, thus leading to smaller throughput.
 
-A global replacement algorithm can be one that starts to remove pages when the number of free memory goes below a certain threshold. The kernel process that manages it is called reaper. This strategy can be applied to any of the algorithms seen previously.
+A global replacement algorithm can be one that starts to remove pages when the number of free memory goes below a certain threshold (instead of waiting for the free frame list to go to zero). The kernel process that manages it is called reaper. This strategy attempts to ensure there is always sufficient free memory to satisfy new requests, i.e. that the free-frame list is never empty.
 
 \section{Thrashing}
-If a process does not have enough frames to perform to perform its operations, the page-fault rate becomes very high. This high paging activity is called thrashing and leads to low CPU utilization and might induce the OS to spawn more processes, which worsen the situation. The problem can be solved by monitoring the page-fault frequency for every process. If the frequency is low, the process will lose a frame, while if it is too high the process will gain one frame.
+If a process does not have enough frames to perform to perform its operations, the page-fault rate becomes very high because the same pages get swapped over and over. This high paging activity is called thrashing and leads to low CPU utilization and might induce the OS to spawn more processes, which worsen the situation. The problem can be solved by monitoring the page-fault frequency for every process. If the frequency is low, the process will lose a frame, while if it is too high the process will gain one frame.
 
 \section{Swapping}
-A process can be swapped temporarily out of memory to a backing store, and then brought back into memory when execution is resumed.
+A whole process can be swapped temporarily out of memory to a backing store, and then brought back into memory when execution is resumed.
 
-Swapping can increase dramatically the time for the context switch. For example, if a 100MB process is swapped to hard disk with transfer rate of 50MB/sec, the swap out time of 2 seconds and additionally the swap in time for the new process is 2 more seconds.
+Swapping can increase dramatically the time for the context switch. For example, if a 100MB process is swapped to hard disk with transfer rate of 50MB/sec, the swap out time of 2 seconds and additionally the swap in time for the new process is 2 more seconds. This huge time penalty is why swapping is not generally used in modern operating systems. OSes decide to swap only when free memory is extremely low. Pages of data allocated to a process that are not in physical memory are stored in the paging file.
 
 \section{Management of the page table}
 The page table can be very big for large memories. For example, if each page table addresses 4KB of memory and the memory is 4GB big ($\approx 2^32$), then the page table would contain one million entries. Given that each process may use any number of pages, if each entry is 4 bytes, then the page table for each process is 4 MB big. Since it is very unlikely that a single process would use the whole memory, the page table can be stored in more efficient data structures, at the tradeoff of speed.
 
 \subsection{Hierarchical page tables}
-The page table can be broken into multiple pieces, and a quick lookup table can be maintained to access the various pieces of the page table. The time complexity for accessing a page is $O(logn)$, with respect to the constant complexity $O(1)$ of the basic table approach.
+The page table can be broken into multiple pieces, and a quick lookup table can be maintained to access the various pieces of the page table. The time complexity for accessing a page is $O(logn)$ (the time complexity of a simple page table is $O(1)$, because we know the exact address).
 
 \image{images/Hierarchical page table.png}{8cm}{Hierarchical page table}
 
@@ -125,23 +166,23 @@ Another possible data structure is the hash table. In case of collisions a linke
 Rather than each process having a page table and keeping track of all possible logical pages, track all physical pages in a single table. Each entry consists of the virtual address of the page stored in that real memory location, with information about the process that owns that page.
 
 \section{Segmentation}
-Using pages of fixed sizes opens the problem of internal fragmentation. This problem can be solved by dividing a process in multiple variable-sized pages, called segments. The segment table stores the information about all such segments, namely the base address and the limit (length).
+Using pages of fixed sizes leads to internal fragmentation. By using segmentation each process gets split in multiple segments, but the total size is equal to the size of the process. The segment table stores the information about all segments (base address and limit). 
 
 \image{images/Segmentation.png}{10cm}{Segmentation}
 
 \section{Mass storage systems}
 The most used devices for secondary storage in modern computers are hard disk drives (HDDs) and nonvolatile memory (NVM) devices.
 
-HDDs are made of spin platters of magnetically-coated material under moving read-write heads. Data is organized in sectors located in concentric tracks called cylinders. The access time to access a random sector is given by time to move the disk arm to the desired cylinder (seek time) and the time for desired sector to rotate under the disk head (rotational latency).
+HDDs are made of spin platters of magnetically-coated material under moving read-write heads. Data is organized in sectors located in concentric tracks called cylinders. The access time to access a random sector (or positioning time) is given by time to move the disk arm to the desired cylinder (seek time) and the time for desired sector to rotate under the disk head (rotational latency). A head crush happens if the disk head makes contact with the disk surface.
 
 \image{images/Hard drive machanism.png}{10cm}{Hard drive mechanism}
 
 The alternative to hard disks are nonvolatile memory devices, such as solid-state disks (SSD) or USB drives. They do not have mechanical parts, therefore they are more reliable to vibrations and impacts and faster. They are more expensive and are more complicated to manage. For example, the information stored can be erased only in chucks. There is also a limited amount of erasures, before the drive warns out. This complexity is managed by a NAND flash controller, which is attached to the memory and regulates access to the memory.
 
 \subsection{Scheduling}
-The latency time and the seek time of HDDs can be reduced by implementing smart algorithms that reorder the read and write requests to minimize the movements of the arm and the rotations of the platters. The basic algorithm, which does no optimization on the queue of requests, is the first-come first-served algorithm.
+The latency time and the seek time of HDDs can be reduced by implementing smart algorithms that reorder the read and write requests to minimize the movements of the arm and the rotations of the platters. Optimization can be done only when a queue of read and write operations exists. The basic algorithm, which does no optimization on the queue of requests, is the first-come first-served algorithm.
 
-The SCAN algorithm (or elevator algorithm) moves the arm at the end of the disk and moves towards the center. While moving it serves the requests received. The SCAN-C algorithm (C for circular) is an optimized version, that instead of servicing requests also on the trip back it jumps immediately to the center. The rationale is that it is very likely that there are no requests that need to be served immediately, since the head just passed on the outer sectors.
+The SCAN algorithm (or elevator algorithm) moves the arm from one end of the disk to the other and back. While doing that, it services requests in the queue. The SCAN-C algorithm (C for circular) is an optimized version of SCAN, where instead of servicing requests also on the trip back it jumps immediately to the start again. In this way the average waiting time is uniform for all positions. SCAN and C-SCAN perform better when there is a lot of information needed to be read and written.
 
 \subsection{Storage device management}
 A disk is divided into different sectors. Each sector can hold header information, plus data, plus error correction code. The sector size can be changed by low-level formatting.
@@ -154,11 +195,11 @@ Network-attached storage (NAS) is storage made available over a network rather t
 Cloud storage also provides access to storage across a network, but unlike NAS, data is retrieved using API calls at a software level.
 
 \subsection{RAID}
-RAID (redundant array of inexpensive disks) is a technique to offer redundancy of data. To achieve this it creates copies of the same data across multiple disk drives. It can also improve the read and write speed by using a technique called striping, where data is written in parallel to a group of disks. RAID is arranged into six different levels:
+RAID (redundant array of inexpensive disks) is a technique to offer redundancy of data and increase the mean time to failure and data loss. To achieve this it creates copies of the same data across multiple disk drives. It can also improve the read and write speed by using a technique called striping, where data is written and read in parallel from a group of disks. RAID is arranged into six levels:
 \begin{itemize}
-    \item Mirroring or shadowing (RAID 1) keeps duplicate of each
-    \item Striped mirrors (RAID 1+0) or mirrored stripes (RAID 0+1) provides high performance and high reliability
-    \item Block interleaved parity (RAID 4, 5, 6) uses much less redundancy
+    \item Mirroring or shadowing (RAID 1): each disk has a duplicate
+    \item Striped mirrors (RAID 1+0) or mirrored stripes (RAID 0+1): provides high performance and high reliability
+    \item Block interleaved parity (RAID 4, 5, 6): provide less redundancy
 \end{itemize}
 RAID within a storage array can still fail if the array fails, so automatic replication of the data between arrays is common. Frequently, a small number of hot-spare disks are left unallocated, automatically replacing a failed disk and having data rebuilt onto them.
 
