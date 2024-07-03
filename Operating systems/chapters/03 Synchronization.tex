@@ -2,8 +2,10 @@
 
 In modern operating systems processes can run concurrently. Although concurrency allows to achieve very high performance, it introduces some problems that need to be managed.
 
-\section{Critical section}
-The critical section problem happens when multiple processes are writing and reading from some shared data at the same time. The part of the code that modifies some shared data (updating common variables, writing to a file, updating tables...) is called \bold{critical section}.
+A situation when several processes access and manipulate the same data concurrently and the outcome of execution depends on the order in which the access takes place, is called a race condition. Because such situations occur frequently (especially in multithreaded systems), processes need to be synchronized and coordinated.
+
+\section{Critical section problem}
+The critical section problem happens when multiple processes are writing and reading from some shared data at the same time. The part of the code that modifies some shared data (such as updating common variables, writing to a file, updating tables...) is called \bold{critical section}.
 
 A solution to the critical section problem must satisfy the following requirements:
 \begin{enumerate}
@@ -12,10 +14,8 @@ A solution to the critical section problem must satisfy the following requiremen
     \item Bounded waiting: a bound must exist on the number of times that other processes are allowed to enter their critical sections after a process has made a request to enter its critical section and before that request is granted (note that this does not imply anything on the time a process stays in its critical section)
 \end{enumerate}
 
-\bold{Liveness} refers to a set of properties that a system must satisfy to ensure processes make progress. Indefinite waiting is an example of a liveness failure.
-
 \subsection{Peterson's solution}
-The Peterson's solution applies to single-core processor and with $n$ processes. The processes share two variables: \code{int turn} and \code{boolean flag[n]}. The \code{turn} variable indicates whose turn it is to enter the critical section. The \code{flag} array is used to indicate if a process is ready to enter the critical section.
+The Peterson's solution applies to single-core processor and with two processes. The processes share two variables: \code{int turn} and \code{boolean flag[n]}. The \code{turn} variable indicates whose turn it is to enter the critical section. The \code{flag} array is used to indicate if a process is ready to enter the critical section.
 
 \snippet{code/03chapter/peterson.c}{c}{Implementation of Peterson's solution for process $i$ with two processes $i$ and $j$}
 
@@ -31,36 +31,46 @@ Although Peterson's process is theoretically perfect, modern compilers and archi
 This can be fixed by using memory barriers. When a memory barrier instruction is performed, the system ensures that all loads and stores of all processes are completed before any subsequent load or store operations are performed. Therefore we can add a memory barrier before setting the flag to false in the while loop.
 
 \section{Hardware solutions}
-Many systems provide hardware support for implementing the critical section code. Special hardware instructions that allow us to either test-and-modify the content of a word, or to swap the contents of two words atomically.
+For single processor systems a simple solution to implement critical sections would be to disable interrupts when executing them. In this way the process cannot be preempted and can execute until the end of the critical section. This solution si very inefficient performance-wise. Many systems therefore provide hardware instructions for implementing the critical section code. Two such instructions are:
+\begin{itemize}
+    \item test-and-set instruction
+    \item compare-and swap instruction
+\end{itemize}
+These instructions must run atomically to work.
 
 \subsection{Test and set instruction}
-To access a critical section processes have to first call the \code{test_and_set()} instruction. This instruction must be non-interruptible (i.e. it has to be executed atomically).
+To access a critical section processes have to first call the \code{test_and_set()} instruction, which must be executed atomically.
 \snippet{code/03chapter/test_and_set.c}{c}{Implementation of the \code{test_and_set()} function}
 This solution satisfies mutual exclusion and progress, but it does not satisfy the bounded waiting requirement, because there is no mechanism that ensures that a process that requested access will enter the critical section.
 
 \subsection{Compare and swap instruction}
-The \code{compare_and_swap()} function must be executed atomically (for example it must be non-interruptible). When used with the lock it ensures that nobody else is reading or modifying the lock when it is executing.
+The \code{compare_and_swap()} function must be executed atomically. When used with the lock it ensures that nobody else is reading or modifying the lock when it is executing.
 
 To access a critical section processes have to first call the \code{compare_and_swap()} instruction on the lock and check if it is their turn. Then they will give the lock to the next process in line or release the lock. 
 \snippet{code/03chapter/compare_and_swap.c}{c}{Implementation of the \code{compare_and_swap()} function}
 This solution satisfies all requirements for the critical section.
 
-The \code{lock} variable from the previous example is an example of an \bold{atomic variable}, i.e. a variable whose value changes atomically (non-interruptible).
+\subsection{Atomic variables}
+The \code{lock} variable from the previous example is an example of an \bold{atomic variable}, i.e. a variable whose value changes atomically. Typically, instructions such as compare-and-swap are used as building blocks for other synchronization tools. An atomic variable is a variable that provides atomic operations on basic data types such as integers and booleans.
 
 \section{Software solutions}
 Previous solutions are complicated and generally inaccessible to application programmers. In this section some software solutions will be shown, under the assumption that the programmer has access to some atomic functions.
 
 \subsection{Mutex locks}
-A simple solution for solving the critical section problem in software is using a mutex lock. A mutex lock is a boolean variable indicating if lock is available or not. When a process wants to access a critical section, it tries to acquire the lock and waits until it is able to do so using the \code{acquire()} atomic function. Then, it releases it when it is done executing using the \code{release()} atomic function. This solution requires busy waiting (this lock therefore called a spinlock), which is undesirable.
+A simple solution for solving the critical section problem in software is using a mutex lock. A mutex lock is a boolean variable indicating if lock is available or not. When a process wants to access a critical section, it tries to acquire the lock and waits until it is able to do so using the \code{acquire()} atomic function. Then, it releases it when it is done executing using the \code{release()} atomic function. This solution requires busy waiting, which is undesirable. While a process is in its critical section, any other process that tries to enter its critical section must wait in a loop (busy waiting). This lock is therefore called spinlock.
 
-\subsection{Semaphore}
-Semaphores are similar to semaphores, but can be also generalized to more than one process. Let \code{S} be an integer variable. When a process wants to enter its critical section, it calls the \code{wait(S)} atomic function, which will wait until the \code{S} variable is one. Then it will decrement it back to zero and let the process execute its critical section. After the process has finished executing its critical section it will call the \code{signal(S)} atomic function. This function will increment \code{S}, thus signalling to the next process that it can execute. This solution is also affected by the busy waiting problem.
+\subsection{Semaphores}
+Semaphores are similar to mutex locks, but can be generalized to more than one process. Let \code{S} be an integer variable. When a process wants to enter its critical section, it calls the \code{wait(S)} atomic function, which will wait until the \code{S} variable is one. Then it will decrement it back to zero and let the process execute its critical section. After the process has finished executing its critical section it will call the \code{signal(S)} atomic function. This function will increment \code{S}, thus signalling to the next process that it can execute. This solution is also affected by the busy waiting problem. Depending on the domain of the integer variable S, there are two types of semaphores:
+\begin{itemize}
+    \item Counting semaphore: integer spans an unrestricted domain
+    \item Binary semaphore: integer can only be 0 or 1
+\end{itemize}
 
-\subsection{Semaphore without busy wait}
-Semaphores can be used to solve the busy waiting problem. This can be done by making the variable \code{S} a queue of processes that wish to execute their critical section. Processes are added to the queue using the \code{block()} atomic function. Now the \code{wait()} function will just call the \code{block()} function, thus avoiding busy waiting. The next process in the queue is executed by calling the \code{wakeup()} function. Therefore the \code{signal()} function will call the \code{wakeup()} function.
+\subsection{Semaphore without busy waiting}
+Semaphores can be implemented without suffering from the busy waiting problem. This can be done by storing in the semaphore object the queue of processes that wish to execute their critical section. When the \code{wait()} function is called, the S variable is decremented, the process is added to the queue and then it is sent to sleep (in this way busy waiting is avoided). When the \code{signal()} function is called, S is incremented and a check will be done to see if there are processes waiting in the queue (true if $S\le0$). If there are processes waiting, the first process gets removed from the list and woken up.
 
 \subsection{Monitors}
-Monitors are structures that abstracts synchronization and exposes to the programmer a set of functions to access the data that the monitor holds. 
+Monitors are structures that abstract synchronization and expose to the programmer a set of functions to access the data that the monitor holds.
 The monitor structure supports condition variables: these variables have a \code{x.wait()} method, which suspends the code of that process until the \code{x.signal()} method is called.
 
 \image{images/Monitor.png}{12cm}{Monitor with condition variables}
@@ -68,8 +78,13 @@ The monitor structure supports condition variables: these variables have a \code
 Monitors can be implemented using semaphores and mutex.
 
 \subsubsection{Resource allocator}
-The resource allocator is an example of a monitor. Assume that a single resource has to be shared among multiple processes with different priorities. This can be implemented using a monitor structure implementing an \code{acquire()} and \code{release()} procedure. The \code{x.wait(c)} is a \italics{conditional-wait} function, where $c$ is the priority. When \code{x.signal()} is called, the process with the lowest priority number will be executed.
+The resource allocator is an example of a monitor. Assume that a single resource has to be shared among multiple processes which will use it for a specific amount of time (given by the priority number). This can be implemented using a monitor structure implementing an \code{acquire()} and \code{release()} procedure. The \code{x.wait(c)} is a \italics{conditional-wait} function, where $c$ is the priority. When \code{x.signal()} is called, the process with the lowest priority number will be executed.
 \snippet{code/03chapter/monitor.c}{c}{Monitor for resource allocator}
+
+\section{Liveness and deadlock}
+\italics{Liveness} refers to a set of properties that a system must satisfy to ensure processes make progress. Indefinite waiting is an example of a liveness failure.
+
+\italics{Deadlock} happens when two or more processes are waiting indefinitely for an event that can be caused only by one of the processes waiting. Deadlock is an example of a liveness failure. Other examples are starvation (when a process waits indefinitely to acquire resources or to be executed) and priority inversion. Priority inversion is a scheduling problem where a lower priority process holds the lock needed by a higher priority process. Priority inversion can be solved by using priority inheritance: when a task blocks one or more higher-priority tasks, it ignores its original priority assignment and executes its critical section at the highest priority level of all the tasks it blocks.
 
 \section{Well-known synchronization problems}
 In the literature there are some well known synchronization problems which have been solved already, namely the bounded buffer problem, the readers-writers problem and the dining philosophers problem.
@@ -92,7 +107,9 @@ N philosophers sit at a round table. Each has one chopstick on the left and one 
 
 The problem is how to design a concurrent algorithm such that any philosopher will not starve; i.e., each can forever continue to alternate between eating and thinking.
 
-Note that if each philosopher takes a chopstick at the same time, then they will wait indefinitely for the other one and no one will eat, thus creating a deadlock.
+Note that if each philosopher takes the right chopstick at the same time, then they will wait indefinitely for the other one and no one will eat, thus creating a deadlock.
+
+There are several possible solutions that avoid deadlock: allowing a philosopher to pick both chopsticks at the same time (implemented in code using a critical section) or by introducing asymmetries (for ex. some philosophers take the right chopstick, while others the left one).
 
 \image{images/Philosophers.png}{6cm}{Philosophers' problem}
 
@@ -103,7 +120,7 @@ Note that if each philosopher takes a chopstick at the same time, then they will
 \section{Deadlock}
 Deadlock is a situation where two or more processes are waiting indefinitely for an event that can be caused by only one of the waiting processes.
 
-A deadlock can happen if the following conditions hold:
+A deadlock can happen if the following conditions hold simultaneously:
 \begin{itemize}
     \item Mutual exclusion: only one thread at a time can use the resource
     \item Hold and wait: a thread holding one resource is waiting to acquire additional resources held by other threads
@@ -117,23 +134,32 @@ Deadlocks can be represented using oriented graphs, called resource allocation g
     \item $\{T_1, T_2, \dots, T_n\}$ the set of threads
     \item $\{R_1, R_2, \dots, R_n\}$ the set of resources
 \end{itemize}
-The request edges are denoted by $T_i \rightarrow R_j$ and the assignment edges are denoted by $R_j \rightarrow T_i$.
+The request edges are denoted by $T_i \rightarrow R_j$ and the assignment edges are denoted by $R_j \rightarrow T_i$. Resources can have multiple instances, represented by dots on the graph.
 
-A deadlock happens if there are cycles in the graph and all resource instances of the cycles are inside a cycle.
+A deadlock happens if there is a cycle in the graph and all resources involved have ony one instance. If there is a cycle and resources have several instances, then there might be a deadlock. If there are no cycles, then there is no deadlock.
 
 \image{images/Deadlock.png}{4cm}{Resource allocation graph with deadlock}
 
 \subsection{Deadlock prevention}
 Deadlock can be prevented by avoiding one of the necessary conditions for deadlock.
 \begin{itemize}
-    \item Mutual exclusion: not feasible to not require it, must hold if there are non-sharable resources (such as when writing to files)
-    \item Hold and wait: must guarantee that whenever a thread requests a resource, it does not hold any other resources. The cons of this solution are low resource utilization and possibility of Starvation
-    \item No preemption
+    \item Mutual exclusion: not feasible to work without it, must hold if there are non-sharable resources (such as when writing to files)
+    \item Hold and wait: must guarantee that whenever a thread requests a resource, it does not hold any other resources. The cons of this solution are low resource utilization and possibility of starvation
+    \item No preemption: if process cannot obtain all the resources it needs, it will free them all, go to sleep and be waken up where all the resources are available
     \item Circular wait (solutions implemented in OSs): to avoid circular wait an order can be given to the resources. If a process wants to access two or more resources, it need to first obtain access to the resource with the lower index
 \end{itemize}
 
 \subsection{Deadlock avoidance}
-Deadlock can be avoided if the system knows which resources threads want to access. Then they can execute an algorithm that detects possible deadlocks and prevents them before they happen. This technique is feasible in real-time operating systems, where tasks have to be allocated in advance for schedulability evaluation.
+Deadlock can be avoided if the system knows which resources threads want to access. Then the system can execute an algorithm that detects possible deadlocks and prevents them before they happen. This technique is feasible in real-time operating systems, where tasks have to be allocated in advance for schedulability evaluation.
 
 \section{Thread-safe states}
-A state is safe if the system can allocate resources to the various processes in some particular order and avoid deadlock in doing so. An unsafe state is a state that may lead to deadlock. Not all unsafe states are actual deadlock.
+A state is safe if the system can allocate resources to the various processes in some particular order and avoid deadlock in doing so. More formally a state is safe if there exists a sequence of all threads in the system $\langle T_1, \dots, T_n \rangle$, such that for each $T_i$, the resources that can be requested by the thread can be satisfied by the currently available resources or by the resources held by the threads $T_j$, where $j \le i$. If a system is safe, no deadlocks can happen. An unsafe state is a state that may lead to deadlock. Not all unsafe states are actual deadlock.
+
+There are two algorithms to check of safe states:
+\begin{itemize}
+    \item Resource-allocation graph (only for single instance resources)
+    
+    A claim edge $T_i \rightarrow R_j$ is defined on the resource-allocation graph (represented using a dashed arrow), which means that process $T_i$ may request the resource. The claim edge is converted into a request edge when a thread requests the resource. The request can be granted only if converting the request edge
+    to an assignment edge does not result in the formation of a cycle in the resource allocation graph.
+    \item Banker's algorithm (multiple resource instances)
+\end{itemize}
