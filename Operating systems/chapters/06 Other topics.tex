@@ -1,6 +1,6 @@
 \chapter{Other topics}
 \section{Virtualization}
-The idea of virtualization is to abstract the access to the hardware, so that multiple operating systems can run at the same time. The software in charge of that is the virtual machine manager (VMM) or hypervisor. The OS that interfaces directly to the hardware is called host, while the ones running through a VMM are called guests. There are different types of VMMs:
+The idea of virtualization is to put a layer between the implementation of something ad its interface. An application of virtualization are virtual file systems. The same idea can be applied to virtualize access to hardware: the software in charge of this is called virtual machine manager (VMM) or hypervisor. The OS that interfaces directly to the hardware is called host, while the ones running through a VMM are called guests. There are different types of VMMs:
 \begin{itemize}
     \item Type 0 VMM: the VMM is implemented directly in hardware
     \item Type 1 VMM: the VMM is an OS-like program which allows execution of virtual machines and it runs at boot
@@ -39,8 +39,20 @@ Cryptography can be used as a tool to improve security (ex. authentication and c
 Firewalls are software or hardware solutions that limit network access between two security domains.
 
 \subsection{Principles of protection}
-\subsubsection{Principle of least privilege}
-Programs, users and systems should be given just enough privileges to perform their tasks. Properly set permissions can limit damage if entity has a bug or gets abused. Privileges can be set statically or dynamically. Rough-grained privilege management is simpler, but less effective. Fine-grained management is more complex and adds more overhead, but is more protective. Additionally, an audit log can be maintained to record all sensitive activities.
+A very important principle of protection is the principle of least privilege. This principle states that programs, users and systems should be given just enough privileges to perform their tasks. Properly set permissions can limit damage if entity has a bug or gets abused. Privileges can be set statically or dynamically. Rough-grained privilege management is simpler, but less effective. Fine-grained management is more complex and adds more overhead, but is more protective. Additionally, an audit log can be maintained to record all sensitive activities.
 
-\subsubsection{Protection rings}
-Components in a secure system can ordered by amount of privilege using the analogy of rings. For example, the kernel is in one ring and user applications in another.
+\subsection{Protection methods}
+Protection rings can be established: components are ordered by amount of privilege and are protected from each other. For example, the kernel is in one ring and user applications in another. This privilege separation requires hardware support.
+
+Other protection methods are sandboxing (running processes in a limited environment) and code signing (verifying that the software is genuine by checking its signature).
+
+\section{I/O systems}
+\subsubsection{I/O communication}
+The communication with I/O devices can be done in two ways:
+\begin{itemize}
+    \item Polling: the device sets a busy bit when it is communicating, the host periodically checks it waits until the device is not busy (host is busy waiting) and sets a command-ready bit when it wants to receive data.
+    \item Interrupts: I/O device can trigger an interrupt line, which is connected directly to the CPU. The line is checked by the processor after every instruction and each interrupt is managed by the interrupt handler. The interrupt handler can ignore (maskable interrupts) or give priority to some interrupts. The interrupt vector to dispatch the interrupt to correct handler. The interrupt mechanism is also used for software exceptions and page faults (traps).
+\end{itemize}
+
+\subsection{Direct memory access}
+Direct memory access (DMA) is a feature of computer systems that allows certain hardware subsystems to access main memory independently of the central processing unit (CPU). Without DMA, when the CPU is using programmed input/output, it is typically fully occupied for the entire duration of the read or write operation, and is thus unavailable to perform other work. With DMA, the CPU first initiates the transfer, then it does other operations while the transfer is in progress, and it finally receives an interrupt from the DMA controller when the operation is done. This feature is useful at any time that the CPU cannot keep up with the rate of data transfer, or when the CPU needs to perform work while waiting for a relatively slow I/O data transfer.  Many hardware systems use DMA, including disk drive controllers, graphics cards, network cards, sound cards.

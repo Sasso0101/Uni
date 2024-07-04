@@ -1,12 +1,7 @@
-\chapter{Filesystem}
+\chapter{Files and filesystem}
 A file system is a structure used by an operating system to organize and manage files on a storage device.
 
-Filesystems can be divided into general-purpose filesystems and specialized filesystems. General-purpose filesystems are the ones generally used to hold user data, such as files, directories, programs etc. General purpose filesystems are used by the operating system to help it implement special tasks, such as IO management and daemon management.
-
-\section{Features of a filesystem}
-A filesystem should manage files, access control, synchronization and protect, provide a high level interface for programs to use and interface with the physical hardware.
-
-\subsection{Files}
+\section{Files}
 Files can be of many types: text files, source files, executable files etc. Depending on the implementation of the operating system, each file has some attributes assigned to it, namely:
 \begin{itemize}
     \item Name: human-readable name
@@ -18,39 +13,52 @@ Files can be of many types: text files, source files, executable files etc. Depe
     \item Other fields: time, date, user identification...
 \end{itemize}
 
+The file control block (FCB) contains all information related to a file (ownership, permissions etc).
+
 \subsubsection{Operations on files}
 A filesystem should support the following operations: create, write, read, seek, delete, truncate, open, close.
 
-When a file is opened, the OS updates an "open file table", which tracks the files that are currently opened. The OS may offer the ability to lock a file, so that a process can earn the exclusive right to write to a file.
+When a file is opened, the OS updates an "open file table", which tracks the files that are currently opened. The OS may offer the ability to lock a file, so that a process (exclusive lock) or a group of processes (shared lock) can earn the exclusive right to write to a file.
 
-A file can be read sequentially or by direct access. More advanced methods involve the creating of an index of the file for a faster lookup.
+A file can be read sequentially or by direct access. More advanced methods involve the creating of an index of the file for a faster lookup. Sequential operations supports only the read/write next and reset operations, while direct access supports reading and writing to a specific position in the file.
 
 \subsection{Memory-mapped files}
 Similar to processes, also files can be loaded in smaller chunks into memory. To achieve this, the files are mapped to an address range within a process's virtual address space, and then paged in as needed using the ordinary demand paging system. File writes are done to the memory page frames, and are not immediately written out to disk.
 
 \subsection{Directories}
-Directories are a collection of nodes, which contain information about files or point to other directories. This implies that they create tree structures.
+Directories are a collection of nodes which point to files. Directories can be structured in different ways:
+\begin{itemize}
+    \item Single-level: single directory for all users
+    \item Two-level: separate directory for each user
+    \item Tree-structured: directories and files organized in a tree structure; general structure, scalable, easy to search, no file sharing support, possible file duplication
+    \item Acyclic-graph: tree structure with files and folders that point to other files (aliases), no information duplication
+\end{itemize}
 
-Most filesystems support creating "virtual" files that point to other files, which are located in other directories. While doing this, the filesystem creates also a backpointer to the "virtual" file. In this way, when the original file is deleted, also all aliases can be tracked back and deleted, too. Another problem that  has to be avoided is creating cycles (ex. "virtual" file that points to another "virtual" file that points to it). This check can be done when a link is created, by using a cycle detection algorithm.
+In acyclic graph structures, when a file is deleted, all other aliases need to be deleted too, therefore the filesystem maintains a list backpointer to the aliases. Another problem that has to be avoided is creating cycles (ex. alias file that points to another alias file that points to it). This check can be done when a link is created, by using a cycle detection algorithm.
 
 \subsection{Protection}
-Filesystems should implement a protection mechanism, such that the file owner/creator should be able to control what can be done by other users. For example, the owner may restrict the following modes of access: read, write, execute, append, delete, list. In Unix there are three modes of access: read, write, execute. Moreover, there are three classes of users: owner, group, others.
+Filesystems should implement a protection mechanism, so that the file owner/creator should be able to control what can be done by other users. For example, the owner may restrict the following modes of access: read, write, execute, append, delete, list. In Unix there are three modes of access: read, write, execute. Moreover, there are three classes of users: owner, group, others.
+
+\section{Filesystem}
+A filesystem should manage files, access control, synchronization and protect, provide a high level interface for programs to use and interface with the physical hardware.
+
+Filesystems can be divided into general-purpose filesystems and specialized filesystems. General-purpose filesystems are the ones generally used to hold user data, such as files, directories, programs etc. General purpose filesystems are used by the operating system to help it implement special tasks, such as IO management and daemon management.
 
 \section{Volumes}
 The entity containing file system is known as a volume. Each volume contains a volume control block (also known as superblock or master file table), which contains volume details, such as: total number of blocks, number of free blocks, block size and free block pointers or array.
 
 \section{File system implementation}
-A filesystem provides the user  an interface to the physical storage, creating a mapping between the logical layer to the physical hardware. A filesystems is usually implemented in layers. Layering useful for reducing complexity and redundancy, but adds overhead and can decrease performance.
+A filesystem provides the user an interface to the physical storage, creating a mapping between the logical layer to the physical hardware. A filesystems is usually implemented in layers.
 
 \image{images/Layered filesystem.png}{6cm}{Layered filesystem}
 
 \subsection{Filesystem layers}
-The device driver controls the devices by using commands, such as: read drive1, cylinder 72, track 2, sector 10, into memory location 1060. It outputs low-level hardware specific commands to hardware
+The device driver controls the devices by using commands. An example command is read drive1, cylinder 72, track 2, sector 10, into memory location 1060. It outputs low-level hardware specific commands to hardware
 controller.
 
 The basic file system translates command like "retrieve block 123" to a command that can be interpreted by the device driver. It also manages memory buffers and caches (allocation, freeing, replacement). The file organization module translates logical block numbers to physical block numbers and manages free space and disk allocation. 
 
-The logical file system manages metadata information about files. This information is stored in a file control block (FCB). The FCB is called inode (index node) in Linux.
+The logical file system manages metadata information about files (stored in file control block), directory management and protection. The FCB is called inode (index node) in Linux.
 
 The Linux inode contains the following information:
 \begin{itemize}
@@ -77,7 +85,7 @@ A simple implementation of directories is using a linked list. This implementati
 The allocation method refers to how disk blocks are allocated for files: contiguous allocation, linked allocation, allocation using a File Allocation Table (FAT), indexed allocation method.
 
 \subsubsection{Contiguous allocation method}
-Using contiguous allocation each file occupies set of contiguous blocks. This method is simple (requires no more information than the size of the file)  and has the best performance in most cases. The downside is that is prone to external fragmentation, thus requires frequent compaction (defragmentation).
+In contiguous allocation each file occupies a set of contiguous blocks. This method is simple (requires knowing only the size of the file)  and has the best performance in most cases. The downside is that is prone to external fragmentation, thus requires frequent compaction (defragmentation).
 
 \image{images/Contiguous allocation.png}{6.5cm}{Contiguous allocation}
 
@@ -87,20 +95,23 @@ In linked allocation each file is a linked list of blocks. The file ends at NULL
 \image{images/Linked allocation.png}{6.5cm}{Linked allocation}
 
 \subsubsection{FAT allocation method}
-In FATthe beginning of volume has a file allocation table, which holds the position in memory of each block. This greatly increases the speed of searching files. This allocation method still uses linked allocation for files, thus retaining also its advantages.
+In FAT allocation volumes contain a file allocation table, which holds the position in memory of each block, instead of storing it in the blocks as in liked allocation. This greatly increases the speed of searching files. This allocation method still uses linked allocation for files, thus retaining also its advantages.
 
 \subsubsection{Indexed allocation method}
 In this allocation method each file has its own table of pointers to its data blocks.
 
 \image{images/Indexed allocation method.png}{6.5cm}{Indexed allocation method}
 
+\subsubsection{Performance}
+The best file allocation method depends on how the files are being accessed. Linked allocation is good for sequential, but not for random access. Indexed allocation is more complex, because it requires an index block read then data block read.
+
 \subsection{Free space management}
-To provide quick file creation, the filesystem maintains a list of available blocks. This table consumes some disk space. An alternative would be to store in each free memory location the pointer to the next free position. The  upside is that this method does not waste any space, but obtaining a contiguous space may require a long search. This can be improved by modifying the linked list to store the address of the next $n-1$ free blocks in first free block, plus a pointer to next block that contains free-block pointers.
+Free space management is needed, so the OS can quickly find a free space when it has to write something to disk. The easiest method is that the filesystem maintains a list of available blocks (bit vector). The downside is that this table consumes disk space. An alternative would be to store in each free memory location the pointer to the next free position (linked list). The  upside is that this method does not waste any space, but obtaining a contiguous space may require a long search. This can be improved by modifying the linked list to store the address of the next $n-1$ free blocks in first free block, plus a pointer to next block that contains free-block pointers (grouping). Another method is to keep a table with each first free block and the count of the following free blocks (counting).
 
 \image{images/Improved free space list.png}{6.5cm}{Improved free space linked list}
 
 \section{Remote file systems}
-Distributed file systems allow the users to use the filesystem as normal, but the files and folders are actually stored on a remote machine. They are normally implemented based on the client-server model: the client asks the server to perform the various operations on files (read, write, delete, update etc.).
+Distributed file systems allow the users to use the filesystem as normal, but the files and folders are actually stored on a remote machine. They are normally implemented based on the client-server model: the client asks the server to perform the various operations on files (read, write, delete, update et).
 
 \section{Virtual file systems}
 A virtual file system is an abstract layer on top of a more concrete file system. A VFS specifies the interface (API) between the kernel and a concrete file system. In this way the kernel can use different filesystems (such as remote filesystems) in the same way. The virtual equivalent of the Linux inode is the vnode.
