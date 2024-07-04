@@ -15,7 +15,7 @@ Files can be of many types: text files, source files, executable files etc. Depe
 
 The file control block (FCB) contains all information related to a file (ownership, permissions etc).
 
-\subsubsection{Operations on files}
+\subsection{Operations on files}
 A filesystem should support the following operations: create, write, read, seek, delete, truncate, open, close.
 
 When a file is opened, the OS updates an "open file table", which tracks the files that are currently opened. The OS may offer the ability to lock a file, so that a process (exclusive lock) or a group of processes (shared lock) can earn the exclusive right to write to a file.
@@ -44,8 +44,8 @@ A filesystem should manage files, access control, synchronization and protect, p
 
 Filesystems can be divided into general-purpose filesystems and specialized filesystems. General-purpose filesystems are the ones generally used to hold user data, such as files, directories, programs etc. General purpose filesystems are used by the operating system to help it implement special tasks, such as IO management and daemon management.
 
-\section{Volumes}
-The entity containing file system is known as a volume. Each volume contains a volume control block (also known as superblock or master file table), which contains volume details, such as: total number of blocks, number of free blocks, block size and free block pointers or array.
+\subsection{Volumes}
+The entity containing the file system is known as volume. Each volume contains a volume control block (also known as superblock or master file table), which contains volume details, such as: total number of blocks, number of free blocks, block size and free block pointers or array.
 
 \section{File system implementation}
 A filesystem provides the user an interface to the physical storage, creating a mapping between the logical layer to the physical hardware. A filesystems is usually implemented in layers.
