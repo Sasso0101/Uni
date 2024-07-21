@@ -23,7 +23,7 @@ architecture rtl of vga_graphic is
     signal is_bar, is_ball : std_logic;
 
     signal ball : position;
-    signal p1, p2 : unsigned(POSITION_BITS-1 downto 0);
+    signal p1, p2 : unsigned(POSITION_BITS downto 0);
 
     component clk_wiz_0
         port (
@@ -86,9 +86,9 @@ begin
             VGA_G <= x"F";
             VGA_B <= x"F";
         else
-            VGA_R <= x"2";
-            VGA_G <= x"2";
-            VGA_B <= x"C";
+            VGA_R <= x"0";
+            VGA_G <= x"0";
+            VGA_B <= x"0";
         end if;
     end process;
 end architecture;

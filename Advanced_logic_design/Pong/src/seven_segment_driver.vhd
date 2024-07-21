@@ -1,10 +1,11 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.utilities.all;
 
 entity seven_segment_driver is
     generic (
-        size : integer := 20
+        size : integer := 19
     );
     port (
         clk : in std_logic;
@@ -52,7 +53,7 @@ begin
 
   -- Divide the clock
     process ( clk, res ) begin
-        if res = '1' then
+        if res = '0' then
             flick_counter <= ( others => '0' );
         elsif rising_edge( clk ) then
             flick_counter <= flick_counter + 1;
@@ -61,24 +62,24 @@ begin
 
   -- Select the anode
     with flick_counter( size - 1 downto size - 3 ) select AN <=
-        "00000001" when "000",
-        "00000010" when "001",
-        "00000100" when "010",
-        "00001000" when "011",
-        "00010000" when "100",
-        "00100000" when "101",
-        "01000000" when "110",
-        "10000000" when "111",
-        "00000000"  when others;
+        "11111110" when "000",
+        "11111101" when "001",
+        "11111011" when "010",
+        "11110111" when "011",
+        "11101111" when "100",
+        "11011111" when "101",
+        "10111111" when "110",
+        "01111111" when "111",
+        "11111111"  when others;
 
   -- Select the digit
     with flick_counter( size - 1 downto size - 3 ) select digit <=
-        bin1(3 downto 0) when "000",
-        bin1(7 downto 4) when "001",
+        bin2(3 downto 0) when "000",
+        bin2(7 downto 4) when "001",
         (others => '0')  when "010",
         (others => '0') when "011",
-        bin2(3 downto 0) when "100",
-        bin2(7 downto 4) when "101",
+        bin1(3 downto 0) when "100",
+        bin1(7 downto 4) when "101",
         (others => '0') when "110",
         (others => '0') when "111",
         (others => '0') when others;

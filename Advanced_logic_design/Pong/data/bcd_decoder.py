@@ -4,7 +4,7 @@
 import sys
 from PIL import Image
 
-def decoder(max, bits):
+def decoder(max, digits):
 	filename = 'bcd.coe'
 	bcd = open(filename, 'w')
 	bcd.write('; Binary to BCD lookup table\n')
@@ -16,7 +16,7 @@ def decoder(max, bits):
 		temp_num = number
 		bcd_final = ''
 		print('number {0}'.format(number))
-		for _ in range(0, bits):
+		for _ in range(0, digits):
 			digit = int(temp_num % 10)
 			temp_num = int(temp_num / 10)
 			bcd_final = ('{:0=4b}{}'.format(digit, bcd_final))

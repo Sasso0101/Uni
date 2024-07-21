@@ -11,3 +11,7 @@ a.out
 target/
 _minted-main/
 *.synctex.gz
+
+**/vivado_project/*
+!**/vivado_project/*.xpr
+!**/vivado_project/*.srcs/*
