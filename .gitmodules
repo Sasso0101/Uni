@@ -7,9 +7,6 @@
 [submodule "Advanced programming/rustbeef_project"]
 	path = Advanced programming/rustbeef_project
 	url = https://github.com/ThomasPasquali/rustbeef_project.git
-[submodule "Advanced programming/-f"]
-	path = Advanced programming/-f
-	url = https://github.com/Advanced-Programming-2023/Robotic-Lib.git
 [submodule "Advanced programming/Robotic-Lib"]
 	path = Advanced programming/Robotic-Lib
 	url = https://github.com/Advanced-Programming-2023/Robotic-Lib.git
