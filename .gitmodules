@@ -1,3 +1,15 @@
 [submodule "Advanced_logic_design/ALD_Project"]
 	path = Advanced_logic_design/ALD_Project
 	url = https://github.com/Sasso0101/ALD_Project.git
+[submodule "Advanced programming/Rustbeef"]
+	path = Advanced programming/Rustbeef
+	url = https://github.com/ThomasPasquali/Rustbeef.git
+[submodule "Advanced programming/rustbeef_project"]
+	path = Advanced programming/rustbeef_project
+	url = https://github.com/ThomasPasquali/rustbeef_project.git
+[submodule "Advanced programming/-f"]
+	path = Advanced programming/-f
+	url = https://github.com/Advanced-Programming-2023/Robotic-Lib.git
+[submodule "Advanced programming/Robotic-Lib"]
+	path = Advanced programming/Robotic-Lib
+	url = https://github.com/Advanced-Programming-2023/Robotic-Lib.git
