@@ -1,0 +1,102 @@
+\documentclass[12pt]{book}
+\usepackage[english]{babel}
+\usepackage{amsmath, graphicx, float, enumitem, microtype, tgpagella, bookmark, fancyhdr, underscore, minted, emptypage, mdframed, subfig}
+\usemintedstyle{vs}
+\usepackage[a4paper, margin={2.5cm}]{geometry}
+\usepackage[hypcap=false, skip=0pt]{caption}
+\setlist[itemize]{noitemsep, topsep=0pt}
+\setlist[enumerate]{noitemsep, topsep=0pt}
+\usepackage[T1]{fontenc}
+\usepackage{subfiles} % import last
+\usepackage{color}
+\definecolor{light-gray}{rgb}{0.9,0.9,0.9}
+\raggedbottom
+\linespread{1.1}
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{20pt}
+\fancyhead[LE,RO]{\small \leftmark}
+\fancyfoot[LE,RO]{\thepage}
+\hypersetup{ colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,
+    urlcolor=blue,
+    citecolor=black,
+    pdftitle={Project report},
+    pdfpagemode=FullScreen }
+
+\makeatletter
+% don't use roman numbers in the front matter
+\renewcommand{\frontmatter}{\cleardoublepage\@mainmatterfalse\pagenumbering{arabic}}
+% don't reset page numbering at \mainmatter
+\renewcommand{\mainmatter}{\cleardoublepage\@mainmattertrue}
+\makeatother
+
+\newcommand{\image}[3]{
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=#2]{#1}
+        \caption{#3}
+        \label{#3}
+    \end{figure}
+}
+\newcommand{\imagelab}[4]{
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=#2]{#1}
+        \caption{#3}
+        \label{#4}
+    \end{figure}
+}
+\newcommand{\imageside}[7] {
+    \begin{figure}[H]%
+        \centering
+        \begin{tabular}{@{}c@{}}
+        \subfloat[\centering #3]{{\includegraphics[width=#2]{#1}\label{#3} }}%
+        \end{tabular} \qquad
+        \begin{tabular}{@{}c@{}}
+        \subfloat[\centering #6]{{\includegraphics[width=#5]{#4}\label{#6} }}%
+        \end{tabular}
+        \caption{#7}%
+        \label{#7}
+    \end{figure}
+}
+\newcommand{\italics}[1]{\emph{#1}}
+\newcommand{\bold}[1]{\textbf{#1}}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\renewcommand\arraystretch{1.5}
+\mdfdefinestyle{MyFrame}{
+    backgroundcolor=light-gray
+}
+\newcommand{\snippet}[4]{
+    \begin{listing}[H]
+        \begin{mdframed}[style=MyFrame]
+            \inputminted[tabsize=2]{#2}{#1}
+        \end{mdframed}
+        \caption{#3}
+        \label{#4}
+    \end{listing}
+}
+
+\begin{document}
+
+\title {
+    \fontsize{40}{60}\bold{Parallel computing}
+    \vspace{1.5cm}
+    \begin{center}
+        \includegraphics[width=6cm]{images/cover.png}
+    \end{center}
+}
+  
+\author{\Large Salvatore Andaloro}
+
+\date{\Large \today}
+\frontmatter
+\maketitle
+\tableofcontents
+\mainmatter
+
+\subfile{00 Introduction.tex}
+\newpage
+
+\end{document}
