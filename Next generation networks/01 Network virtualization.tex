@@ -1,0 +1,39 @@
+\chapter{Network virtualization}
+Network virtualization refers to the ability of decoupling the physical infrastructure and topology from a logical topology or infrastructure, typically by creating overlay networks.
+
+\section{VLAN}
+Virtual Local Area Networks (VLAN) are used to divide a physical network into several broadcast domains. VLAN is implemented at layer 2 (data link layer), therefore the devices responsible for VLANs are switches.
+
+There are two ways of implementing VLANs: port-based or using tagged packets. In port-based VLANs a switch is configured to assign specific ports to specific VLANs. In VLANs using tagged packets, special fields are used by the host to define to which VLAN the frame belongs to. The following fields need to be set (part of the IEEE 802.1Q Frame):
+\begin{itemize}
+  \item TPI (Tag Protocol Identifier): two bytes with fixed value (81 00) to identify frame as 802.1Q
+  \item TCI (Tag Control Information): two VLAN tag bytes, first three bits specify frame priority, the fourth bit (CFI) is 1 for frames belonging to token ring LANs and the remaining 12 bits (VID) specify the VLAN tag (0 to 4095)
+\end{itemize}
+
+\image{images/VLAN frame.png}{11cm}{VLAN frame}
+
+\section{VPN}
+A Virtual Private Network is a type of private network that uses a public network, such as the Internet to communicate. VPNs must implement four services: authentication (validating that the data was sent from the sender), access control (limiting unauthorized users from accessing the network), confidentiality (preventing the data to be read or copied as the data is being transported), data integrity (ensuring that the data has not been altered during transport). Data confidentiality is ensured by using encryption, based on  the public key encryption technique. The data to be transported by the VPN is encapsulated into encrypted datagrams, which are then encapsulated into the outer datagram, visible to the public network. Datagrams are transported to the destination over a virtual point-to-point connection made through a public network called tunnel.
+
+There are multiple VPN protocols:
+\begin{itemize}
+  \item PPTP - Point-to-Point Tunneling Protocol
+  \item L2TP - Layer 2 Tunneling Protocol
+  \item IPsec - Internet Protocol Security
+  \item WireGuard - carries traffic over UDP
+  \item SOCKS
+\end{itemize}
+
+VPNs can securely connect single clients to a remote network over a public network or bridge multiple networks together (site-to-site VPN).
+
+VPNs can be implemented in hardware inside a router (easy to use and deploy, high throughput, lack of flexibility and higher cost), on the firewall or in software (flexible, low cost, less efficient, more complicated to deploy).
+
+\section{VXLAN}
+Virtual eXtensible LAN (VXLAN) is a network virtualization technology which encapsulates OSI layer 2 Ethernet frames within layer 4 UDP datagrams, with an added VXLAN header. Compared to single-tagged IEEE 802.1Q VLANs which provide a limited number of layer-2 VLANs (4094, using a 12-bit VLAN ID), VXLAN increases scalability up to about 16 million logical networks (using a 24-bit VNID) and allows for layer-2 adjacency across IP networks.
+
+\image{images/VXLAN.png}{11cm}{L2 frame encapsulated inside a UDP packet}
+
+VXLANs use devices called VTEP (VXLAN Tunnel Endpoint) that encapsulate and decapsulate the packets and map the devices connected to it to different VXLANs. Each VTEP has therefore two interfaces: one is to a switch connected to the devices in the LAN, while the other is an IP interface towards the IP transport network. The IP network between the VTEPs is independent from the VXLAN network, because it simply routes encapsulated packets on the basis of the IP address in the external header, which has the starting VTEP as source IP and terminating VTEP as destination IP.
+
+\image{images/VXLAN topology.png}{7cm}{VXLAN topology}
+\image{images/VXLAN packet.png}{10cm}{Packet travelling through a VXLAN network}

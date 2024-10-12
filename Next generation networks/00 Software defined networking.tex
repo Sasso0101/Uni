@@ -1,0 +1,69 @@
+\chapter{Software defined networking}
+The network layer manages moving packets from the input to the output port of the router (forwarding - data plane) and determining the route taken by a packet from its source to its destination (routing - control plane). There are two approaches to structuring the network control plane: a decentralized approach and a centralized approach. In the decentralized structure, each router routes packets according to its own logic and runs a proprietary OS and implementation of the Internet protocols. In the centralized structure, a remote controller centrally manages all routers in the network by modifying their routing tables. This is called Software defined networking (SDN).
+\imageside{images/decentralized_control.png}{7.3cm}{Per-router control plane}{images/centralized_control.png}{7.3cm}{SDN control plane}{Control plane approaches}
+
+The advantages of SDN are the avoidance router misconfigurations, better management of traffic flow due to having full knowledge and control of the whole network and the availability of many choices for the routing software, including open-source solutions, fostering raping innovation.
+
+SDN networking can be divided into three components:
+\begin{itemize}
+  \item Data-plane switches: fast and simple switches implementing data plane forwarding in hardware and supporting the reprogramming of the routing ables using a standard API (ex. OpenFlow)
+  \item SDN controller: maintains network state information (state of switches, network links, services) and interacts with network applications and network switches. Usually implemented as a distributed system for performance, scalability, fault tolerance, robustness (ex. OpenDaylight, ONOS)
+  \item Network-control apps: standalone programs which implement control functions by interacting with the API provided by the SDN controller
+\end{itemize}
+
+\image{images/SDN.png}{6cm}{SDN components}
+
+\section{OpenFlow protocol}
+OpenFlow is a communications protocol that gives access to the forwarding plane of a network switch or router over the network. OpenFlow relies on TCP (with optional encryption). OpenFlow supports three classes of messages, where each class provides a specific set of actions:
+\begin{itemize}
+  \item Controller-to-switch messages:
+  \begin{itemize}
+    \item features: controller queries switch features, switch replies
+    \item configure: controller sets switch configuration parameters
+    \item modify-state: add, delete, modify flow entries in the OpenFlow tables
+    \item packet-out: controller can send this packet out of specific switch port
+  \end{itemize}
+  \item switch-to-controller (asynchronous):
+  \begin{itemize}
+    \item packet-in: transfer packet to controller
+    \item flow-removed: inform controller that a flow table entry has been deleted
+    \item port status: inform controller of a change on a port
+  \end{itemize}
+\end{itemize}
+
+\section{SDN example}
+The following is an example of a SDN control/data plane interaction:
+\begin{enumerate}
+  \item S1, experiencing link failure uses OpenFlow port status message to notify controller
+  \item SDN controller receives OpenFlow message and updates link status info
+  \item Dijkstra's routing algorithm application, which has previously registered to be called when ever link status changes, is called
+  \item Dijkstra's routing algorithm access network graph and link state info stored by the controller and computes new routes
+  \item Link state routing application interacts with flow-table-computation component in SDN controller, which computes new flow tables
+  \item Controller uses OpenFlow to install new tables in switches that need updating
+\end{enumerate}
+
+\image{images/SDN example.png}{7cm}{SDN example}
+
+\section{Network management}
+Network management includes the deployment of the hardware, software, and human elements to control the network and satisfy performance and quality of service requirements at a reasonable cost.
+
+Network management is made of multiple components: a \italics{managing} server which interacts with \italics{managed devices} (or agents) (equipment with configurable hardware and software components) through a \italics{network management protocol} to exchange data and for configuration.
+
+The protocol between the server and the managed devices can be implemented in different ways: using a CLI over an SSH interface (ex. bash scripts), SNMP/MIB or NETCONF/YANG.
+
+\subsection{SNMP}
+SNMP (Simple Network Management Protocol) is a protocol for organizing and modifying the configuration about managed devices. SNMP supports two types of communications: get/set request from the controller, followed by a response by the agent or trap messages, used by the agent to inform the controller of some event.
+
+\image{images/SNMP protocol.png}{11cm}{SNMP protocol}
+
+Data exchanged using the SNMP protocol is organized in variables. Related variables are grouped in management information base (MIB) modules. There are 400 MIB modules defined in RFCs and many more vendor-specific MIBs.
+
+\image{images/MIB variables.png}{7.5cm}{MIB variables for the UDP protocol}
+
+\subsection{NETCONF}
+The Network Configuration Protocol (NETCONF) is another network management protocol which provides mechanisms to install, manipulate, and delete the configuration of network devices. Its operations are realized on top of a simple Remote Procedure Call (RPC) layer. The NETCONF protocol uses XML data encoding for the configuration data as well as the protocol messages. Messages are exchanged over secure and reliable transport protocol (ex. TLS).
+
+XML data exchanged over NETCONF can be generated from another data modeling language called YANG.
+
+\image{images/NETCONF.png}{12cm}{NETCONF exchange}
+\image{images/NETCONF operations.png}{14cm}{NETCONF operations}
