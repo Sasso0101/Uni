@@ -15,3 +15,5 @@ _minted-main/
 **/vivado_project/*
 !**/vivado_project/*.xpr
 !**/vivado_project/*.srcs/*
+
+**/Parallel computing/**/*.sh
