@@ -22,7 +22,7 @@ int main() {
         a[i] = b[i] = c[i] = i;
     }
     struct timeval start, end;
-    gettimeofday (& start , NULL );
+    gettimeofday(&start, NULL);
 
     // Code to measure
     array_operations(a, b, c);
