@@ -1,15 +1,24 @@
 ### Optimizing for the architecture
-Modern Intel processors support vector operations with 256 bits (AVX2) and 512 bits (AVX-512). AVX-512 doesn't make sense to use because the CPU lowers the clock, thus resulting in the same execution time. To enable this instruction set on supported CPUs, use the flag `-march=native (-mtune=native)`. To force vectorization with 512 bits use the flag `-mprefer-vector-width=256`.
+Modern Intel processors support vector operations with 256 bits (AVX2) and 512 bits (AVX-512). AVX-512 doesn't make sense to use because the CPU lowers the clock, thus resulting in the same execution time. To enable this instruction set on supported CPUs, use the flag `-march=native (-mtune=native)`. To force vectorization with 512 bits use the flag `-mprefer-vector-width=512`. This is disabled by default because when using AVX-512 instructions the clock frequency is reduced, leading to the same performance [^1].
 
+[^1]: https://en.wikipedia.org/wiki/AVX-512#Reception
 ### Checking for auto-vectorization
-`gcc` can automatically vectorize loops.
+`gcc` can automatically (some) vectorize loops.
+
 Vectorizable loops: https://gcc.gnu.org/projects/tree-ssa/vectorization.html
+
 Guide to vectorization: https://colfaxresearch.com/knl-avx512/
 
-Flag to print the auto-vectorization report: `-fopt-info-vec-all`
+Flag to print the auto-vectorization report: `-fopt-info-vec-all`.
+To obtain more info about the gcc optimizations see https://gcc.gnu.org/onlinedocs/gcc/Developer-Options.html#index-fopt-info.
+
+In the report gcc will sometimes complain that it cannot vectorize loops because of data dependencies (i.e. the result of one operation may affect the input of another one in the same vector operation). If you are sure that there are no data dependencies, you can force gcc to ignore this check by adding `#pragma GCC ivdep` right before the affected loop.
+
+More loop pragmas can be found at https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html.
 
 ### Useful commands for profiling
 likwid docs: https://github.com/RRZE-HPC/likwid/wiki/likwid-perfctr
+
 likwid tutorial: https://blogs.fau.de/hager/files/2021/10/sc21-06_tools_part2.pdf
 
 To profile a specific function inside C code, use the following markers:
