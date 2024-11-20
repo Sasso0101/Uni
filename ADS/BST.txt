@@ -1,0 +1,9 @@
+is_BST(r, min, max) {
+  if r == null {
+    return true
+  }
+  if r < min or r > max or !is_BST(r.left, min, r) or !is_BST(r.right, r, max) {
+    return false
+  }
+  return true
+}
