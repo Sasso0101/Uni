@@ -1,17 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-
-#define TIMER_START S=get_timestamp()
-#define TIMER_STOP E=get_timestamp()
-
-double get_timestamp() {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (double)ts.tv_sec + (double)ts.tv_nsec * 1.e-9;
-}
+#include <likwid.h>
 
 int size = 4096;
+int runs = 2;
 
 void init_rand(float **m) {
     for (int i = 0; i < size; i++) {
@@ -43,46 +35,42 @@ int check_sym(float **m) {
 }
 
 void transpose(float **m, float **t) {
+    LIKWID_MARKER_INIT;
+    LIKWID_MARKER_START("transpose");
     for (int i = 0; i < size; i++) {
-        #pragma GCC ivdep
         for (int j = 0; j < size; j++) {
             t[i][j] = m[j][i];
         }
     }
+    LIKWID_MARKER_STOP("transpose");
+    LIKWID_MARKER_CLOSE;
 }
 
 int main(int argc, char **argv) {
-    if (argc > 1) {
+    if (argc > 2) {
         size = strtol(argv[1], NULL, 10);
     }
 
     // Run the transpose multiple times to get an average
-    float **m = (float **)malloc(size * sizeof(float *));
-    float **t = (float **)malloc(size * sizeof(float *));
-    for (int i = 0; i < size; i++) {
-        m[i] = (float *)malloc(size * sizeof(float));
-        t[i] = (float *)malloc(size * sizeof(float));
-    }
-    // Initialize matrix randomly until it is not symmetric
-    do {
+    for (int run = 0; run < runs; run++) {
+        float **m = (float **)malloc(size * sizeof(float *));
+        float **t = (float **)malloc(size * sizeof(float *));
+        for (int i = 0; i < size; i++) {
+            m[i] = (float *)malloc(size * sizeof(float));
+            t[i] = (float *)malloc(size * sizeof(float));
+        }
+        // Initialize matrix randomly
         init_rand(m);
-    } while (check_sym(m));
 
-    // Check matrix symmetry
-    // int is_sym = check_sym(m);
+        // Check matrix symmetry
+        // int is_sym = check_sym(m);
 
-    double S=0.0, E=0.0;
-    TIMER_START;
-    // Compute naive transpose
-    transpose(m, t);
-    TIMER_STOP;
-
-    // Print wall time
-    printf("%f\n", E-S);
-
-    // Free memory
-    free(m);
-    free(t);
+        // Compute naive transpose
+        transpose(m, t);
+        // Free memory
+        free(m);
+        free(t);
+    }
 
     return 0;
 }

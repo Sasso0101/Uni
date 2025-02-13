@@ -1,74 +1,75 @@
 #include <iostream>
-#include <string.h>
+#include <string>
 using namespace std;
 
-void push(int &, char *);
-char *pop(int &);
-int evaluate(int&);
+class Book{
+    private:
+        string author;
+        string title;
+    public:
+        Book(string author, string title){
+            this->author = author;
+            this->title = title;
+        }
+};
 
-const int MAX_SIZE = 10;
-char *stack[MAX_SIZE];
+class Borrower{
+    private:
+        string name;
+    public:
+        Borrower(string name){this->name = name;}
+};
 
-int main(int argc, char *argv[]) {
-	if(argc==1){
-		cout<<"Too few arguments"<<endl;
-	} else if (argc>=MAX_SIZE){
-		cout<<"Too many arguments"<<endl;
-	}
-	
-	int last=-1;
-	for (int i=1; i<argc; i++){
-		push(last, argv[i]);
-	}
-	
-	
-	int res =evaluate(last);
-	cout<<"The result of the operation is "<<res;
-	return 0;
-}
+class Borrowing{
+};
+
+class Library{
+    private:
+        struct date{
+            int year;
+            int month;
+            int day;
+        };
+
+        template<typename T>
+        struct node{
+            T value;
+            node* next;
+
+						node<T>(T val): value(val) {}
+        };
+
+        // node<Book>* list_book = NULL;
+        // node<Borrower>* list_borrower = NULL;
+        // node<Borrowing>* list_borrowing = NULL;
+
+        template<typename T>
+        void p_add_node(node<T>* &list, T A){
+            if(list == NULL){
+                list = new node<T>(A);
+            }
+            else{
+                node<T>* p = list;
+                while(p->next!=NULL){p=p->next;}
+
+                p->next = new node<T>(A);
+                p = p->next;
+            }
+        }
+    public:
+        Library(){}
+        void Lib_add_book(string author, string title,node<Book>* list_book){
+            Book A(author,title);
+            p_add_node<Book>(list_book,A);
+        }
+        void Lib_add_borrower(string name, node<Borrower>* list_borrower){
+            Borrower A(name);
+            p_add_node<Borrower>(list_borrower,A);
+        }
+};
+
+int main(){
 
 
-void push (int &last, char *number) {
-	last+=1;
-	stack[last]=number;
-}
-
-char *pop (int &last) {
-	char *number = stack[last];
-	stack[last]=0;
-	last-=1;
-	return number;
-}
-	
-int evaluate (int &last) {
-	
-	char *p=pop(last);
-    cout << p;
-	
-	if(p[0]=='+'||p[0]=='-'||p[0]=='*'||p[0]=='/') {
-	
-		int v1=evaluate(last);
-		int v2=evaluate(last);
-		
-		switch(p[0]) {
-			case '+':
-			    return v1+v2;
-			    break;
-			case '-':
-			    return v1-v2;
-			    break;
-			case '*':
-			    return v1*v2;
-                break;
-			case '/':
-			    return v1/v2;
-                break;
-		}
-        return 0;
-	} 
-	else{
-		int res=stoi(p);
-		return res;
-        return 0;
-	}
+    return 0;
 }

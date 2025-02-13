@@ -44,6 +44,9 @@ int check_sym(float **m) {
 
 void transpose(float **m, float **t) {
     for (int i = 0; i < size; i++) {
+        // gcc thinks that this loop can't be vectorized because of a data dependence
+        // since this is not the case, force gcc to ignore the data dependency check
+        // by adding the ignore vector dependency pragma
         #pragma GCC ivdep
         for (int j = 0; j < size; j++) {
             t[i][j] = m[j][i];

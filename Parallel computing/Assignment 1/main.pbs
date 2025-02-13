@@ -1,0 +1,59 @@
+#!/bin/bash
+# Job name
+#PBS -N parco_assignment_1
+# Output files
+#PBS -o ./stdout.o
+#PBS -e ./stderr.e
+# Queue name
+#PBS -q short_cpuQ
+# Set the maximum wall time
+#PBS -l walltime=0:01:00
+# Number of nodes, cpus, mpi processors and amount of memory
+#PBS -l select=1:ncpus=1:mem=1gb
+
+# Import modules
+module load gcc91
+module load likwid-4.3.4
+module load python-3.10.14
+
+# Install python packages
+# pip3 install matplotlib pandas
+
+# Select the working directory
+cd /home/salvatore.andaloro/Assignment_1
+
+# Alias for gcc compiler with likwid libraries linked
+# gcc_likwid='gcc-9.1.0 -O3 -DLIKWID_PERFMON -I /apps/likwid-4.3.4/include -L /apps/likwid-4.3.4/lib -llikwid'
+
+# Remove previous results
+rm -r results
+# Create directories for plots
+mkdir -p results/plots
+
+#Flags
+declare -A flags
+flags=(["sequential.out"]="-O1 sequential.c" ["sequential-unroll.out"]="-O1 -funroll-loops sequential.c" ["sequential-unroll-native.out"]="-O1 -funroll-loops -march=native sequential.c" ["sequential-unroll-native-vect.out"]="-O1 -funroll-loops -march=native -ftree-loop-vectorize implicit_parallel.c")
+# Matrix sizes
+sizes=(64 128 256 512 1024 2048 4096 8192)
+# Number of runs for each size
+runs=5
+
+# Run codes
+for code in "${!flags[@]}"
+do
+  printf "Running $code\n"
+  for i in ${sizes[@]}
+  do
+    printf "$i... "
+    for (( j = 0 ; j <= $runs ; j++ ))
+    do
+      mkdir -p results/$code
+      gcc-9.1.0 ${flags[$code]} -o $code
+      ./$code $i > results/$code/$(printf "%04d\n" $i)\_$(printf "%02d\n" $j).txt
+    done
+  done
+  printf "\n"
+done
+
+# Collect data and draw plots
+python3 main.py

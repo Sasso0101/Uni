@@ -25,7 +25,6 @@ void print_mat(float **m) {
 }
 
 int check_sym(float **m) {
-    LIKWID_MARKER_START("Symmetry check");
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < i; j++) {
             if (m[i][j] != m[j][i]) {
@@ -33,7 +32,6 @@ int check_sym(float **m) {
             }
         }
     }
-    LIKWID_MARKER_STOP("Symmetry check");
     return 1;
 }
 
@@ -56,13 +54,13 @@ void blocked_tranpose(float **m, float **t, int i1, int i2, int j1, int j2) {
 
 void divide_transpose(float **m, float **t) {
     LIKWID_MARKER_INIT;
-    LIKWID_MARKER_START("Transpose");
+    LIKWID_MARKER_START("transpose");
     for (int i = 0; i < SIZE; i += TILE_SIZE) {
         for (int j = 0; j < SIZE; j += TILE_SIZE) {
             blocked_tranpose(m, t, i, i + TILE_SIZE, j, j + TILE_SIZE);
         }
     }
-    LIKWID_MARKER_STOP("Transpose");
+    LIKWID_MARKER_STOP("transpose");
     LIKWID_MARKER_CLOSE;
 }
 
