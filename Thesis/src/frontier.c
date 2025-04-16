@@ -86,6 +86,11 @@ void insert_vertex(VertexChunk* c, uint32_t v) {
 
 int get_max_thread(Frontier *f) {
   int max_thread = -1;
+  // Stop stealing if threads have at most one chunk
+  // Done because of degraded performance when a thread
+  // starts an iteration without any vertices to process
+  // and steals them from another thread that hasn't started
+  // executing yet, breaking cache locality
   int max_chunks = 1;
   for (int i = 0; i < MAX_THREADS; i++) {
     if (f->chunk_counts[i] > max_chunks) {

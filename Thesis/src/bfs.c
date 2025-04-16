@@ -2,9 +2,7 @@
 #include "graph.h"
 #include "frontier.h"
 #include "command_line.h"
-#include "frontier.h"
 #include "merged_csr.h"
-#include "graph.h"
 #include "debug_utils.h"
 #include "mt19937-64.h"
 #include "pthread_barrier.h"
@@ -57,6 +55,18 @@ void top_down(GraphCSR *graph, Frontier *current, Frontier *next, int distance,
   }
 }
 
+void finialize_distances(int thread_id) {
+  // Write distances from mergedCSR to distances array
+  uint32_t chunk_size = graph->num_vertices / MAX_THREADS;
+  uint32_t start = thread_id * chunk_size;
+  uint32_t end = (thread_id == MAX_THREADS - 1) ? graph->num_vertices
+                                                : (thread_id + 1) * chunk_size;
+  for (uint32_t i = start; i < end; i++) {
+    distances[i] = DISTANCE(graph, graph->row_ptr[i]);
+    DISTANCE(graph, graph->row_ptr[i]) = UINT32_MAX;
+  }
+}
+
 void *thread_main(void *arg) {
   int thread_id = *(int *)arg;
   int distance = 1;
@@ -76,16 +86,7 @@ void *thread_main(void *arg) {
     pthread_barrier_wait(&barrier2);
     distance++;
   }
-
-  // Write distances from mergedCSR to distances array
-  uint32_t chunk_size = graph->num_vertices / MAX_THREADS;
-  uint32_t start = thread_id * chunk_size;
-  uint32_t end = (thread_id == MAX_THREADS - 1) ? graph->num_vertices
-                                                : (thread_id + 1) * chunk_size;
-  for (uint32_t i = start; i < end; i++) {
-    distances[i] = DISTANCE(graph, graph->row_ptr[i]);
-    DISTANCE(graph, graph->row_ptr[i]) = UINT32_MAX;
-  }
+  finialize_distances(thread_id);
   return NULL;
 }
 

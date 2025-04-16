@@ -7,6 +7,28 @@
 #define DEGREE(g, i) g->col_idx[i]
 #define DISTANCE(g, i) g->col_idx[i + 1]
 
+/**
+ * Converts the CSR graph into a modified "merged CSR" format with embedded metadata.
+ *
+ * Original CSR:
+ *   - row_ptr[i] points to the start of the neighbors of vertex i in col_idx[]
+ *   - col_idx[] contains the destination vertex IDs of edges
+ *
+ * Merged CSR format:
+ *   - For each vertex i, we allocate METADATA_SIZE (2) slots before its adjacency list.
+ *   - These metadata slots are:
+ *       DEGREE(i)   = number of neighbors (out-degree of vertex i)
+ *       DISTANCE(i) = BFS distance, initialized to UINT32_MAX
+ *   - The new col_idx[] is reallocated to hold both metadata and edges for all vertices.
+ *   - For each neighbor j of vertex i, we store the *offset* into col_idx[] for j’s metadata
+ *     (i.e., row_ptr[j] + j * METADATA_SIZE), not the raw vertex ID.
+ * 
+ * The row_ptr[] is also updated so that row_ptr[i] points to the DEGREE slot
+ * (i.e., the beginning of vertex i’s metadata).
+ *
+ * This layout allows efficient BFS traversal where each vertex's distance and neighbor
+ * information are stored contiguously, improving cache performance.
+ */
 void to_merged_csr(GraphCSR *graph) {
   uint32_t *merged_csr =
       (uint32_t *)malloc((graph->num_edges) * METADATA_SIZE * sizeof(uint32_t));
