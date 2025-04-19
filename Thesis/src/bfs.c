@@ -1,18 +1,21 @@
 #define _GNU_SOURCE
 #include "config.h"
 #include "command_line.h"
+#include "config.h"
 #include "frontier.h"
 #include "graph.h"
 #include "merged_csr.h"
 #include "mt19937-64.h"
 #include "pthread_barrier.h"
 #include "thread_pool.h"
-#include "debug_utils.h"
+#include <assert.h>
 #include <pthread.h>
 #include <assert.h>
 #include <stdatomic.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
+#include <bits/time.h>
 
 GraphCSR *graph;
 Frontier *f1, *f2;
@@ -86,31 +89,54 @@ void finalize_distances(int thread_id) {
   }
 }
 
+volatile int distance;
+double total[MAX_THREADS];
+double max[MAX_THREADS];
+
 void *thread_main(void *arg) {
   int thread_id = *(int *)arg;
+  struct timespec start, end;
   while (wait_for_work(&tp) == 0) {
-    int distance = 0;
+    // printf("Thread %d: got work\n", thread_id);
+    
     while (!exploration_done) {
+      int old = distance;
       top_down(graph, f1, f2, distance, thread_id);
       if (atomic_fetch_sub(&active_threads, 1) == 1) {
         // Swap frontiers
+        active_threads = MAX_THREADS;
         Frontier *temp = f2;
         f2 = f1;
         f1 = temp;
-        active_threads = MAX_THREADS;
         if (get_total_chunks(f1) == 0)
           exploration_done = 1;
+        
+        atomic_thread_fence(memory_order_seq_cst);
+        distance++;
         // print_chunk_counts(f1);
         // printf("Done distance %d\n", distance);
       }
-      pthread_barrier_wait(&barrier);
-      distance++;
+      clock_gettime(CLOCK_MONOTONIC, &start);
+      while (distance == old);
+      clock_gettime(CLOCK_MONOTONIC, &end);
+      long seconds = end.tv_sec - start.tv_sec;
+      long nanoseconds = end.tv_nsec - start.tv_nsec;
+      double this_wait = seconds + nanoseconds * 1e-9;
+      total[thread_id] += this_wait;
+      if (this_wait > max[thread_id]) {
+        max[thread_id] = this_wait;
+      }
+
+      // pthread_barrier_wait(&barrier);
     }
     finalize_distances(thread_id);
-    
+
     if (atomic_fetch_sub(&active_threads, 1) == 1) {
       pthread_mutex_lock(&bfs_done_mutex);
       bfs_done = 1;
+      for (int i = 0; i < MAX_THREADS; i++) {
+        printf("Thread %d: wait %f avg: %f max: %f\n", i, total[i], total[i]/distance, max[i]);
+      }
       pthread_cond_signal(&bfs_done_cond);
       pthread_mutex_unlock(&bfs_done_mutex);
     }
@@ -139,6 +165,11 @@ void bfs(uint32_t source) {
   insert_vertex(c, source);
   exploration_done = 0;
   active_threads = MAX_THREADS;
+  distance = 0;
+  for (int i = 0; i < MAX_THREADS; i++) {
+    total[i] = 0;
+    max[i] = 0;
+  }
 
   notify_threads(&tp, 0);
 
@@ -212,7 +243,6 @@ int main(int argc, char **argv) {
     // print_distances(distances);
     memset(distances, UINT32_MAX, graph->num_vertices * sizeof(uint32_t));
   }
-
   // Terminate threads
   notify_threads(&tp, 1);
   join_threads(&tp);

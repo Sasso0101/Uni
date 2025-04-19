@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define MAX_THREADS 6
+#define MAX_THREADS 24
 
 #define CHUNK_SIZE 64
 #define CHUNKS_PER_THREAD 128
