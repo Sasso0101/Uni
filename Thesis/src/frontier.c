@@ -1,8 +1,8 @@
+#include "frontier.h"
 #include <assert.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "frontier.h"
 #include "config.h"
 #include <stdio.h>
 

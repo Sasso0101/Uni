@@ -1,8 +1,8 @@
 #ifndef FRONTIER_H
 #define FRONTIER_H
 
-#include <pthread.h>
 #include "config.h"
+#include <pthread.h>
 #include <stdint.h>
 
 typedef struct {
