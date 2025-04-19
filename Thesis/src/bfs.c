@@ -1,20 +1,25 @@
-#define _POSIX_C_SOURCE 200112L
-#include "graph.h"
-#include "frontier.h"
+#include "config.h"
+#define _GNU_SOURCE
+// #define _POSIX_C_SOURCE 200112L
 #include "command_line.h"
+#include "frontier.h"
+#include "graph.h"
 #include "merged_csr.h"
-#include "debug_utils.h"
 #include "mt19937-64.h"
 #include "pthread_barrier.h"
 #include <assert.h>
+#include <sched.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdatomic.h>
 
 GraphCSR *graph;
 Frontier *f1, *f2;
 uint32_t *distances;
-pthread_barrier_t barrier1, barrier2;
-uint32_t done;
+
+pthread_barrier_t barrier;
+atomic_int active_threads;
+volatile uint32_t done;
 
 void top_down_chunk(GraphCSR *graph, Frontier *next, VertexChunk *c,
                     VertexChunk **dest, int distance, int thread_id) {
@@ -47,15 +52,22 @@ void top_down(GraphCSR *graph, Frontier *current, Frontier *next, int distance,
   }
   // Work stealing from other threads when finished processing chunks of this
   // thread
-  int max_thread;
-  while ((max_thread = get_max_thread(current)) != -1) {
-    if ((c = remove_chunk(current, max_thread)) != NULL) {
-      top_down_chunk(graph, next, c, dest, distance, thread_id);
+  uint32_t work_to_do = 1;
+  while (work_to_do) {
+    work_to_do = 0;
+    for (int i = 0; i < MAX_THREADS; i++) {
+      if (current->chunk_counts[i] > 1) {
+        work_to_do = 1;
+        if ((c = remove_chunk(current, i)) != NULL) {
+          top_down_chunk(graph, next, c, dest, distance, thread_id);
+        }
+        i--;
+      }
     }
   }
 }
 
-void finialize_distances(int thread_id) {
+void finalize_distances(int thread_id) {
   // Write distances from mergedCSR to distances array
   uint32_t chunk_size = graph->num_vertices / MAX_THREADS;
   uint32_t start = thread_id * chunk_size;
@@ -71,22 +83,24 @@ void *thread_main(void *arg) {
   int thread_id = *(int *)arg;
   int distance = 1;
   while (!done) {
-    top_down(graph, f1, f2, distance, thread_id);
-    pthread_barrier_wait(&barrier1);
-    if (thread_id == 0) {
+    // if (thread_id < 6) {
+      top_down(graph, f1, f2, distance, thread_id);
+    // }
+    if (atomic_fetch_sub(&active_threads, 1) == 1) {
       // Swap frontiers
       Frontier *temp = f2;
       f2 = f1;
       f1 = temp;
+      active_threads = TRUE_THREADS_TEST;
       if (get_total_chunks(f1) == 0)
         done = 1;
-      // print_chunk_counts();
+      // print_chunk_counts(f1);
       // printf("Done distance %d\n", distance);
     }
-    pthread_barrier_wait(&barrier2);
+    pthread_barrier_wait(&barrier);
     distance++;
   }
-  finialize_distances(thread_id);
+  finalize_distances(thread_id);
   return NULL;
 }
 
@@ -106,22 +120,30 @@ void bfs(uint32_t source) {
   pthread_t threads[MAX_THREADS];
   int thread_ids[MAX_THREADS];
   done = 0;
+  active_threads = TRUE_THREADS_TEST;
   // Initialize barriers
-  if (pthread_barrier_init(&barrier1, NULL, MAX_THREADS) != 0) {
+  if (pthread_barrier_init(&barrier, NULL, TRUE_THREADS_TEST) != 0) {
     perror("Could not initialize the barrier");
     exit(1);
   }
-  if (pthread_barrier_init(&barrier2, NULL, MAX_THREADS) != 0) {
-    perror("Could not initialize the barrier");
-    exit(1);
-  }
+#ifdef __linux__
+  cpu_set_t cpuset;
+#endif
   // Spawn threads
   for (int i = 0; i < MAX_THREADS; i++) {
+#ifdef __linux__
+    CPU_SET(i, &cpuset);
+#endif
     thread_ids[i] = i;
     if (pthread_create(&threads[i], NULL, thread_main, &thread_ids[i]) != 0) {
       perror("Failed to create thread");
       exit(1);
     }
+#ifdef __linux__
+    int s = pthread_setaffinity_np(threads[i], sizeof(cpuset), &cpuset);
+    if (s != 0)
+      perror("pthread_setaffinity_np");
+#endif
   }
   // Wait for all threads to finish
   for (int i = 0; i < MAX_THREADS; ++i) {
@@ -173,7 +195,8 @@ int main(int argc, char **argv) {
   }
   uint32_t *sources =
       generate_sources(args.runs, graph->num_vertices, args.source);
-  print_sources(graph, sources, args.runs);
+  // print_sources(graph, sources, args.runs);
+  printf("Threads: %d, Chunk size: %d\n", MAX_THREADS, CHUNK_SIZE);
 
   distances = malloc(graph->num_vertices * sizeof(uint32_t));
   memset(distances, UINT32_MAX, graph->num_vertices * sizeof(uint32_t));
@@ -199,8 +222,7 @@ int main(int argc, char **argv) {
   free(sources);
   free_frontier(f1);
   free_frontier(f2);
-  pthread_barrier_destroy(&barrier1);
-  pthread_barrier_destroy(&barrier2);
+  pthread_barrier_destroy(&barrier);
   free(graph->row_ptr);
   free(graph->col_idx);
   free(graph);
