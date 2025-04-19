@@ -90,12 +90,9 @@ void finalize_distances(int thread_id) {
 }
 
 volatile int distance;
-double total[MAX_THREADS];
-double max[MAX_THREADS];
 
 void *thread_main(void *arg) {
   int thread_id = *(int *)arg;
-  struct timespec start, end;
   while (wait_for_work(&tp) == 0) {
     // printf("Thread %d: got work\n", thread_id);
     
@@ -116,27 +113,13 @@ void *thread_main(void *arg) {
         // print_chunk_counts(f1);
         // printf("Done distance %d\n", distance);
       }
-      clock_gettime(CLOCK_MONOTONIC, &start);
       while (distance == old);
-      clock_gettime(CLOCK_MONOTONIC, &end);
-      long seconds = end.tv_sec - start.tv_sec;
-      long nanoseconds = end.tv_nsec - start.tv_nsec;
-      double this_wait = seconds + nanoseconds * 1e-9;
-      total[thread_id] += this_wait;
-      if (this_wait > max[thread_id]) {
-        max[thread_id] = this_wait;
-      }
-
-      // pthread_barrier_wait(&barrier);
     }
     finalize_distances(thread_id);
 
     if (atomic_fetch_sub(&active_threads, 1) == 1) {
       pthread_mutex_lock(&bfs_done_mutex);
       bfs_done = 1;
-      for (int i = 0; i < MAX_THREADS; i++) {
-        printf("Thread %d: wait %f avg: %f max: %f\n", i, total[i], total[i]/distance, max[i]);
-      }
       pthread_cond_signal(&bfs_done_cond);
       pthread_mutex_unlock(&bfs_done_mutex);
     }
@@ -166,10 +149,6 @@ void bfs(uint32_t source) {
   exploration_done = 0;
   active_threads = MAX_THREADS;
   distance = 0;
-  for (int i = 0; i < MAX_THREADS; i++) {
-    total[i] = 0;
-    max[i] = 0;
-  }
 
   notify_threads(&tp, 0);
 
