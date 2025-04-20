@@ -18,16 +18,16 @@ void print_chunk_counts(const Frontier *f) {
 void print_sources(const GraphCSR *graph, const uint32_t *sources, int runs) {
   printf("Sources: ");
   for (int i = 0; i < runs; i++) {
-    printf("%d (%d)\n", sources[i], graph->row_ptr[sources[i]]);
+    printf("%u (%u)\n", sources[i], graph->row_ptr[sources[i]]);
   }
   printf("\n");
 }
 
 void print_graph(const GraphCSR *graph) {
   for (uint32_t i = 0; i < graph->num_vertices; i++) {
-    printf("Vertex %d: ", i);
+    printf("Vertex %u: ", i);
     for (uint32_t j = graph->row_ptr[i]; j < graph->row_ptr[i + 1]; j++) {
-      printf("%d ", graph->col_idx[j]);
+      printf("%u ", graph->col_idx[j]);
     }
     printf("\n");
   }
@@ -35,7 +35,7 @@ void print_graph(const GraphCSR *graph) {
 
 void print_merged_csr(const MergedCSR *merged_csr) {
   for (uint32_t i = 0; i < merged_csr->num_vertices; i++) {
-    printf("Vertex %d (%lu): ", i, merged_csr->row_ptr[i]);
+    printf("Vertex %u (%lu): ", i, (uint64_t)merged_csr->row_ptr[i]);
     for (mer_t j = merged_csr->row_ptr[i]; j < merged_csr->row_ptr[i + 1]; j++) {
       printf("%lu ", merged_csr->merged[j]);
     }
@@ -46,7 +46,7 @@ void print_merged_csr(const MergedCSR *merged_csr) {
 void print_distances(const GraphCSR *graph, const uint32_t *distances) {
   printf("Distances:\n");
   for (uint32_t i = 0; i < graph->num_vertices; i++) {
-    printf("Vertex %d: %d\n", i, distances[i]);
+    printf("Vertex %u: %u\n", i, distances[i]);
   }
 }
 
@@ -72,7 +72,7 @@ int check_bfs_correctness(const GraphCSR *graph, const uint32_t *distances, uint
     uint32_t end = graph->row_ptr[u + 1];
 
     if (end - start == 0 && distances[u] != UINT32_MAX) {
-      printf("Error: vertex %d is not connected to the graph but has been assigned distance %d\n", u, distances[u]);
+      printf("Error: vertex %u is not connected to the graph but has been assigned distance %u\n", u, distances[u]);
       return 0;
     }
     else if (distances[u] != UINT32_MAX) {
@@ -90,7 +90,7 @@ int check_bfs_correctness(const GraphCSR *graph, const uint32_t *distances, uint
     }
   }
 
-  printf("BFS starting from vertex %d is valid.\n", source);
+  printf("BFS starting from vertex %u is valid.\n", source);
   return 1;
 }
 

@@ -102,12 +102,12 @@ int mm_read_mtx_crd_size(FILE *f, uint32_t *M, uint32_t *N, uint32_t *nz) {
   } while (line[0] == '%');
 
   /* line[] is either blank or has M,N, nz */
-  if (sscanf(line, "%d %d %d", M, N, nz) == 3)
+  if (sscanf(line, "%u %u %u", M, N, nz) == 3)
     return 0;
 
   else
     do {
-      num_items_read = fscanf(f, "%d %d %d", M, N, nz);
+      num_items_read = fscanf(f, "%u %u %u", M, N, nz);
       if (num_items_read == EOF)
         return MM_PREMATURE_EOF;
     } while (num_items_read != 3);
@@ -125,12 +125,12 @@ int mm_read_mtx_crd_data(FILE *f, int nz, Entry entries[], MM_typecode matcode) 
   int i;
   if (mm_is_real(matcode) || mm_is_integer(matcode)) {
     for (i = 0; i < nz; i++) {
-      if (fscanf(f, "%d %d %lg\n", &entries[i].row, &entries[i].col, &entries[i].val) != 3)
+      if (fscanf(f, "%u %u %lg\n", &entries[i].row, &entries[i].col, &entries[i].val) != 3)
         return MM_PREMATURE_EOF;
     }
   } else if (mm_is_pattern(matcode)) {
     for (i = 0; i < nz; i++)
-      if (fscanf(f, "%d %d", &entries[i].row, &entries[i].col) != 2)
+      if (fscanf(f, "%u %u", &entries[i].row, &entries[i].col) != 2)
         return MM_PREMATURE_EOF;
   } else
     return MM_UNSUPPORTED_TYPE;

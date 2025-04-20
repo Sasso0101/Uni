@@ -108,7 +108,7 @@ void *thread_main(void *arg) {
         atomic_thread_fence(memory_order_seq_cst);
         distance++;
         // print_chunk_counts(f1);
-        // printf("%d ", distance);
+        // printf("%u ", distance);
       }
       while (distance == old)
         ;

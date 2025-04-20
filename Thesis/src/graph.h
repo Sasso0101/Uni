@@ -60,7 +60,7 @@ GraphCSR *import_mtx(char *filename) {
     graph->num_edges = nz * 2; // For symmetric matrices
   }
 
-  printf("Matrix size: %d x %d, nnz: %d\n", M, N, graph->num_edges);
+  printf("Matrix size: %u x %u, nnz: %u\n", M, N, graph->num_edges);
   Entry *entries = (Entry *)malloc(graph->num_edges * sizeof(Entry));
   if (mm_read_mtx_crd_data(f, nz, entries, matcode) != 0) {
     printf("Could not parse matrix data.\n");
