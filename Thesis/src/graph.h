@@ -98,14 +98,4 @@ GraphCSR *import_mtx(char *filename) {
   return graph;
 }
 
-void print_graph(GraphCSR *graph) {
-  for (uint32_t i = 0; i < graph->num_vertices; i++) {
-    printf("Vertex %d: ", i);
-    for (uint32_t j = graph->row_ptr[i]; j < graph->row_ptr[i + 1]; j++) {
-      printf("%d ", graph->col_idx[j]);
-    }
-    printf("\n");
-  }
-}
-
 #endif

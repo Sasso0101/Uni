@@ -37,7 +37,7 @@ void top_down_chunk(MergedCSR *merged_csr, Frontier *next, VertexChunk *c,
     mer_t end = v + DEGREE(merged_csr, v) + METADATA_SIZE;
     for (mer_t i = v + METADATA_SIZE; i < end; i++) {
       mer_t neighbor = merged_csr->merged[i];
-      if (DISTANCE(merged_csr, neighbor) == MERGED_MAX) {
+      if (DISTANCE(merged_csr, neighbor) == UINT32_MAX) {
         DISTANCE(merged_csr, neighbor) = distance;
         if (DEGREE(merged_csr, neighbor) != 1) {
           if (*dest == NULL || (*dest)->next_free_index >= CHUNK_SIZE) {
@@ -50,13 +50,14 @@ void top_down_chunk(MergedCSR *merged_csr, Frontier *next, VertexChunk *c,
   }
 }
 
-void top_down(MergedCSR *merged_csr, Frontier *current, Frontier *next,
+void top_down(MergedCSR *merged_csr, Frontier *current_frontier, Frontier *next_frontier,
               int distance, int thread_id) {
   VertexChunk *c = NULL;
   VertexChunk *next_chunk = NULL;
   VertexChunk **dest = &next_chunk;
-  while ((c = frontier_release_chunk(current, thread_id)) != NULL) {
-    top_down_chunk(merged_csr, next, c, dest, distance, thread_id);
+  // Run top-down step for all chunks belonging to the thread
+  while ((c = frontier_release_chunk(current_frontier, thread_id)) != NULL) {
+    top_down_chunk(merged_csr, next_frontier, c, dest, distance, thread_id);
   }
   // Work stealing from other threads when finished processing chunks of this
   // thread
@@ -64,10 +65,10 @@ void top_down(MergedCSR *merged_csr, Frontier *current, Frontier *next,
   while (work_to_do) {
     work_to_do = false;
     for (int i = 0; i < MAX_THREADS; i++) {
-      if (current->chunk_counts[i] > 1) {
+      if (current_frontier->chunk_counts[i] > 1) {
         work_to_do = 1;
-        if ((c = frontier_release_chunk(current, i)) != NULL) {
-          top_down_chunk(merged_csr, next, c, dest, distance, thread_id);
+        if ((c = frontier_release_chunk(current_frontier, i)) != NULL) {
+          top_down_chunk(merged_csr, next_frontier, c, dest, distance, thread_id);
         }
         i--;
       }
@@ -107,7 +108,7 @@ void *thread_main(void *arg) {
         atomic_thread_fence(memory_order_seq_cst);
         distance++;
         // print_chunk_counts(f1);
-        // printf("Done distance %d\n", distance);
+        // printf("%d ", distance);
       }
       while (distance == old)
         ;
