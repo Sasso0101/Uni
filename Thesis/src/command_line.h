@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define HELP_LEN 1000
 char help_string[HELP_LEN];
@@ -19,6 +20,7 @@ typedef struct {
   char filename[100];
   int runs;
   uint32_t source;
+  bool check;
 } Cli_Args;
 
 int str_empty(const char *str) {
@@ -64,7 +66,8 @@ int parse_integer(char *optarg, int* dest) {
 int parse_args(int argc, char **argv, Cli_Args *args) {
   int c_opt;
   int filename_flag = 0, runs_flag = 0, source_flag = 0;
-  while ((c_opt = getopt(argc, argv, "f:n:s:h")) != -1) {
+  args->check = false;
+  while ((c_opt = getopt(argc, argv, "f:n:s:ch")) != -1) {
     switch (c_opt) {
     case 'f':
       strncpy(args->filename, optarg, sizeof(args->filename) - 1);
@@ -83,6 +86,9 @@ int parse_args(int argc, char **argv, Cli_Args *args) {
         return MISSING_PARAMETER;
       }
       source_flag = 1;
+      break;
+    case 'c':
+      args->check = true;
       break;
     case '?':
       if (optopt == 'f' || optopt == 'n' || optopt == 's') {
@@ -117,6 +123,7 @@ void init_cli() {
   add_help_line('f', "file", "load graph from file", NULL);
   add_help_line('n', "runs", "number of runs", "1");
   add_help_line('s', "source", "ID of source vertex", "rand");
+  add_help_line('c', "", "Checks BFS correctness", NULL);
   add_help_line('h', "", "print this help message", NULL);
 }
 

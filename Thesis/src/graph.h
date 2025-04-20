@@ -1,6 +1,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include "config.h"
 #include "mmio.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -43,7 +44,7 @@ GraphCSR *import_mtx(char *filename) {
     return NULL;
   }
 
-  int M, N, nz;
+  uint32_t M, N, nz;
   if (mm_read_mtx_crd_size(f, &M, &N, &nz) != 0) {
     printf("Could not parse matrix size.\n");
     return NULL;
@@ -70,7 +71,7 @@ GraphCSR *import_mtx(char *filename) {
 
   if (!mm_is_general(matcode))
     // Duplicate the entries for symmetric matrices
-    for (int i = 0; i < nz; i++) {
+    for (uint32_t i = 0; i < nz; i++) {
       entries[i + nz].row = entries[i].col;
       entries[i + nz].col = entries[i].row;
       entries[i + nz].val = entries[i].val;
@@ -84,7 +85,7 @@ GraphCSR *import_mtx(char *filename) {
   uint32_t i = 0;
   for (uint32_t vertex = 0; vertex < graph->num_vertices; vertex++) {
     graph->row_ptr[vertex] = i;
-    while (vertex == (entries[i].row - 1) && i < graph->num_edges) {
+    while (i < graph->num_edges && vertex == (entries[i].row - 1)) {
       // Matrix Market format is 1-indexed, convert to 0-indexed
       graph->col_idx[i] = entries[i].col - 1;
       i++;

@@ -5,14 +5,7 @@
 #include "frontier.h"
 #include "merged_csr.h"
 #include <stdint.h>
-
-void print_vertex(GraphCSR *graph, uint32_t v) {
-  printf("Vertex %d, degree %d, distance %d: ", v, DEGREE(graph, v), DISTANCE(graph, v));
-  for (uint32_t i = v + METADATA_SIZE; i < v + METADATA_SIZE + DEGREE(graph, v); i++) {
-    printf("%d ", graph->col_idx[i]);
-  }
-  printf("\n");
-}
+#include <stdint.h>
 
 void print_chunk_counts(Frontier *f) {
   printf("Chunk counts: ");
@@ -35,6 +28,50 @@ void print_distances(GraphCSR *graph, uint32_t *distances) {
   for (uint32_t i = 0; i < graph->num_vertices; i++) {
     printf("Vertex %d: %d\n", i, distances[i]);
   }
+}
+
+void print_time(double elapsed[], int runs) {
+  double total = 0;
+  for (int i = 0; i < runs; i++) {
+    total += elapsed[i];
+  }
+  printf("Average time: %14.5f\n", total / runs);
+}
+
+int check_bfs_correctness(const GraphCSR *graph, uint32_t *distances, uint32_t source) {
+  uint32_t n = graph->num_vertices;
+
+  if (distances[source] != 0) {
+    printf("Error: distance to source vertex %u is not 0 (got %u)\n", source, distances[source]);
+    return 0;
+  }
+
+  for (uint32_t u = 0; u < n; u++) {
+    uint32_t dist_u = distances[u];
+    uint32_t start = graph->row_ptr[u];
+    uint32_t end = graph->row_ptr[u + 1];
+
+    if (end - start == 0 && distances[u] != UINT32_MAX) {
+      printf("Error: vertex %d is not connected to the graph but has been assigned distance %d\n", u, distances[u]);
+      return 0;
+    }
+    else if (distances[u] != UINT32_MAX) {
+      for (uint32_t i = start; i < end; i++) {
+        uint32_t v = graph->col_idx[i];
+        uint32_t dist_v = distances[v];
+  
+        // Rule: if v is reachable from u, then their distances must differ by at most 1
+        if (dist_v > dist_u + 1) {
+          printf("Error: edge (%u -> %u) with dist[%u] = %u, dist[%u] = %u (too far apart)\n",
+                  u, v, u, dist_u, v, dist_v);
+          return 0;
+        }
+      }
+    }
+  }
+
+  printf("BFS starting from vertex %d is valid.\n", source);
+  return 1;
 }
 
 #endif // DEBUG_UTILS_H

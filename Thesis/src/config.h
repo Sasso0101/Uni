@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stdint.h>
+
 #define MAX_THREADS 24
 
 #define CHUNK_SIZE 64
@@ -10,5 +12,8 @@
 // Using same seed as in GAP benchmark for reproducible experiments
 // https://github.com/sbeamer/gapbs/blob/b5e3e19c2845f22fb338f4a4bc4b1ccee861d026/src/util.h#L22
 #define SEED 27491095
+
+typedef uint64_t mer_t;
+#define MERGED_MAX UINT64_MAX
 
 #endif // CONFIG_H

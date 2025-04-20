@@ -88,7 +88,7 @@ int mm_read_banner(FILE *f, MM_typecode *matcode) {
   return 0;
 }
 
-int mm_read_mtx_crd_size(FILE *f, int *M, int *N, int *nz) {
+int mm_read_mtx_crd_size(FILE *f, uint32_t *M, uint32_t *N, uint32_t *nz) {
   char line[MM_MAX_LINE_LENGTH];
   int num_items_read;
 
