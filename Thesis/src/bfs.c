@@ -32,9 +32,9 @@ void top_down_chunk(GraphCSR *graph, Frontier *next, VertexChunk *c,
   while ((v = chunk_pop_vertex(c)) != MERGED_MAX) {
     mer_t start = graph->row_ptr[v];
     mer_t end = graph->row_ptr[v+1];
-    for (mer_t i = v; i < end; i++) {
+    for (mer_t i = start; i < end; i++) {
       // mer_t neighbor = merged_csr->merged[i];
-      mer_t neighbor = graph->row_ptr[i];
+      mer_t neighbor = graph->col_idx[i];
       if (distances[neighbor] == UINT32_MAX) {
         distances[neighbor] = distance;
         if (graph->row_ptr[i+1] - graph->row_ptr[i] != 1) {
@@ -120,7 +120,7 @@ void *thread_main(void *arg) {
   return NULL;
 }
 
-void initialize_bfs(const GraphCSR *graph) {
+void initialize_bfs() {
   // merged_csr = to_merged_csr(graph);
   f1 = frontier_create();
   f2 = frontier_create();
@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
 
   distances = malloc(graph->num_vertices * sizeof(uint32_t));
   memset(distances, UINT32_MAX, graph->num_vertices * sizeof(uint32_t));
-  initialize_bfs(graph);
+  initialize_bfs();
 
   struct timespec start, end;
   double elapsed[args.runs];
