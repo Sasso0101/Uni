@@ -1,3 +1,5 @@
+// Define _GNU_SOURCE to enable non-standard GNU extensions,
+// specifically needed for pthread_setaffinity_np used in thread pinning.
 #define _GNU_SOURCE
 #include "thread_pool.h"
 #include <pthread.h>
@@ -7,10 +9,14 @@
 #include <stdlib.h>
 
 void init_thread_pool(thread_pool_t *tp, void *(*routine)(void *)) {
+  // Initialize synchronization primitives for worker threads
   pthread_mutex_init(&tp->mutex_children, NULL);
   pthread_cond_init(&tp->cond_children, NULL);
+
+  // Initialize synchronization primitives for the main (parent) thread
   pthread_mutex_init(&tp->mutex_parent, NULL);
   pthread_cond_init(&tp->cond_parent, NULL);
+
   tp->run_id = 0;
   tp->stop_threads = false;
   tp->children_done = false;
@@ -18,10 +24,15 @@ void init_thread_pool(thread_pool_t *tp, void *(*routine)(void *)) {
 }
 
 int wait_for_work(thread_pool_t *tp, uint *run_id) {
+  // Lock the mutex protecting shared state accessed by worker threads
   pthread_mutex_lock(&tp->mutex_children);
+
+  // Wait while the worker's run_id is greater than the global run_id
+  // This ensures the worker doesn't proceed until the main thread signals a new cycle
   while (tp->run_id < *run_id) {
     pthread_cond_wait(&tp->cond_children, &tp->mutex_children);
   }
+
   *run_id += 1;
   pthread_mutex_unlock(&tp->mutex_children);
   if (tp->stop_threads) {
@@ -30,8 +41,28 @@ int wait_for_work(thread_pool_t *tp, uint *run_id) {
   return 0;
 }
 
+/**
+ * @brief The main function executed by each worker thread.
+ *
+ * This function serves as the entry point for threads created by `pthread_create`.
+ * It runs a loop that repeatedly calls `wait_for_work` to wait for tasks.
+ * If `wait_for_work` returns 0 (indicating work is available and termination is not
+ * requested *yet*), it executes the user-provided `tp->routine` function, passing
+ * the `arg` parameter received during thread creation.
+ * The loop continues as long as `wait_for_work` returns 0. If `wait_for_work`
+ * detects the `stop_threads` flag, it calls `pthread_exit`, terminating this loop.
+ *
+ * @param arg The argument passed to the thread during creation (e.g., thread ID).
+ *            This is forwarded to the `tp->routine` function.
+ * @return NULL (The function typically runs indefinitely until terminated via `pthread_exit`).
+ * @internal
+ */
 void *thread_main_wrapper(void *arg) {
+  // Initialize the worker's local run ID. Starts at 1 to wait for the first cycle (global run id is initalized at 0).
   uint run_id = 1;
+
+  // Main worker loop: continue as long as wait_for_work indicates readiness
+  // wait_for_work handles the blocking and the termination check (via pthread_exit)
   while (wait_for_work(&tp, &run_id) == 0) {
     tp.routine(arg);
   }
@@ -45,9 +76,11 @@ void *thread_main_wrapper(void *arg) {
  * and reduce contention by binding threads to specific cores.
  *
  * @param thread The pthread handle.
- * @param core The logical CPU core to bind the thread to.
+ * @param core The logical CPU core index to bind the thread to.
  *
- * @note Only available on Linux systems. No-op on others.
+ * @note Only effective on Linux systems where `pthread_setaffinity_np` is available.
+ *       It's a no-op on other systems.
+ * @internal
  * @internal
  */
 static void pin_thread_to_cpu(pthread_t thread, int core) {
@@ -74,6 +107,18 @@ void thread_pool_create(thread_pool_t *tp) {
   }
 }
 
+/**
+ * @brief Waits for all worker threads in the pool to terminate.
+ *
+ * Calls `pthread_join` for each of the `MAX_THREADS` worker threads, blocking
+ * the calling thread (usually the main thread) until they have all exited.
+ * This should typically be called after signaling the threads to stop via
+ * `thread_pool_terminate`.
+ * Exits the program with an error message if joining any thread fails.
+ *
+ * @param tp Pointer to the thread_pool_t structure containing the thread handles.
+ * @internal
+ */
 void join_threads(thread_pool_t *tp) {
   for (int i = 0; i < MAX_THREADS; ++i) {
     if (pthread_join(tp->threads[i], NULL) != 0) {
