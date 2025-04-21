@@ -14,7 +14,7 @@
 #define SEED 27491095
 
 // Selects weather to use 32-bit or 64-bit integers for the vertices in the merged CSR
-typedef uint64_t mer_t;
-#define MERGED_MAX UINT64_MAX
+typedef uint32_t mer_t;
+#define MERGED_MAX UINT32_MAX
 
 #endif // CONFIG_H

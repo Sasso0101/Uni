@@ -22,16 +22,26 @@
 
 #include "config.h"
 #include <pthread.h>
+#include <stdatomic.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
 typedef struct {
-  pthread_cond_t cond;
-  pthread_mutex_t mutex;
+  pthread_cond_t cond_children;
+  pthread_mutex_t mutex_children;
   pthread_t threads[MAX_THREADS];
   int thread_ids[MAX_THREADS];
-  int allowed_threads;
-  bool stop_threads;
+  atomic_uint run_id;
+  atomic_bool stop_threads;
+
+  atomic_bool children_done;
+  pthread_cond_t cond_parent;
+  pthread_mutex_t mutex_parent;
+
+  void *(*routine)(void *);
 } thread_pool_t;
+
+thread_pool_t tp;
 
 /**
  * @brief Initializes the thread pool structure.
@@ -41,7 +51,7 @@ typedef struct {
  *
  * @param tp Pointer to the thread pool structure.
  */
-void init_thread_pool(thread_pool_t *tp);
+void init_thread_pool(thread_pool_t *tp, void *(*routine)(void *));
 
 /**
  * @brief Waits until the thread pool signals work.
@@ -52,7 +62,7 @@ void init_thread_pool(thread_pool_t *tp);
  * @param tp Pointer to the thread pool.
  * @return 0 if work is allowed, -1 if the thread pool has been stopped.
  */
-int wait_for_work(thread_pool_t *tp);
+int wait_for_work(thread_pool_t *tp, uint *run_id);
 
 /**
  * @brief Creates and starts all threads in the thread pool.
@@ -66,7 +76,7 @@ int wait_for_work(thread_pool_t *tp);
  * @note Not thread-safe. Should be called once during setup.
  * @warning Exits the program on failure to create a thread.
  */
-void thread_pool_create(thread_pool_t *tp, void *(*routine)(void *));
+void thread_pool_create(thread_pool_t *tp);
 
 /**
  * @brief Waits for all threads in the pool to finish execution.
@@ -91,7 +101,9 @@ void join_threads(thread_pool_t *tp);
  *
  * @note Thread-safe.
  */
-void thread_pool_notify(thread_pool_t *tp, bool stop_threads);
+void thread_pool_start_wait(thread_pool_t *tp);
+
+void thread_pool_terminate(thread_pool_t *tp);
 
 /**
  * @brief Destroys the thread pool and its synchronization primitives.
@@ -104,5 +116,7 @@ void thread_pool_notify(thread_pool_t *tp, bool stop_threads);
  * @note Not thread-safe. Should be called after all threads are joined.
  */
 void destroy_thread_pool(thread_pool_t *tp);
+
+void thread_pool_notify_parent(thread_pool_t *tp);
 
 #endif

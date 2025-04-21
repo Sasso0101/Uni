@@ -22,7 +22,7 @@ int compare_entries(const void *a, const void *b) {
   return ea->col - eb->col;
 }
 
-GraphCSR *import_mtx(char *filename) {
+GraphCSR *import_mtx(char *filename, uint32_t metadata_size, uint64_t max_size) {
   FILE *f = fopen(filename, "r");
 
   if (!f) {
@@ -61,6 +61,13 @@ GraphCSR *import_mtx(char *filename) {
   }
 
   printf("Matrix size: %u x %u, nnz: %u\n", M, N, graph->num_edges);
+
+  if ((uint64_t)(graph->num_edges) + metadata_size * graph->num_vertices >
+      max_size) {
+    printf("Graph is too large and would overflow the merged CSR!\n");
+    return NULL;
+  }
+
   Entry *entries = (Entry *)malloc(graph->num_edges * sizeof(Entry));
   if (mm_read_mtx_crd_data(f, nz, entries, matcode) != 0) {
     printf("Could not parse matrix data.\n");
@@ -79,7 +86,8 @@ GraphCSR *import_mtx(char *filename) {
 
   qsort(entries, graph->num_edges, sizeof(Entry), compare_entries);
 
-  graph->row_ptr = (uint32_t *)malloc((graph->num_vertices + 1) * sizeof(uint32_t));
+  graph->row_ptr =
+      (uint32_t *)malloc((graph->num_vertices + 1) * sizeof(uint32_t));
   graph->col_idx = (uint32_t *)malloc(graph->num_edges * sizeof(uint32_t));
 
   uint32_t i = 0;
