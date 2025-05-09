@@ -19,8 +19,8 @@ MergedCSR *to_merged_csr(const GraphCSR *graph) {
     ID(merged_csr, merged_pos) = i;
     merged_pos += METADATA_SIZE;
     for (mer_t j = graph->row_ptr[i]; j < graph->row_ptr[i + 1]; j++, merged_pos++) {
-      merged_csr->merged[merged_pos] = graph->col_idx[j]; // Original vertex ID
-      merged_csr->merged[merged_pos + degree] =
+      // merged_csr->merged[merged_pos] = graph->col_idx[j]; // Original vertex ID
+      merged_csr->merged[merged_pos] =
           graph->row_ptr[graph->col_idx[j]] * DATA_SIZE +
           graph->col_idx[j] * METADATA_SIZE; // Vertex position in Merged CSR
     }
