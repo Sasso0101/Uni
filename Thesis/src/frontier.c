@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 Frontier *frontier_create() {
@@ -16,9 +17,11 @@ Frontier *frontier_create() {
     f->thread_chunks[i]->chunks =
         (Chunk **)malloc(sizeof(Chunk *) * CHUNKS_PER_THREAD);
     f->thread_chunks[i]->chunks_size = CHUNKS_PER_THREAD;
-    f->thread_chunks[i]->scratch_chunk = NULL;
+    f->thread_chunks[i]->chunks[0] = (Chunk *)malloc(sizeof(Chunk));
+    f->thread_chunks[i]->chunks[0]->next_free_index = 0;
+    f->thread_chunks[i]->scratch_chunk = f->thread_chunks[i]->chunks[0];
     f->thread_chunks[i]->top_chunk = 0;
-    f->thread_chunks[i]->initialized_count = 0;
+    f->thread_chunks[i]->initialized_count = 1;
     f->thread_chunks[i]->next_stealable_thread = (i + 1) % MAX_THREADS;
     f->chunk_counts[i] = 0;
     pthread_mutex_init(&f->thread_chunks[i]->lock, NULL);
@@ -45,8 +48,8 @@ void destroy_frontier(Frontier *f) {
  */
 void thread_new_scratch_chunk(ThreadChunks *t, int *chunk_counter) {
   pthread_mutex_lock(&t->lock);
-  // Check if we need to resize the chunks array
   t->top_chunk++;
+  // Check if we need to resize the chunks array
   if (t->top_chunk >= t->chunks_size) {
     t->chunks_size *= 2;
     t->chunks = (Chunk **)realloc(t->chunks, t->chunks_size * sizeof(Chunk *));
@@ -111,15 +114,15 @@ ver_t chunk_pop_vertex(Chunk *c) {
 int frontier_get_total_chunks(Frontier *f) {
   int total = 0;
   for (int i = 0; i < MAX_THREADS; i++) {
-    total += f->chunk_counts[i];
+    total += f->chunk_counts[i] +
+             (f->thread_chunks[i]->scratch_chunk->next_free_index > 0 ? 1 : 0);
   }
   return total;
 }
 
 void frontier_push_vertex(Frontier *f, int thread_id, ver_t v) {
   ThreadChunks *t = f->thread_chunks[thread_id];
-  if (t->scratch_chunk == NULL ||
-      t->scratch_chunk->next_free_index == CHUNK_SIZE) {
+  if (t->scratch_chunk->next_free_index == CHUNK_SIZE) {
     thread_new_scratch_chunk(t, &f->chunk_counts[thread_id]);
   }
   chunk_push_vertex(t->scratch_chunk, v);
@@ -128,24 +131,28 @@ void frontier_push_vertex(Frontier *f, int thread_id, ver_t v) {
 ver_t frontier_pop_vertex(Frontier *f, int thread_id) {
   ThreadChunks *t = f->thread_chunks[thread_id];
   // If scratch_chunk is empty, take a chunk from the top of thread chunk array
-  if (t->scratch_chunk == NULL || t->scratch_chunk->next_free_index == 0) {
-    t->scratch_chunk = thread_remove_chunk(t, &f->chunk_counts[thread_id]);
-  }
-  // If thread chunk array is empty, steal a chunk from another thread by
-  // pointing scratch_chunk to it
-  if (t->scratch_chunk == NULL) {
-    int *next_stealable_thread =
-        &f->thread_chunks[thread_id]->next_stealable_thread;
-    while (f->chunk_counts[*next_stealable_thread] == 0 &&
-           *next_stealable_thread != thread_id) {
-      *next_stealable_thread = (*next_stealable_thread + 1) % MAX_THREADS;
-    }
-    if (*next_stealable_thread == thread_id) {
-      return VERT_MAX; // No threads to steal from
+  if (t->scratch_chunk->next_free_index == 0) {
+    Chunk *c = NULL;
+    if ((c = thread_remove_chunk(t, &f->chunk_counts[thread_id])) != NULL) {
+      t->scratch_chunk = c;
     } else {
-      t->scratch_chunk =
-          thread_remove_chunk(f->thread_chunks[*next_stealable_thread],
-                              &f->chunk_counts[*next_stealable_thread]);
+      // If thread chunk array is empty, steal a chunk from another thread by
+      // pointing scratch_chunk to it
+      if (t->scratch_chunk == NULL) {
+        int *next_stealable_thread =
+            &f->thread_chunks[thread_id]->next_stealable_thread;
+        while (f->chunk_counts[*next_stealable_thread] == 0 &&
+               *next_stealable_thread != thread_id) {
+          *next_stealable_thread = (*next_stealable_thread + 1) % MAX_THREADS;
+        }
+        if (*next_stealable_thread == thread_id) {
+          return VERT_MAX; // No threads to steal from
+        } else {
+          t->scratch_chunk =
+              thread_remove_chunk(f->thread_chunks[*next_stealable_thread],
+                                  &f->chunk_counts[*next_stealable_thread]);
+        }
+      }
     }
   }
   return chunk_pop_vertex(t->scratch_chunk);

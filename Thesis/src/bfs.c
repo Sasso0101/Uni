@@ -8,7 +8,6 @@
 #include "mt19937-64.h"
 #include "thread_pool.h"
 #include <assert.h>
-#include <bits/time.h>
 #include <pthread.h>
 #include <stdatomic.h>
 #include <stdint.h>
@@ -69,7 +68,7 @@ void *thread_main(void *arg) {
       if (frontier_get_total_chunks(f1) == 0)
         exploration_done = 1;
 
-      // printf("%u ", distance);
+      // printf("%u \n", distance);
       // print_chunk_counts(f1);
       atomic_thread_fence(memory_order_seq_cst);
       distance++;
