@@ -1,6 +1,8 @@
+#ifndef BITMAP_H_
+#define BITMAP_H_
+
 #include "frontier.h"
 #include "merged_csr.h"
-#include <stdbool.h>
 
 typedef struct {
   bool *bitmap;
@@ -12,3 +14,5 @@ void frontier_to_bitmap(Bitmap *b, MergedCSR *merged_csr, Frontier *f,
                         int thread_id);
 void bitmap_to_frontier(Bitmap *b, MergedCSR *merged_csr, Frontier *f,
                         int thread_id);
+
+#endif

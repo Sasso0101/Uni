@@ -31,3 +31,9 @@ MergedCSR *to_merged_csr(const GraphCSR *graph) {
   }
   return merged_csr;
 }
+
+void destroy_merged_csr(MergedCSR *merged_csr) {
+  free(merged_csr->merged);
+  free(merged_csr->row_ptr);
+  free(merged_csr);
+}

@@ -127,11 +127,12 @@ void frontier_push_vertex(Frontier *f, int thread_id, ver_t v) {
 
 ver_t frontier_pop_vertex(Frontier *f, int thread_id) {
   ThreadChunks *t = f->thread_chunks[thread_id];
-  // If the screath chunk is empty take a chunk from the thread chunk array
+  // If scratch_chunk is empty, take a chunk from the top of thread chunk array
   if (t->scratch_chunk == NULL || t->scratch_chunk->next_free_index == 0) {
     t->scratch_chunk = thread_remove_chunk(t, &f->chunk_counts[thread_id]);
   }
-  // If the thread chunk array is empty, steal from other threads
+  // If thread chunk array is empty, steal a chunk from another thread by
+  // pointing scratch_chunk to it
   if (t->scratch_chunk == NULL) {
     int *next_stealable_thread =
         &f->thread_chunks[thread_id]->next_stealable_thread;
