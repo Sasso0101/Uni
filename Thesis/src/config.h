@@ -13,8 +13,9 @@
 // https://github.com/sbeamer/gapbs/blob/b5e3e19c2845f22fb338f4a4bc4b1ccee861d026/src/util.h#L22
 #define SEED 27491095
 
-// Selects weather to use 32-bit or 64-bit integers for the vertices in the merged CSR
+// Selects weather to use 32-bit or 64-bit integers for the vertices in the
+// merged CSR
 typedef uint32_t mer_t;
-#define MERGED_MAX UINT32_MAX
+#define VERT_MAX UINT32_MAX
 
 #endif // CONFIG_H

@@ -24,49 +24,18 @@ atomic_int active_threads;
 volatile uint32_t exploration_done;
 volatile int distance;
 
-void top_down_chunk(MergedCSR *merged_csr, Frontier *next, VertexChunk *c,
-                    VertexChunk **dest, int distance, int thread_id) {
-  assert(c != NULL && "Chunk passed to top_down_chunk is NULL!");
-  mer_t v = MERGED_MAX;
-  while ((v = chunk_pop_vertex(c)) != MERGED_MAX) {
-    mer_t end = v + DEGREE(merged_csr, v) + METADATA_SIZE;
-    for (mer_t i = v + METADATA_SIZE; i < end; i++) {
+void top_down(MergedCSR *merged_csr, Frontier *current_frontier,
+              Frontier *next_frontier, int distance, int thread_id) {
+  mer_t v;
+  while ((v = frontier_pop_vertex(current_frontier, thread_id)) != VERT_MAX) {
+    mer_t end = START_MERGED_INDICES(merged_csr, v) + DEGREE(merged_csr, v);
+    for (mer_t i = START_MERGED_INDICES(merged_csr, v); i < end; i++) {
       mer_t neighbor = merged_csr->merged[i];
       if (DISTANCE(merged_csr, neighbor) == UINT32_MAX) {
         DISTANCE(merged_csr, neighbor) = distance;
         if (DEGREE(merged_csr, neighbor) != 1) {
-          if (*dest == NULL || (*dest)->next_free_index >= CHUNK_SIZE) {
-            *dest = frontier_acquire_chunk(next, thread_id);
-          }
-          chunk_push_vertex(*dest, neighbor);
+          frontier_push_vertex(next_frontier, thread_id, neighbor);
         }
-      }
-    }
-  }
-}
-
-void top_down(MergedCSR *merged_csr, Frontier *current_frontier,
-              Frontier *next_frontier, int distance, int thread_id) {
-  VertexChunk *c = NULL;
-  VertexChunk *next_chunk = NULL;
-  VertexChunk **dest = &next_chunk;
-  // Run top-down step for all chunks belonging to the thread
-  while ((c = frontier_release_chunk(current_frontier, thread_id)) != NULL) {
-    top_down_chunk(merged_csr, next_frontier, c, dest, distance, thread_id);
-  }
-  // Work stealing from other threads when finished processing chunks of this
-  // thread
-  bool work_to_do = true;
-  while (work_to_do) {
-    work_to_do = false;
-    for (int i = 0; i < MAX_THREADS; i++) {
-      if (current_frontier->chunk_counts[i] > 1) {
-        work_to_do = 1;
-        if ((c = frontier_release_chunk(current_frontier, i)) != NULL) {
-          top_down_chunk(merged_csr, next_frontier, c, dest, distance,
-                         thread_id);
-        }
-        i--;
       }
     }
   }
@@ -129,8 +98,7 @@ void bfs(uint32_t source) {
   // Convert source vertex to mergedCSR index
   source = merged_csr->row_ptr[source];
   DISTANCE(merged_csr, source) = 0;
-  VertexChunk *c = frontier_acquire_chunk(f1, 0);
-  chunk_push_vertex(c, source);
+  frontier_push_vertex(f1, 0, source);
   exploration_done = 0;
   active_threads = MAX_THREADS;
   distance = 1;
@@ -165,7 +133,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  GraphCSR *graph = import_mtx(args.filename, METADATA_SIZE, MERGED_MAX);
+  GraphCSR *graph = import_mtx(args.filename, METADATA_SIZE, VERT_MAX);
   if (graph == NULL) {
     printf("Failed to import graph from file [%s]\n", args.filename);
     return -1;
