@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "graph.h"
+#include <stdlib.h>
 
 typedef struct {
   uint32_t num_vertices;
