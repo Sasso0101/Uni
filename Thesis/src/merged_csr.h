@@ -11,9 +11,10 @@ typedef struct {
   mer_t *merged;
 } MergedCSR;
 
-#define METADATA_SIZE 2
+#define METADATA_SIZE 3
 #define DEGREE(mer, i) mer->merged[i]
 #define DISTANCE(mer, i) mer->merged[i + 1]
+#define ID(mer, i) mer->merged[i + 2]
 
 /**
  * Converts the CSR graph into a modified "merged CSR" format with embedded
@@ -51,6 +52,7 @@ MergedCSR *to_merged_csr(const GraphCSR *graph) {
     mer_t start = graph->row_ptr[i] + i * METADATA_SIZE;
     DEGREE(merged_csr, start) = graph->row_ptr[i + 1] - graph->row_ptr[i];
     DISTANCE(merged_csr, start) = UINT32_MAX;
+    ID(merged_csr, start) = i;
     start += METADATA_SIZE;
     for (mer_t j = graph->row_ptr[i]; j < graph->row_ptr[i + 1]; j++) {
       merged_csr->merged[start++] =

@@ -1,3 +1,4 @@
+#include "bitmap.h"
 #define _GNU_SOURCE
 #include "command_line.h"
 #include "config.h"
@@ -8,7 +9,6 @@
 #include "mt19937-64.h"
 #include "thread_pool.h"
 #include <assert.h>
-#include <bits/time.h>
 #include <pthread.h>
 #include <stdatomic.h>
 #include <stdint.h>
@@ -17,6 +17,7 @@
 
 MergedCSR *merged_csr;
 Frontier *f1, *f2;
+Bitmap *b1, *b2;
 uint32_t *distances;
 
 atomic_int active_threads;
@@ -72,6 +73,27 @@ void top_down(MergedCSR *merged_csr, Frontier *current_frontier,
   }
 }
 
+void bottom_up(MergedCSR *merged, GraphCSR *graph, Bitmap *current,
+               Bitmap *next, int distance, int thread_id) {
+  uint32_t vert_per_thread = merged_csr->num_vertices / MAX_THREADS;
+  uint32_t start = vert_per_thread * thread_id;
+  uint32_t potential_end = vert_per_thread * (thread_id + 1);
+  uint32_t end = (potential_end < merged_csr->num_vertices)
+                     ? potential_end
+                     : merged_csr->num_vertices;
+
+  for (uint32_t v = start; v < end; v++) {
+    for (uint32_t i = graph->row_ptr[v]; i < graph->row_ptr[v + 1]; i++) {
+      uint32_t neighbor = graph->col_idx[i];
+      if (current->bitmap[neighbor]) {
+        DISTANCE(merged, merged->row_ptr[v]) = distance;
+        next->bitmap[v] = 1;
+      }
+    }
+  }
+  bitmap_clear(current, graph->num_vertices);
+}
+
 void finalize_distances(MergedCSR *merged_csr, int thread_id) {
   // Write distances from mergedCSR to distances array
   mer_t chunk_size = merged_csr->num_vertices / MAX_THREADS;
@@ -121,6 +143,8 @@ void initialize_bfs(const GraphCSR *graph) {
   merged_csr = to_merged_csr(graph);
   f1 = frontier_create();
   f2 = frontier_create();
+  b1 = bitmap_create(graph->num_vertices);
+  b2 = bitmap_create(graph->num_vertices);
   init_thread_pool(&tp, thread_main);
   thread_pool_create(&tp);
 }
