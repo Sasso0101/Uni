@@ -1,10 +1,10 @@
-#include "bitmap.h"
 #define _GNU_SOURCE
 #include "command_line.h"
 #include "config.h"
 #include "debug_utils.h"
 #include "frontier.h"
 #include "graph.h"
+#include "bitmap.h"
 #include "merged_csr.h"
 #include "mt19937-64.h"
 #include "thread_pool.h"
@@ -102,6 +102,7 @@ void bottom_up(MergedCSR *merged, GraphCSR *graph, Bitmap *current,
         DISTANCE(merged, merged->row_ptr[v]) = distance;
         next->bitmap[v] = 1;
         edges_to_check += DEGREE(merged, merged->row_ptr[v]);
+        vert_in_front++;
       }
     }
   }
@@ -141,6 +142,7 @@ void *thread_main(void *arg) {
           exploration_done = 1;
         else {
           if (edges_to_check_front > edges_to_check_tot / ALPHA) {
+            printf("Bottom up %d", distance+1);
             is_top_down = 0;
             bitmap_clear(b1, merged_csr->num_vertices);
             frontier_to_bitmap(b1, f2, merged_csr, thread_id);
@@ -154,6 +156,7 @@ void *thread_main(void *arg) {
           exploration_done = 1;
         else {
           if (vert_in_front < graph->num_vertices / BETA) {
+            printf("Top down %d", distance+1);
             is_top_down = 1;
             bitmap_to_frontier(b2, f1, merged_csr, thread_id);
           }

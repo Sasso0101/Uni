@@ -59,7 +59,7 @@ int wait_for_work(thread_pool_t *tp, uint32_t *run_id) {
  */
 void *thread_main_wrapper(void *arg) {
   // Initialize the worker's local run ID. Starts at 1 to wait for the first cycle (global run id is initalized at 0).
-  uint run_id = 1;
+  uint32_t run_id = 1;
 
   // Main worker loop: continue as long as wait_for_work indicates readiness
   // wait_for_work handles the blocking and the termination check (via pthread_exit)
@@ -132,6 +132,7 @@ void thread_pool_start_wait(thread_pool_t *tp) {
   pthread_mutex_lock(&tp->mutex_parent);
   tp->run_id++;
   tp->children_done = false;
+  printf("broadcast\n");
 
   pthread_cond_broadcast(&tp->cond_children);
   pthread_mutex_unlock(&tp->mutex_children);

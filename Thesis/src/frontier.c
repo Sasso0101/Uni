@@ -27,7 +27,7 @@ Frontier *frontier_create() {
 }
 
 
-void destroy_frontier(Frontier *f) {
+void frontier_destroy(Frontier *f) {
   for (int i = 0; i < MAX_THREADS; i++) {
     for (int j = 0; j < f->thread_chunks[i]->initialized_count; j++) {
       free(f->thread_chunks[i]->chunks[j]);
@@ -40,7 +40,7 @@ void destroy_frontier(Frontier *f) {
   free(f);
 }
 
-Chunk *frontier_acquire_chunk(Frontier *f, int thread_id) {
+Chunk *frontier_create_chunk(Frontier *f, int thread_id) {
   ThreadChunks *thread = f->thread_chunks[thread_id];
   pthread_mutex_lock(&thread->lock);
   // Check if we need to resize the chunks array
@@ -62,7 +62,7 @@ Chunk *frontier_acquire_chunk(Frontier *f, int thread_id) {
 }
 
 
-Chunk *frontier_release_chunk(Frontier *f, int thread_id) {
+Chunk *frontier_remove_chunk(Frontier *f, int thread_id) {
   ThreadChunks *thread = f->thread_chunks[thread_id];
   pthread_mutex_lock(&thread->lock);
   if (thread->next_free_chunk > 0) {

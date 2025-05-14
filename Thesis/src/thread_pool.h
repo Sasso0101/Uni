@@ -44,7 +44,7 @@ void init_thread_pool(thread_pool_t *tp, void *(*routine)(void *));
  * thread should proceed or calls pthread_exit directly if termination is
  * signaled.
  */
-int wait_for_work(thread_pool_t *tp, uint *run_id);
+int wait_for_work(thread_pool_t *tp, uint32_t *run_id);
 
 /**
  * @brief Creates and launches the threads in the pool.

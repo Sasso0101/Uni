@@ -29,11 +29,9 @@ void chunk_to_bitmap(Bitmap *b, Chunk *c, MergedCSR *merged) {
 }
 
 void frontier_to_bitmap(Bitmap *b, Frontier *f, MergedCSR *merged, int thread_id) {
-  Chunk *c = NULL;
-  Chunk *next_chunk = NULL;
-  Chunk **dest = &next_chunk;
+  Chunk *c;
   // Run top-down step for all chunks belonging to the thread
-  while ((c = frontier_release_chunk(f, thread_id)) != NULL) {
+  while ((c = frontier_remove_chunk(f, thread_id)) != NULL) {
     chunk_to_bitmap(b, c, merged);
   }
   // Work stealing from other threads when finished processing chunks of this
@@ -44,7 +42,7 @@ void frontier_to_bitmap(Bitmap *b, Frontier *f, MergedCSR *merged, int thread_id
     for (int i = 0; i < MAX_THREADS; i++) {
       if (f->chunk_counts[i] > 1) {
         work_to_do = 1;
-        if ((c = frontier_release_chunk(f, i)) != NULL) {
+        if ((c = frontier_remove_chunk(f, i)) != NULL) {
           chunk_to_bitmap(b, c, merged);
         }
         i--;
@@ -58,12 +56,12 @@ void bitmap_to_frontier(Bitmap *b, Frontier *f, MergedCSR *merged, int thread_id
   uint32_t start = vert_per_thread*thread_id;
   uint32_t potential_end = vert_per_thread * (thread_id + 1);
   uint32_t end = (potential_end < merged->num_vertices) ? potential_end : merged->num_vertices;
-  Chunk *dest = frontier_acquire_chunk(f, thread_id);
+  Chunk *dest = frontier_create_chunk(f, thread_id);
   for (uint32_t i = start; i < end; i++) {
     uint32_t v = b->bitmap[i];
     if (v) {
       if (dest == NULL || dest->next_free_index >= CHUNK_SIZE) {
-        dest = frontier_acquire_chunk(f, thread_id);
+        dest = frontier_create_chunk(f, thread_id);
       }
       chunk_push_vertex(dest, merged->row_ptr[v]);
     }
