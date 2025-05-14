@@ -23,7 +23,7 @@ void init_thread_pool(thread_pool_t *tp, void *(*routine)(void *)) {
   tp->routine = routine;
 }
 
-int wait_for_work(thread_pool_t *tp, uint *run_id) {
+int wait_for_work(thread_pool_t *tp, uint32_t *run_id) {
   // Lock the mutex protecting shared state accessed by worker threads
   pthread_mutex_lock(&tp->mutex_children);
 
@@ -70,18 +70,8 @@ void *thread_main_wrapper(void *arg) {
 }
 
 /**
- * @brief Pins a thread to a specific logical CPU core.
- *
- * Platform-specific optimization for Linux to improve cache locality
- * and reduce contention by binding threads to specific cores.
- *
- * @param thread The pthread handle.
- * @param core The logical CPU core index to bind the thread to.
- *
+ * Platform-specific optimization that pins a thread to a CPU core.
  * @note Only effective on Linux systems where `pthread_setaffinity_np` is available.
- *       It's a no-op on other systems.
- * @internal
- * @internal
  */
 static void pin_thread_to_cpu(pthread_t thread, int core) {
 #ifdef __linux__

@@ -9,14 +9,14 @@
 Frontier *frontier_create() {
   Frontier *f = (Frontier *)malloc(sizeof(Frontier));
   f->thread_chunks =
-      (ChunkPool **)malloc(sizeof(ChunkPool *) * MAX_THREADS);
+      (ThreadChunks **)malloc(sizeof(ThreadChunks *) * MAX_THREADS);
   f->chunk_counts = (int *)calloc(MAX_THREADS, sizeof(int));
 
   for (int i = 0; i < MAX_THREADS; i++) {
     f->thread_chunks[i] =
-        (ChunkPool *)malloc(sizeof(ChunkPool));
+        (ThreadChunks *)malloc(sizeof(ThreadChunks));
     f->thread_chunks[i]->chunks =
-        (VertexChunk **)malloc(sizeof(VertexChunk *) * CHUNKS_PER_THREAD);
+        (Chunk **)malloc(sizeof(Chunk *) * CHUNKS_PER_THREAD);
     f->thread_chunks[i]->chunks_size = CHUNKS_PER_THREAD;
     f->thread_chunks[i]->next_free_chunk = 0;
     f->thread_chunks[i]->initialized_count = 0;
@@ -40,19 +40,19 @@ void destroy_frontier(Frontier *f) {
   free(f);
 }
 
-VertexChunk *frontier_acquire_chunk(Frontier *f, int thread_id) {
-  ChunkPool *thread = f->thread_chunks[thread_id];
+Chunk *frontier_acquire_chunk(Frontier *f, int thread_id) {
+  ThreadChunks *thread = f->thread_chunks[thread_id];
   pthread_mutex_lock(&thread->lock);
   // Check if we need to resize the chunks array
   if (thread->next_free_chunk >= thread->chunks_size) {
     thread->chunks_size *= 2;
-    thread->chunks = (VertexChunk **)realloc(
-        thread->chunks, thread->chunks_size * sizeof(VertexChunk *));
+    thread->chunks = (Chunk **)realloc(
+        thread->chunks, thread->chunks_size * sizeof(Chunk *));
   }
   // Check if we need to allocate a new chunk
   if (thread->next_free_chunk >= thread->initialized_count) {
     thread->chunks[thread->next_free_chunk] =
-        (VertexChunk *)malloc(sizeof(VertexChunk));
+        (Chunk *)malloc(sizeof(Chunk));
     thread->chunks[thread->next_free_chunk]->next_free_index = 0;
     thread->initialized_count++;
   }
@@ -62,12 +62,12 @@ VertexChunk *frontier_acquire_chunk(Frontier *f, int thread_id) {
 }
 
 
-VertexChunk *frontier_release_chunk(Frontier *f, int thread_id) {
-  ChunkPool *thread = f->thread_chunks[thread_id];
+Chunk *frontier_release_chunk(Frontier *f, int thread_id) {
+  ThreadChunks *thread = f->thread_chunks[thread_id];
   pthread_mutex_lock(&thread->lock);
   if (thread->next_free_chunk > 0) {
     thread->next_free_chunk--;
-    VertexChunk *chunk = thread->chunks[thread->next_free_chunk];
+    Chunk *chunk = thread->chunks[thread->next_free_chunk];
     f->chunk_counts[thread_id]--;
     pthread_mutex_unlock(&thread->lock);
     return chunk;
@@ -77,14 +77,14 @@ VertexChunk *frontier_release_chunk(Frontier *f, int thread_id) {
   }
 }
 
-void chunk_push_vertex(VertexChunk *c, mer_t v) {
+void chunk_push_vertex(Chunk *c, mer_t v) {
   assert(c != NULL && "Trying to insert in NULL chunk!");
   assert(c->next_free_index < CHUNK_SIZE && "Trying to insert in full chunk!");
   c->vertices[c->next_free_index] = v;
   c->next_free_index++;
 }
 
-mer_t chunk_pop_vertex(VertexChunk *c) {
+mer_t chunk_pop_vertex(Chunk *c) {
   if (c->next_free_index > 0) {
     c->next_free_index--;
     return c->vertices[c->next_free_index];
