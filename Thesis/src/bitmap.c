@@ -6,9 +6,13 @@
 #include <stdint.h>
 #include <string.h>
 
-Bitmap* bitmap_create(uint32_t num_vertices) {
+#define BITS_PER_WORD 64
+#define WORD_INDEX(i) ((i) / BITS_PER_WORD)
+#define BIT_OFFSET(i) ((i) % BITS_PER_WORD)
+
+Bitmap *bitmap_create(uint32_t num_vertices) {
   Bitmap *b = malloc(sizeof(Bitmap));
-  b->bitmap = calloc(num_vertices, sizeof(bool));
+  b->bitmap = calloc((num_vertices + BITS_PER_WORD - 1)/BITS_PER_WORD, sizeof(uint64_t));
   return b;
 }
 
@@ -18,52 +22,17 @@ void bitmap_destroy(Bitmap *b) {
 }
 
 void bitmap_clear(Bitmap *b, uint32_t num_vertices) {
-  memset(b->bitmap, 0, sizeof(bool)*num_vertices);
+  memset(b->bitmap, 0, (num_vertices + BITS_PER_WORD - 1)/BITS_PER_WORD * sizeof(uint64_t));
 }
 
-void chunk_to_bitmap(Bitmap *b, Chunk *c, MergedCSR *merged) {
-  mer_t v = MERGED_MAX;
-  while ((v = chunk_pop_vertex(c)) != MERGED_MAX) {
-    b->bitmap[ID(merged, v)] = 1;
-  }
+void bitmap_set_bit(Bitmap *b, size_t index) {
+  b->bitmap[WORD_INDEX(index)] |= (1ULL << BIT_OFFSET(index));
 }
 
-void frontier_to_bitmap(Bitmap *b, Frontier *f, MergedCSR *merged, int thread_id) {
-  Chunk *c;
-  // Run top-down step for all chunks belonging to the thread
-  while ((c = frontier_remove_chunk(f, thread_id)) != NULL) {
-    chunk_to_bitmap(b, c, merged);
-  }
-  // Work stealing from other threads when finished processing chunks of this
-  // thread
-  bool work_to_do = true;
-  while (work_to_do) {
-    work_to_do = false;
-    for (int i = 0; i < MAX_THREADS; i++) {
-      if (f->chunk_counts[i] > 1) {
-        work_to_do = 1;
-        if ((c = frontier_remove_chunk(f, i)) != NULL) {
-          chunk_to_bitmap(b, c, merged);
-        }
-        i--;
-      }
-    }
-  }
+void bitmap_clear_bit(Bitmap *b, size_t index) {
+  b->bitmap[WORD_INDEX(index)] &= ~(1ULL << BIT_OFFSET(index));
 }
 
-void bitmap_to_frontier(Bitmap *b, Frontier *f, MergedCSR *merged, int thread_id) {
-  uint32_t vert_per_thread = merged->num_vertices/MAX_THREADS;
-  uint32_t start = vert_per_thread*thread_id;
-  uint32_t potential_end = vert_per_thread * (thread_id + 1);
-  uint32_t end = (potential_end < merged->num_vertices) ? potential_end : merged->num_vertices;
-  Chunk *dest = frontier_create_chunk(f, thread_id);
-  for (uint32_t i = start; i < end; i++) {
-    uint32_t v = b->bitmap[i];
-    if (v) {
-      if (dest == NULL || dest->next_free_index >= CHUNK_SIZE) {
-        dest = frontier_create_chunk(f, thread_id);
-      }
-      chunk_push_vertex(dest, merged->row_ptr[v]);
-    }
-  }
+int bitmap_test_bit(const Bitmap *b, size_t index) {
+  return (b->bitmap[WORD_INDEX(index)] >> BIT_OFFSET(index)) & 1;
 }

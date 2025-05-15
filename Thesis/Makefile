@@ -2,6 +2,10 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -O3 -std=c11 -MMD -MP -pthread
 
+ifeq ($(DEBUG),1)
+  CFLAGS += -g -O0
+endif
+
 # Directories
 SRC_DIR = src
 OBJ_DIR = obj
@@ -13,7 +17,7 @@ OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 DEPS = $(OBJS:.o=.d)
 
 # Target executable
-TARGET = $(BIN_DIR)/bfs
+TARGET = $(BIN_DIR)/bfs $(BIN_DIR)/tc
 
 # Rules
 all: $(TARGET)

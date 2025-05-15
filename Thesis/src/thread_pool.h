@@ -24,16 +24,14 @@ typedef struct {
   pthread_cond_t cond_parent;
   pthread_mutex_t mutex_parent;
 
-  void *(*routine)(void *); // Store the worker function pointer
+  void *(*routine)(int); // Store the worker function pointer
 } thread_pool_t;
-
-static thread_pool_t tp;
 
 /**
  * Initializes a thread pool structure by specifying the function pointer for
  * the task that worker threads will execute.
  */
-void init_thread_pool(thread_pool_t *tp, void *(*routine)(void *));
+void init_thread_pool(thread_pool_t *tp, void *(*routine)(int));
 
 /**
  * @brief Waits for a signal indicating new work or termination.

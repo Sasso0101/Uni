@@ -6,13 +6,14 @@
 #include <stdint.h>
 
 typedef struct {
-  uint32_t* bitmap;
+  uint64_t* bitmap;
 } Bitmap;
 
 Bitmap* bitmap_create(uint32_t num_vertices);
 void bitmap_destroy(Bitmap *b);
 void bitmap_clear(Bitmap *b, uint32_t num_vertices);
-void frontier_to_bitmap(Bitmap *b, Frontier *f, MergedCSR *merged, int thread_id);
-void bitmap_to_frontier(Bitmap *b, Frontier *f, MergedCSR *merged, int thread_id);
+void bitmap_set_bit(Bitmap *b, size_t index);
+void bitmap_clear_bit(Bitmap *b, size_t index);
+int bitmap_test_bit(const Bitmap *b, size_t index);
 
 #endif

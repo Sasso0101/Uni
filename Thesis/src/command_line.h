@@ -119,12 +119,4 @@ int parse_args(int argc, char **argv, Cli_Args *args) {
   return 0;
 }
 
-void init_cli() {
-  add_help_line('f', "file", "load graph from file", NULL);
-  add_help_line('n', "runs", "number of runs", "1");
-  add_help_line('s', "source", "ID of source vertex", "rand");
-  add_help_line('c', "", "Checks BFS correctness", NULL);
-  add_help_line('h', "", "print this help message", NULL);
-}
-
 #endif

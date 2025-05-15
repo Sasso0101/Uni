@@ -1,5 +1,5 @@
-// Define _GNU_SOURCE to enable non-standard GNU extensions,
-// specifically needed for pthread_setaffinity_np used in thread pinning.
+// Define _GNU_SOURCE to enable non-standard GNU extensions.
+// Needed for pthread_setaffinity_np used in thread pinning.
 #define _GNU_SOURCE
 #include "thread_pool.h"
 #include <pthread.h>
@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void init_thread_pool(thread_pool_t *tp, void *(*routine)(void *)) {
+void init_thread_pool(thread_pool_t *tp, void *(*routine)(int)) {
   // Initialize synchronization primitives for worker threads
   pthread_mutex_init(&tp->mutex_children, NULL);
   pthread_cond_init(&tp->cond_children, NULL);
@@ -58,13 +58,16 @@ int wait_for_work(thread_pool_t *tp, uint32_t *run_id) {
  * @internal
  */
 void *thread_main_wrapper(void *arg) {
+  int thread_id = *(int*)(((void**)(arg))[0]);
+  thread_pool_t* tp = ((void**)(arg))[1];
+  free(arg);
   // Initialize the worker's local run ID. Starts at 1 to wait for the first cycle (global run id is initalized at 0).
   uint32_t run_id = 1;
 
   // Main worker loop: continue as long as wait_for_work indicates readiness
   // wait_for_work handles the blocking and the termination check (via pthread_exit)
-  while (wait_for_work(&tp, &run_id) == 0) {
-    tp.routine(arg);
+  while (wait_for_work(tp, &run_id) == 0) {
+    tp->routine(thread_id);
   }
   return NULL;
 }
@@ -85,9 +88,12 @@ static void pin_thread_to_cpu(pthread_t thread, int core) {
 void thread_pool_create(thread_pool_t *tp) {
   // Spawn threads
   for (int i = 0; i < MAX_THREADS; i++) {
+    void** thread_data = (void**)malloc(2*sizeof(void*));
     tp->thread_ids[i] = i;
+    thread_data[0] = &tp->thread_ids[i];
+    thread_data[1] = tp;
     if (pthread_create(&tp->threads[i], NULL, thread_main_wrapper,
-                       &tp->thread_ids[i]) != 0) {
+                       thread_data) != 0) {
       perror("Failed to create thread");
       exit(1);
     }
@@ -132,7 +138,6 @@ void thread_pool_start_wait(thread_pool_t *tp) {
   pthread_mutex_lock(&tp->mutex_parent);
   tp->run_id++;
   tp->children_done = false;
-  printf("broadcast\n");
 
   pthread_cond_broadcast(&tp->cond_children);
   pthread_mutex_unlock(&tp->mutex_children);

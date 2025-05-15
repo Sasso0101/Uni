@@ -5,6 +5,7 @@
 #include "frontier.h"
 #include "merged_csr.h"
 #include <stdint.h>
+#include <stdio.h>
 
 void print_chunk_counts(const Frontier *f) {
   printf("Chunk counts: ");
