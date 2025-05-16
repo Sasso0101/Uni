@@ -67,7 +67,7 @@ int parse_args(int argc, char **argv, Cli_Args *args) {
   int c_opt;
   int filename_flag = 0, runs_flag = 0, source_flag = 0;
   args->check = false;
-  while ((c_opt = getopt(argc, argv, "f:n:s:ch")) != -1) {
+  while ((c_opt = getopt(argc, argv, "f:n:s:vh")) != -1) {
     switch (c_opt) {
     case 'f':
       strncpy(args->filename, optarg, sizeof(args->filename) - 1);
@@ -87,7 +87,7 @@ int parse_args(int argc, char **argv, Cli_Args *args) {
       }
       source_flag = 1;
       break;
-    case 'c':
+    case 'v':
       args->check = true;
       break;
     case '?':
