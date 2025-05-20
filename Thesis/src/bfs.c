@@ -16,8 +16,8 @@
 #include <stdio.h>
 #include <time.h>
 
-#define ALPHA 4
-#define BETA 24
+#define ALPHA 15
+#define BETA 18
 
 MergedCSR *merged_csr; // Will be NULL if is_small_diameter_graph is true
 GraphCSR *graph;
@@ -63,16 +63,17 @@ void frontier_to_bitmap_csr(Bitmap *b, Frontier *f, int thread_id) {
 }
 
 void bitmap_to_frontier_csr(Bitmap *b, Frontier *f, int thread_id) {
-  // TODO: make it parallel
-  uint32_t start = 0;
-  uint32_t end = graph->num_vertices;
+  mer_t chunk_size = graph->num_vertices / MAX_THREADS;
+  mer_t start = thread_id * chunk_size;
+  mer_t end = (thread_id == MAX_THREADS - 1) ? graph->num_vertices
+                                             : (thread_id + 1) * chunk_size;
   Chunk *dest = frontier_create_chunk(f, thread_id);
   for (uint32_t i = start; i < end; i++) {
     if (bitmap_test_bit(b, i)) {
       if (dest == NULL || dest->next_free_index >= CHUNK_SIZE) {
         dest = frontier_create_chunk(f, thread_id);
       }
-      chunk_push_vertex(dest, graph->row_ptr[i]);
+      chunk_push_vertex(dest, i);
     }
   }
 }
@@ -175,13 +176,9 @@ void top_down_csr(Frontier *current_frontier, Frontier *next_frontier,
 }
 
 void bottom_up_csr(Bitmap *current, Bitmap *next, int current_distance,
-                   int thread_id, uint32_t *vert_in_front,
-                   uint64_t *edges_in_front) {
-  uint32_t vert_per_thread = graph->num_vertices / MAX_THREADS;
-  uint32_t start = vert_per_thread * thread_id;
-  uint32_t potential_end = vert_per_thread * (thread_id + 1);
-  uint32_t end =
-      (thread_id == MAX_THREADS - 1) ? graph->num_vertices : potential_end;
+                   int thread_id, uint32_t *vert_in_front) {
+  uint32_t start, end;
+  bitmap_calculate_offset(next, thread_id, &start, &end);
 
   for (uint32_t v = start; v < end; v++) {
     if (distances[v] == UINT32_MAX) {
@@ -191,7 +188,6 @@ void bottom_up_csr(Bitmap *current, Bitmap *next, int current_distance,
                             neighbor)) { // If neighbor is in current frontier
           bitmap_set_bit(next, v);
           distances[v] = current_distance;
-          *edges_in_front += (graph->row_ptr[v + 1] - graph->row_ptr[v]);
           (*vert_in_front)++;
           break;
         }
@@ -203,8 +199,11 @@ void bottom_up_csr(Bitmap *current, Bitmap *next, int current_distance,
 // --- Main Thread Logic ---
 void *thread_main(int thread_id) {
   while (!exploration_done) {
+    /*struct timespec start_ts, end_ts;
+    clock_gettime(CLOCK_MONOTONIC, &start_ts);*/
+
     uint32_t current_iter = iter;
-    int current_distance = iter;
+    int current_distance = distance;
     uint64_t local_edges_in_front = 0;
     uint32_t local_vert_in_front = 0;
 
@@ -213,7 +212,9 @@ void *thread_main(int thread_id) {
         if (is_top_down) {
           bitmap_to_frontier_csr(b1, f1, thread_id);
         } else {
-          frontier_to_bitmap_csr(b1, f2, thread_id);
+          if (thread_id == 0) {
+            frontier_to_bitmap_csr(b1, f1, thread_id);
+          }
         }
       } else {
         if (is_top_down) {
@@ -221,7 +222,7 @@ void *thread_main(int thread_id) {
                        &local_edges_in_front);
         } else { // Bottom-up CSR
           bottom_up_csr(b1, b2, current_distance, thread_id,
-                        &local_vert_in_front, &local_edges_in_front);
+                        &local_vert_in_front);
           atomic_fetch_add_explicit(&vert_in_front_tot, local_vert_in_front,
                                     memory_order_relaxed);
         }
@@ -234,33 +235,48 @@ void *thread_main(int thread_id) {
 
     if (atomic_fetch_sub(&active_threads, 1) == 1) {
       active_threads = MAX_THREADS;
+      /*clock_gettime(CLOCK_MONOTONIC, &end_ts);
+      long seconds = end_ts.tv_sec - start_ts.tv_sec;
+      long nanoseconds = end_ts.tv_nsec - start_ts.tv_nsec;
+      double elapsed = seconds + nanoseconds * 1e-9;*/
 
       if (is_small_diameter_graph) {
         if (is_top_down) {
           if (convert_data) {
+            // printf("%5d: %8s %16.5f\n", distance, "c b->t", elapsed);
             convert_data = false;
           } else if (frontier_get_total_chunks(f2) == 0) {
+            // printf("%5d: %8s %16.5f\n", distance, "tp done", elapsed);
             exploration_done = 1;
-          } else if (edges_to_check_front > edges_to_check_tot / ALPHA) {
-            is_top_down = false;
-            convert_data = true;
-            bitmap_clear(b1, graph->num_vertices);
           } else {
+            if (edges_to_check_front > edges_to_check_tot / ALPHA) {
+              is_top_down = false;
+              convert_data = true;
+              bitmap_clear(b1, graph->num_vertices);
+            }
             Frontier *temp_f = f1;
             f1 = f2;
             f2 = temp_f;
+            // printf("%5d: %8s %16.5f\n", distance, "td", elapsed);
           }
         } else { // Bottom-Up CSR
-          if (vert_in_front_tot == 0) {
+          if (convert_data) {
+            // printf("%5d: %8s %16.5f\n", distance, "c t>b", elapsed);
+            convert_data = false;
+          } else if (vert_in_front_tot == 0) {
+            // printf("%5d: %8s %16.5f\n", distance, "bu done", elapsed);
             exploration_done = 1;
-          } else if (vert_in_front_tot < graph->num_vertices / BETA) {
-            is_top_down = true;
-            convert_data = true;
+          } else {
+            if (vert_in_front_tot < graph->num_vertices / BETA) {
+              is_top_down = true;
+              convert_data = true;
+            }
+            Bitmap *temp_b = b1;
+            b1 = b2;
+            b2 = temp_b;
+            bitmap_clear(b2, graph->num_vertices);
+            // printf("%5d: %8s %16.5f\n", distance, "bu", elapsed);
           }
-          Bitmap *temp_b = b1;
-          b1 = b2;
-          b2 = temp_b;
-          bitmap_clear(b2, graph->num_vertices);
         }
       } else {
         if (frontier_get_total_chunks(f2) == 0) {
@@ -281,11 +297,11 @@ void *thread_main(int thread_id) {
       atomic_store_explicit(&edges_to_check_front, 0, memory_order_relaxed);
       atomic_store_explicit(&vert_in_front_tot, 0, memory_order_relaxed);
 
-      atomic_thread_fence(memory_order_seq_cst); // Ensure all writes visible
       // before distance increment
       if (!convert_data) {
         distance++;
       }
+      atomic_thread_fence(memory_order_seq_cst); // Ensure all writes visible
       iter++;
     }
     // Spin-wait for the iteration number to be incremented by the last thread.
@@ -329,14 +345,6 @@ void initialize_bfs() {
   thread_pool_create(&tp);
 }
 
-void init_cli() {
-  add_help_line('f', "file", "load graph from file", NULL);
-  add_help_line('n', "runs", "number of runs", "1");
-  add_help_line('s', "source", "ID of source vertex", "rand");
-  add_help_line('v', "", "Verify BFS correctness", NULL);
-  add_help_line('h', "", "print this help message", NULL);
-}
-
 void bfs(uint32_t source_node_id) {
   // Clear data structures for a new BFS run
   bitmap_clear(b1, graph->num_vertices);
@@ -372,15 +380,23 @@ void bfs(uint32_t source_node_id) {
   thread_pool_start_wait(&tp);
 }
 
-uint32_t *generate_sources(int runs, uint32_t num_vertices, uint32_t source) {
+uint32_t *generate_sources(int runs, uint32_t num_vertices,
+                           const char *source) {
   uint32_t *sources_arr = malloc(runs * sizeof(uint32_t));
   if (!sources_arr) {
     perror("Failed to allocate sources array");
     exit(EXIT_FAILURE);
   }
-  if (source != UINT32_MAX) {
-    for (int i = 0; i < runs; i++) {
-      sources_arr[i] = source;
+  if (!str_is_empty(source)) {
+    char *endptr;
+    uint32_t vertex = strtoul(source, &endptr, 10);
+    if (*endptr != '\0') {
+      for (int i = 0; i < runs; i++) {
+        sources_arr[i] = vertex;
+      }
+    } else {
+      perror("Passed source is not a valid integer.");
+      exit(EXIT_FAILURE);
     }
   } else {
     init_genrand64(SEED);
@@ -396,16 +412,47 @@ uint32_t *generate_sources(int runs, uint32_t num_vertices, uint32_t source) {
   return sources_arr;
 }
 
+typedef struct {
+  char filename[MAX_STRING_ARG_LEN];
+  char source[MAX_STRING_ARG_LEN];
+  int num_runs;
+  bool logging;
+  bool verify;
+} ApplicationSettings;
+
+ApplicationSettings settings;
+
+void init_options() {
+  settings.filename[0] = '\0';
+  settings.source[0] = '\0';
+  add_option('f', "MatrixMarket file path", true, "filepath", "",
+             ARG_TYPE_STRING, &settings.filename, true);
+  add_option('n', "Number of runs", true, "count", "1", ARG_TYPE_INT,
+             &settings.num_runs, false);
+  add_option('l', "Enable detailed logging", false, NULL, NULL,
+             ARG_TYPE_BOOL, &settings.logging, false);
+  add_option('v', "Enable correctness check for each run", false, NULL, NULL,
+             ARG_TYPE_BOOL, &settings.logging, false);
+  add_option('s', "Source vertex", true, "ID", "", ARG_TYPE_STRING,
+             &settings.source, false);
+}
+
 int main(int argc, char **argv) {
-  Cli_Args args;
-  init_cli();
-  if (parse_args(argc, argv, &args) != 0) {
-    return -1;
+  cli_parser_init();
+  init_options();
+
+  int parse_status = parse_args(argc, argv);
+  if (parse_status == HELP_PRINTED) {
+    return 0;
+  }
+  if (parse_status != PARSE_SUCCESS) {
+    fprintf(stderr, "Exiting due to argument parsing error.\n");
+    return 1;
   }
 
-  graph = import_mtx(args.filename, METADATA_SIZE, MERGED_MAX);
+  graph = import_mtx(settings.filename, METADATA_SIZE, MERGED_MAX);
   if (graph == NULL) {
-    printf("Failed to import graph from file [%s]\n", args.filename);
+    printf("Failed to import graph from file [%s]\n", settings.filename);
     return -1;
   }
 
@@ -419,7 +466,7 @@ int main(int argc, char **argv) {
   }
 
   uint32_t *sources =
-      generate_sources(args.runs, graph->num_vertices, args.source);
+      generate_sources(settings.num_runs, graph->num_vertices, settings.source);
   printf("Threads: %d, Chunk size: %d, Vertex size: %lu bytes, Small diameter "
          "mode: %s\n",
          MAX_THREADS, CHUNK_SIZE, sizeof(mer_t),
@@ -437,8 +484,8 @@ int main(int argc, char **argv) {
   initialize_bfs();
 
   struct timespec start_ts, end_ts;
-  double elapsed[args.runs];
-  for (int i = 0; i < args.runs; i++) {
+  double elapsed[settings.num_runs];
+  for (int i = 0; i < settings.num_runs; i++) {
     // Reset distances for each run
     for (uint32_t j = 0; j < graph->num_vertices; j++) {
       distances[j] = UINT32_MAX;
@@ -452,14 +499,14 @@ int main(int argc, char **argv) {
     elapsed[i] = seconds + nanoseconds * 1e-9;
     printf("Trial time: %16.5f\n", elapsed[i]);
 
-    if (args.check) {
+    if (settings.verify) {
       check_bfs_correctness(graph, distances, sources[i]);
     }
   }
 
   thread_pool_terminate(&tp);
 
-  print_time(elapsed, args.runs);
+  print_time(elapsed, settings.num_runs);
 
   free(sources);
   free(graph->row_ptr);

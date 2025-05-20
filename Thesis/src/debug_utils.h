@@ -159,4 +159,30 @@ int check_bfs_correctness(const GraphCSR *graph, const uint32_t *distances,
   return 1;
 }
 
+void print_current_time_ms(int thread_id) {
+  char time_buffer[100]; // Buffer for formatted time string
+  long milliseconds;
+
+  struct timespec ts;
+  if (clock_gettime(CLOCK_REALTIME, &ts) == -1) {
+    perror("clock_gettime");
+    // Fallback or error message
+    snprintf(time_buffer, sizeof(time_buffer), "[Error getting time]");
+    milliseconds = 0;
+  } else {
+    struct tm t_m;
+    // Use localtime_r for thread-safety
+    if (localtime_r(&ts.tv_sec, &t_m) == NULL) {
+      perror("localtime_r");
+      snprintf(time_buffer, sizeof(time_buffer), "[Error formatting time]");
+      milliseconds = 0;
+    } else {
+      strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", &t_m);
+      milliseconds =
+          ts.tv_nsec / 1000000; // Convert nanoseconds to milliseconds
+    }
+  }
+  printf("[%d] finished %s.%03ld\n", thread_id, time_buffer, milliseconds);
+}
+
 #endif // DEBUG_UTILS_H
