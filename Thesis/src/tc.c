@@ -8,7 +8,7 @@
 #include <stdatomic.h>
 #include <time.h>
 
-#define TC_CHUNK_SIZE 1024
+#define TC_CHUNK_SIZE 64
 
 MergedCSR *merged_csr;
 GraphCSR *graph;
@@ -28,12 +28,14 @@ void *thread_main(__attribute__((unused)) int thread_id) {
     uint32_t u, v, w;
     for (uint32_t i = start_index; i < start_index + elements_in_chunk; i++) {
       u = merged_csr->row_ptr[i];
-      for (uint32_t j = u + METADATA_SIZE; j < u + METADATA_SIZE + DEGREE(merged_csr, u); j++) {
+      for (uint32_t j = u + METADATA_SIZE;
+           j < u + METADATA_SIZE + DEGREE(merged_csr, u); j++) {
         v = merged_csr->merged[j];
         if (v > u)
           break;
         uint32_t it = v + METADATA_SIZE;
-        for (uint32_t t = u + METADATA_SIZE; t < u + METADATA_SIZE + DEGREE(merged_csr, u); t++) {
+        for (uint32_t t = u + METADATA_SIZE;
+             t < u + METADATA_SIZE + DEGREE(merged_csr, u); t++) {
           w = merged_csr->merged[t];
           if (w > v)
             break;
@@ -67,8 +69,7 @@ void initialize_tc() {
 void tc() {
   active_threads = MAX_THREADS;
   total = 0;
-  if (array_processor_init(&ap, merged_csr->merged, merged_csr->num_vertices,
-                           TC_CHUNK_SIZE) != 0) {
+  if (array_processor_init(&ap, merged_csr->num_vertices, TC_CHUNK_SIZE) != 0) {
     fprintf(stderr, "Failed to initialize array processor.\n");
     exit(EXIT_FAILURE);
   }
@@ -119,19 +120,19 @@ int main(int argc, char **argv) {
   struct timespec start_ts, end_ts;
   double elapsed[settings.num_runs];
   for (int i = 0; i < settings.num_runs; i++) {
-
     clock_gettime(CLOCK_MONOTONIC, &start_ts);
     tc();
     clock_gettime(CLOCK_MONOTONIC, &end_ts);
     long seconds = end_ts.tv_sec - start_ts.tv_sec;
     long nanoseconds = end_ts.tv_nsec - start_ts.tv_nsec;
     elapsed[i] = seconds + nanoseconds * 1e-9;
-    printf("Trial time: %16.5f Triangles: %lu\n", elapsed[i], total);
   }
-
   thread_pool_terminate(&tp);
-
+  for (int i = 0; i < settings.num_runs; i++) {
+    printf("Trial time: %16.5f\n", elapsed[i]);
+  }
   print_time(elapsed, settings.num_runs);
+  printf("Total triangles: %ld\n", total);
 
   free(graph->row_ptr);
   free(graph->col_idx);

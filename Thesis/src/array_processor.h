@@ -25,10 +25,9 @@ typedef struct {
  * @return 0 on success, -1 on error.
  */
 static inline int array_processor_init(ArrayProcessor *processor,
-                                       void *data,
                                        size_t num_elements,
                                        size_t elements_per_chunk) {
-    if (!processor || !data) {
+    if (!processor) {
         fprintf(stderr, "Error: Null pointer provided to array_processor_init.\n");
         return -1;
     }
